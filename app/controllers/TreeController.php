@@ -1,0 +1,61 @@
+<?php
+
+class TreeController extends Controller{
+
+    public function index()
+    {
+        return Document::whereRaw("fid = 0")->get();
+        if(isset($_GET['node'])){
+            $docs = Document::where('fid', '=', $_GET['node'])->get();
+        }else{
+            $docs = Document::whereRaw("project_id = {$_GET['project_id']} and fid = 0")->get();
+        }
+        $rt = array();
+        foreach($docs as $d){
+            $lf = ($d->type == 'folder')?false:true;
+            $rt[] = array(
+                    'name' => $d->name,
+                    'leaf' => $lf,
+                    'id' => $d->id,
+                    'type' => $d->type
+            );
+        }
+        $r = array('children'=>$rt);
+        return json_encode($r);
+    }
+
+    public function root()
+    {
+         $docs = Document::whereRaw("project_id = {$_GET['project_id']} and fid = 0")->get();
+         $rt = array();
+         foreach($docs as $d){
+             $lf = ($d->type == 'folder')?false:true;
+             $rt[] = array(
+                     'name' => $d->name,
+                     'leaf' => $lf,
+                     'id' => $d->id,
+                     'type' => $d->type
+             );
+         }
+         $r = array('children'=>$rt);
+         return json_encode($r);
+    }
+    
+    public function show($foder_id)
+    {
+        $docs = Document::where('fid', '=', $foder_id)->get();
+        $rt = array();
+        foreach($docs as $d){
+            $lf = ($d->type == 'folder')?false:true;
+            $rt[] = array(
+                    'name' => $d->name,
+                    'leaf' => $lf,
+                    'id' => $d->id,
+                    'type' => $d->type
+            );
+        }
+        $r = array('children'=>$rt);
+        return json_encode($r);
+    }
+
+}

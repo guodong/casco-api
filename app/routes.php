@@ -1,0 +1,22 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Application Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register all of the routes for an application.
+| It's a breeze. Simply tell Laravel the URIs it should respond to
+| and give it the Closure to execute when that URI is requested.
+|
+*/
+
+
+Route::resource('project', 'ProjectController');
+
+Route::resource('rs', 'RsController');
+Route::resource('tc', 'TcController');
+Route::resource('document', 'DocumentController');
+Route::resource('document.rs', 'DocumentRsController');
+Route::get('tree/root', 'TreeController@root');
+Route::resource('tree', 'TreeController');

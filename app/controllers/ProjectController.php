@@ -1,0 +1,55 @@
+<?php
+
+use Illuminate\Support\Facades\Input;
+class ProjectController extends BaseController {
+
+	//项目创建
+	public function store()
+	{
+		
+		$project = new Project(Input::get());
+		$project->save();
+		
+		return $project;
+	}
+
+	public function docfile()
+	{
+		set_time_limit(9999);
+		$name = date("Y-m-d").$_FILES["file"]["name"];
+		move_uploaded_file($_FILES["file"]["tmp_name"], public_path().'/files/'.$name);
+		$url = 'http://10.4.8.156/files/'.$name;
+		$u = 'http://10.4.2.158/WebService1.asmx/InputWord?url='.$url;
+		$data = file_get_contents($u);
+		$d = json_decode($data);
+		foreach($d as $v){
+			if(empty($v)) continue;
+			$rs = new Rs();
+			$rs->document_id = $_POST['document_id'];
+			$rs->title = $v->title;
+			$rs->allocation = $v->Allocation;
+			$rs->category = $v->Category;
+			$rs->implement = $v->Implement;
+			$rs->priority = $v->Priority;
+			$rs->contribution = $v->Contribution;
+			$rs->description = $v->description;
+			$rs->save();
+			foreach($v->Source as $s){
+				$source = new Source();
+				$source->item_id = $rs->id;
+				$source->source = $s;
+				$source->save();
+			}
+		}
+		$rt = Rs::all();
+		return $rt->toJson();
+	}
+
+	//项目列表
+	public function index()
+	{
+		$projects = Project::all();
+		return $projects->toJson();
+	}
+
+}
