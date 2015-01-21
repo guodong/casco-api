@@ -20,3 +20,4 @@ Route::resource('document', 'DocumentController');
 Route::resource('document.rs', 'DocumentRsController');
 Route::get('tree/root', 'TreeController@root');
 Route::resource('tree', 'TreeController');
+Route::get('treemod', 'TreeController@treemod');

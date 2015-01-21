@@ -57,5 +57,17 @@ class TreeController extends Controller{
         $r = array('children'=>$rt);
         return json_encode($r);
     }
-
+    
+    public function treemod()
+    {
+        $src = Document::find($_GET['src']);
+        $dst = Document::find($_GET['dst']);
+        if($dst->type == 'folder'){
+            $src->fid = $dst->id;
+            $src->save();
+        }else{
+            $src->fid = $dst->fid;
+            $src->save();
+        }
+    }
 }
