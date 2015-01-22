@@ -10,10 +10,15 @@ class TcController extends Controller{
 	public function index()
 	{
 	    $tcs = Tc::where('document_id', '=', $_GET['document_id'])->get();
-        foreach ($tcs as &$v) {
-            $v->steps;
-            $v->rss;
-        }
+        
+        $tcs->each(function($tc){
+            $tc->steps;
+            $sources = array();
+            foreach ($tc->rss as $rs){
+                $sources[] = $rs->id;
+            }
+            $tc->sources = $sources;
+        });
         return $tcs;
 	}
 	

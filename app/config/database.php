@@ -54,7 +54,8 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			'host'      => '122.226.100.96',
+			//'host'      => 'localhost',
+		    'host'      => '122.226.100.96',
 			'database'  => 'cascodb',
 			'username'  => 'cascodb',
 			'password'  => 'cascodb123',
