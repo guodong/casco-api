@@ -1,16 +1,16 @@
 <?php
-class Tc extends Eloquent {
-
+class Tc extends BaseModel {
 
 	protected $table = 'tc';
+	protected $fillable = array('tag', 'document_id', 'description', 'test_method', 'pre_condition', 'result');
 
 	public function steps()
 	{
-		return $this->hasMany('TestStep');
+		return $this->hasMany('TcStep');
 	}
-
-	public function rss()
+	
+	public function sources()
 	{
-	    return $this->belongsToMany('Rs', 'rs_tc');
+	    return $this->belongsToMany('Tag', 'tc_source', 'tc_id', 'source_id');
 	}
 }

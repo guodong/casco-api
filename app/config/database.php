@@ -54,11 +54,11 @@ return array(
 
 		'mysql' => array(
 			'driver'    => 'mysql',
-			//'host'      => 'localhost',
-		    'host'      => '122.226.100.96',
+			'host'      => '127.0.0.1',
+		    //'host'      => '122.226.100.96',
 			'database'  => 'cascodb',
-			'username'  => 'cascodb',
-			'password'  => 'cascodb123',
+			'username'  => 'root',
+			'password'  => '',
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',

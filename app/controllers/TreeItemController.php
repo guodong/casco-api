@@ -20,9 +20,10 @@ class TreeItemController extends Controller
             $rt = array();
             foreach ($items as $v){
                 $rt[] = array(
-                        'name' => $v->title,
+                        'name' => $v->tag,
                         'leaf' => 'true',
                         'id' => 'item-'.$v->id,
+                        'item_id' => $v->id,
                         'type' => 'item'
                 );
             }
