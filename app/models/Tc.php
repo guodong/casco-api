@@ -6,7 +6,7 @@ class Tc extends BaseModel {
 
 	public function steps()
 	{
-		return $this->hasMany('TcStep');
+		return $this->hasMany('TcStep')->orderBy('num');
 	}
 	
 	public function sources()
