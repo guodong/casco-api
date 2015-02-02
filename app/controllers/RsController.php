@@ -15,4 +15,10 @@ class RsController extends Controller{
 	    }
 	    return $rss;
 	}
+	
+	public function update($id)
+	{
+	    $m = Rs::find($id);
+	    $m->update(Input::get());
+	}
 }

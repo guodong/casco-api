@@ -12,6 +12,7 @@
 */
 
 
+Route::get('tc/export', 'TcController@export');
 Route::resource('project', 'ProjectController');
 
 Route::resource('rs', 'RsController');

@@ -1,4 +1,5 @@
 <?php
+define('PATH_BASE', realpath(__DIR__.'/../'));
 /**
  * Laravel - A PHP Framework For Web Artisans
  *
