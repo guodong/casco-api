@@ -8,7 +8,7 @@ class Document extends Eloquent {
 	
 	public function tcs()
 	{
-	    return $this->hasMany('TC');
+	    return $this->hasMany('Tc');
 	}
 
 	public function rss()

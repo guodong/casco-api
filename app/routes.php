@@ -24,3 +24,4 @@ Route::resource('tree', 'TreeController');
 Route::get('treeitem/root', 'TreeController@root');
 Route::resource('treeitem', 'TreeItemController');
 Route::get('treemod', 'TreeController@treemod');
+Route::post('docfile', 'ProjectController@docfile');

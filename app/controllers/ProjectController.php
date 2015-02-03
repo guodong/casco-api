@@ -18,15 +18,15 @@ class ProjectController extends BaseController {
 		set_time_limit(9999);
 		$name = date("Y-m-d").$_FILES["file"]["name"];
 		move_uploaded_file($_FILES["file"]["tmp_name"], public_path().'/files/'.$name);
-		$url = 'http://10.4.8.156/files/'.$name;
-		$u = 'http://10.4.2.158/WebService1.asmx/InputWord?url='.$url;
+		$url = 'http://192.100.212.31/files/'.$name;
+		$u = 'http://192.100.212.33/WebService1.asmx/InputWord?url='.$url;
 		$data = file_get_contents($u);
 		$d = json_decode($data);
 		foreach($d as $v){
 			if(empty($v)) continue;
 			$rs = new Rs();
 			$rs->document_id = $_POST['document_id'];
-			$rs->title = $v->title;
+			$rs->tag = $v->title;
 			$rs->allocation = $v->Allocation;
 			$rs->category = $v->Category;
 			$rs->implement = $v->Implement;
