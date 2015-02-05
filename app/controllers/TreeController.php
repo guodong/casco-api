@@ -26,7 +26,7 @@ class TreeController extends Controller{
 
     public function root()
     {
-         $docs = Document::whereRaw("project_id = {$_GET['project_id']} and fid = 0")->get();
+         $docs = Document::whereRaw("project_id = ? and fid = ?", array($_GET['project_id'], 0))->get();
          $rt = array();
          foreach($docs as $d){
              $lf = ($d->type == 'folder')?false:true;

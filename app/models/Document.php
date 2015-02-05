@@ -1,9 +1,9 @@
 <?php
-class Document extends Eloquent {
+class Document extends BaseModel {
 
 
 	protected $table = 'document';
-	protected $fillable = array('name', 'project_id', 'type');
+	protected $fillable = array('name', 'project_id', 'type', 'graph');
 
 	
 	public function tcs()

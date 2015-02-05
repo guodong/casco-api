@@ -11,7 +11,16 @@ class RsController extends Controller{
 	{
 	    $rss = Rs::where('document_id','=',$_GET['document_id'])->get();
 	    foreach ($rss as $v){
-	        $v->tcs;
+	        $v->result = 1;
+	        foreach ($v->tcs as $vv){
+	            if ($vv->result == 2){
+	                $v->result = 2;
+	                break;
+	            }elseif ($vv->result == 0){
+	                $v->result = 0;
+	            }
+	        }
+	        $v->vat;
 	    }
 	    return $rss;
 	}
@@ -19,6 +28,10 @@ class RsController extends Controller{
 	public function update($id)
 	{
 	    $m = Rs::find($id);
-	    $m->update(Input::get());
+	    $m->vat()->detach();
+	    foreach (Input::get('vat') as $v){
+	        $m->vat()->attach($v['id']);
+	    }
+	     
 	}
 }

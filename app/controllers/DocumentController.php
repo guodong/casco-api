@@ -5,6 +5,10 @@ class DocumentController extends Controller{
 
     public function index()
     {
+        if (!empty($_GET['project_id'])){
+            $d = Document::where('project_id', '=', $_GET['project_id'])->where('type','<>','folder')->get();
+            return Response::json($d);
+        }
         return Document::all();
     }
     
@@ -18,6 +22,10 @@ class DocumentController extends Controller{
 	    $document = new Document(Input::get());
 	    $document->save();
 	    return $document;
+	}
+	
+	public function update($id)
+	{
 	}
 
 }

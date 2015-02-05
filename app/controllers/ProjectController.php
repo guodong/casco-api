@@ -16,7 +16,7 @@ class ProjectController extends BaseController {
 	public function docfile()
 	{
 		set_time_limit(9999);
-		$name = date("Y-m-d").$_FILES["file"]["name"];
+		$name = uniqid().'.'.end(explode('.', $file));
 		move_uploaded_file($_FILES["file"]["tmp_name"], public_path().'/files/'.$name);
 		$url = 'http://192.100.212.31/files/'.$name;
 		$u = 'http://192.100.212.33/WebService1.asmx/InputWord?url='.$url;
@@ -50,6 +50,25 @@ class ProjectController extends BaseController {
 	{
 		$projects = Project::all();
 		return $projects->toJson();
+	}
+	
+	public function show($id)
+	{
+	    $p = Project::find($id);
+	    //$p->graph = json_decode($p->graph);
+	    $p->documents;
+	    return $p;
+	}
+	
+	public function update($id)
+	{
+	    $project = Project::find($id);
+	    $data = Input::get();
+	    if($data['graph']){
+	        //$data['graph'] = json_encode($data['graph']);
+	    }
+	    $project->update($data);
+	    return $project;
 	}
 
 }
