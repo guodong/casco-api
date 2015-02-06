@@ -64,8 +64,13 @@ class ProjectController extends BaseController {
 	{
 	    $project = Project::find($id);
 	    $data = Input::get();
-	    if($data['graph']){
-	        //$data['graph'] = json_encode($data['graph']);
+	    $graph = json_decode($data['graph']);var_dump($graph);
+	    foreach ($graph->cells as $node){
+	        if ($node->type != 'fsa.Arrow')
+	            continue;
+	        $src = Document::find($node->source->id);
+	        $dst = Document::find($node->target->id);
+	        $src->dests()->attach($dst);
 	    }
 	    $project->update($data);
 	    return $project;

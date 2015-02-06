@@ -15,4 +15,14 @@ class Document extends BaseModel {
 	{
 	    return $this->hasMany('Rs');
 	}
+	
+	public function srcs()
+	{
+	    return $this->belongsToMany('Document', 'relation', 'dest', 'src');
+	}
+	
+	public function dests()
+	{
+	    return $this->belongsToMany('Document', 'relation', 'src', 'dest');
+	}
 }

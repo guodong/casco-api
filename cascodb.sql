@@ -61,7 +61,7 @@ CREATE TABLE `document` (
   `project_id` varchar(36) NOT NULL COMMENT '所属项目',
   `build_version` varchar(10) NOT NULL COMMENT '软件测试版本',
   `test_version` varchar(10) NOT NULL COMMENT '测试软件版本',
-  `fid` int(11) NOT NULL DEFAULT '0',
+  `fid` varchar(36) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
   PRIMARY KEY (`id`)
@@ -74,7 +74,7 @@ CREATE TABLE `document` (
 
 LOCK TABLES `document` WRITE;
 /*!40000 ALTER TABLE `document` DISABLE KEYS */;
-INSERT INTO `document` VALUES ('1','TSP-SYRS','rs','1','','',28,'2014-11-23 14:05:41','2015-01-28 00:00:48'),('28','sytem','folder','1','','',0,'2014-12-08 22:31:02','2014-12-08 22:31:02'),('5','TSP-SYTC','tc','1','','',28,'2014-11-23 13:21:30','2015-01-28 00:00:44'),('22','subsystem','folder','1','','',0,'2014-12-08 15:42:01','2014-12-08 15:42:01'),('23','test case','tc','1','','',22,'2014-12-08 15:58:51','2015-01-28 00:00:51');
+INSERT INTO `document` VALUES ('d6889236-ad21-11e4-aa9b-cf2d72b432dc','TSP-SYRS','rs','1','','','dc14a208-ad21-11e4-aa9b-cf2d72b432dc','2014-11-23 14:05:41','2015-02-05 01:16:30'),('dc14a208-ad21-11e4-aa9b-cf2d72b432dc','sytem','folder','1','','','0','2014-12-08 22:31:02','2014-12-08 22:31:02'),('e1c83444-ad21-11e4-aa9b-cf2d72b432dc','TSP-SYTC','tc','1','','','dc14a208-ad21-11e4-aa9b-cf2d72b432dc','2014-11-23 13:21:30','2015-01-28 00:00:44'),('e7146468-ad21-11e4-aa9b-cf2d72b432dc','subsystem','folder','1','','','0','2014-12-08 15:42:01','2014-12-08 15:42:01'),('eca32cc0-ad21-11e4-aa9b-cf2d72b432dc','test case','tc','1','','','e7146468-ad21-11e4-aa9b-cf2d72b432dc','2014-12-08 15:58:51','2015-01-28 00:00:51'),('c00dc5ad-c45f-410c-9f88-b27562414c59','adf','rs','1','','','0','2015-02-06 01:36:36','2015-02-06 01:36:36');
 /*!40000 ALTER TABLE `document` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -89,6 +89,7 @@ CREATE TABLE `project` (
   `id` varchar(36) NOT NULL,
   `name` varchar(30) NOT NULL,
   `description` text NOT NULL,
+  `graph` text NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
@@ -101,7 +102,7 @@ CREATE TABLE `project` (
 
 LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project` DISABLE KEYS */;
-INSERT INTO `project` VALUES ('1','TSP-PJG','卡斯卡项目','2014-11-24 00:00:00','0000-00-00 00:00:00'),('7','RAIL-FORWARD','1','2014-11-23 18:32:34','2014-11-23 18:32:34');
+INSERT INTO `project` VALUES ('1','TSP-PJG','卡斯卡项目','{\"cells\":[{\"type\":\"basic.Rect\",\"position\":{\"x\":115,\"y\":219},\"size\":{\"width\":150,\"height\":30},\"angle\":0,\"id\":\"d6889236-ad21-11e4-aa9b-cf2d72b432dc\",\"z\":1,\"attrs\":{\"rect\":{\"fill\":\"#E74C3C\"},\"text\":{\"text\":\"TSP-SYRS\",\"fill\":\"white\"}}},{\"type\":\"basic.Rect\",\"position\":{\"x\":445,\"y\":63},\"size\":{\"width\":150,\"height\":30},\"angle\":0,\"id\":\"e1c83444-ad21-11e4-aa9b-cf2d72b432dc\",\"z\":2,\"attrs\":{\"rect\":{\"fill\":\"#8E44AD\"},\"text\":{\"text\":\"TSP-SYTC\",\"fill\":\"white\"}}},{\"type\":\"basic.Rect\",\"position\":{\"x\":400,\"y\":140},\"size\":{\"width\":150,\"height\":30},\"angle\":0,\"id\":\"eca32cc0-ad21-11e4-aa9b-cf2d72b432dc\",\"z\":3,\"attrs\":{\"rect\":{\"fill\":\"#8E44AD\"},\"text\":{\"text\":\"test case\",\"fill\":\"white\"}}},{\"type\":\"basic.Rect\",\"position\":{\"x\":123,\"y\":105},\"size\":{\"width\":150,\"height\":30},\"angle\":0,\"id\":\"c00dc5ad-c45f-410c-9f88-b27562414c59\",\"z\":5,\"attrs\":{\"rect\":{\"fill\":\"#E74C3C\"},\"text\":{\"text\":\"adf\",\"fill\":\"white\"}}},{\"type\":\"fsa.Arrow\",\"smooth\":true,\"source\":{\"id\":\"c00dc5ad-c45f-410c-9f88-b27562414c59\"},\"target\":{\"id\":\"d6889236-ad21-11e4-aa9b-cf2d72b432dc\"},\"id\":\"4e8924ea-ef36-4d1c-b0c1-4537371842b6\",\"z\":6,\"attrs\":{}},{\"type\":\"fsa.Arrow\",\"smooth\":true,\"source\":{\"id\":\"d6889236-ad21-11e4-aa9b-cf2d72b432dc\"},\"target\":{\"id\":\"eca32cc0-ad21-11e4-aa9b-cf2d72b432dc\"},\"id\":\"624b0f68-07be-4755-b9a4-85fb364c52d3\",\"z\":7,\"attrs\":{}},{\"type\":\"fsa.Arrow\",\"smooth\":true,\"source\":{\"id\":\"e1c83444-ad21-11e4-aa9b-cf2d72b432dc\"},\"target\":{\"id\":\"d6889236-ad21-11e4-aa9b-cf2d72b432dc\"},\"id\":\"e5aa1834-4c97-4c0f-83f9-949575b5ef0f\",\"z\":8,\"attrs\":{}}]}','2014-11-24 00:00:00','2015-02-06 10:38:30'),('7','RAIL-FORWARD','1','','2014-11-23 18:32:34','2014-11-23 18:32:34');
 /*!40000 ALTER TABLE `project` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -138,17 +139,15 @@ DROP TABLE IF EXISTS `relation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `relation` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '关系id',
-  `src` int(10) unsigned NOT NULL COMMENT '源item的id',
-  `dest` int(10) unsigned NOT NULL COMMENT '覆盖item的id',
+  `src` varchar(36) NOT NULL COMMENT '文档关系起点',
+  `dest` varchar(36) NOT NULL COMMENT '文档关系终点',
   `src_type` varchar(10) NOT NULL COMMENT '源item所属类别',
   `dest_type` varchar(10) NOT NULL COMMENT '覆盖item所属类别',
   `src_tag` varchar(20) NOT NULL COMMENT '源tag内容',
   `dest_tag` varchar(20) NOT NULL COMMENT '目标tag内容',
-  PRIMARY KEY (`id`),
   KEY `src` (`src`),
   KEY `dest` (`dest`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -157,7 +156,7 @@ CREATE TABLE `relation` (
 
 LOCK TABLES `relation` WRITE;
 /*!40000 ALTER TABLE `relation` DISABLE KEYS */;
-INSERT INTO `relation` VALUES (5,1,2,'ad','rs','',''),(3,1,1,'tc','rs','',''),(4,1,2,'tc','rx','',''),(6,1,3,'ad','rs','','');
+INSERT INTO `relation` VALUES ('c00dc5ad-c45f-410c-9f88-b27562414c59','d6889236-ad21-11e4-aa9b-cf2d72b432dc','','','',''),('d6889236-ad21-11e4-aa9b-cf2d72b432dc','eca32cc0-ad21-11e4-aa9b-cf2d72b432dc','','','',''),('c00dc5ad-c45f-410c-9f88-b27562414c59','d6889236-ad21-11e4-aa9b-cf2d72b432dc','','','',''),('d6889236-ad21-11e4-aa9b-cf2d72b432dc','eca32cc0-ad21-11e4-aa9b-cf2d72b432dc','','','',''),('e1c83444-ad21-11e4-aa9b-cf2d72b432dc','d6889236-ad21-11e4-aa9b-cf2d72b432dc','','','','');
 /*!40000 ALTER TABLE `relation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -218,7 +217,7 @@ CREATE TABLE `rs` (
 
 LOCK TABLES `rs` WRITE;
 /*!40000 ALTER TABLE `rs` DISABLE KEYS */;
-INSERT INTO `rs` VALUES ('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','1','132313','3123','32','High','33','12','321',0,'0000-00-00 00:00:00','2015-02-03 08:59:15'),('9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b','1','[TSP-SyRS-0001]','Trackside safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n',' 1.1.0','',' SIL0',' Functional',' [TSP-SyAD]\r\n',0,'2014-12-09 03:50:31','2015-02-03 09:02:34');
+INSERT INTO `rs` VALUES ('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','d6889236-ad21-11e4-aa9b-cf2d72b432dc','132313','3123','32','High','33','12','321',0,'0000-00-00 00:00:00','2015-02-03 08:59:15'),('9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b','d6889236-ad21-11e4-aa9b-cf2d72b432dc','[TSP-SyRS-0001]','Trackside safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n',' 1.1.0','',' SIL0',' Functional',' [TSP-SyAD]\r\n',0,'2014-12-09 03:50:31','2015-02-03 09:02:34');
 /*!40000 ALTER TABLE `rs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -268,7 +267,7 @@ CREATE TABLE `rs_vat` (
 
 LOCK TABLES `rs_vat` WRITE;
 /*!40000 ALTER TABLE `rs_vat` DISABLE KEYS */;
-INSERT INTO `rs_vat` VALUES ('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','399b97e7-776f-49f3-b4fe-ffc218f0ff55');
+INSERT INTO `rs_vat` VALUES ('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','fd7bdad4-c56c-410c-95b6-910e53f1dd6b'),('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','399b97e7-776f-49f3-b4fe-ffc218f0ff55'),('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','01e87349-d3b1-4985-b261-2de78719a825');
 /*!40000 ALTER TABLE `rs_vat` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -346,7 +345,7 @@ CREATE TABLE `tc` (
 
 LOCK TABLES `tc` WRITE;
 /*!40000 ALTER TABLE `tc` DISABLE KEYS */;
-INSERT INTO `tc` VALUES ('399b97e7-776f-49f3-b4fe-ffc218f0ff55','5','[TSP-SyRTC-0117]','Check TSP shall be a hot-redundant 2×2oo2 system.','EP','APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ',0,'2015-01-28 08:22:08','2015-02-02 04:12:38'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b','5','[TSP-SyRTC-0117]','Check TSP shall be a hot-redundant 2×2oo2 system.','EP','APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ',0,'2015-01-28 08:23:47','2015-01-28 08:23:47'),('01e87349-d3b1-4985-b261-2de78719a825','5','1','1','EP','1',1,'2015-01-29 05:55:57','2015-02-03 08:59:43'),('2e47eb3e-3582-49f8-9cf0-40a554841e7d','5','2','2','EP','2',0,'2015-01-29 05:58:34','2015-01-29 05:58:34'),('87e9f18a-9801-4353-99c8-66090109f093','5','1','1','EG','1',0,'2015-01-29 08:37:51','2015-02-02 03:35:34'),('7276c180-fd88-4d36-a9b6-724ea6efbd28','','1','1','EP','1',0,'2015-01-30 05:37:24','2015-01-30 05:37:24'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f','5','1','1','EP','1',0,'2015-01-30 05:40:31','2015-01-30 05:40:31'),('bf9839fe-31e2-495a-bf51-116ad2364c64','5','13333245','1','EP','132',2,'2015-01-30 06:04:40','2015-02-03 08:40:29');
+INSERT INTO `tc` VALUES ('399b97e7-776f-49f3-b4fe-ffc218f0ff55','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','[TSP-SyRTC-0117]','Check TSP shall be a hot-redundant 2×2oo2 system.','EP','APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ',0,'2015-01-28 08:22:08','2015-02-02 04:12:38'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','[TSP-SyRTC-0117]','Check TSP shall be a hot-redundant 2×2oo2 system.','EP','APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ',1,'2015-01-28 08:23:47','2015-02-05 06:37:29'),('01e87349-d3b1-4985-b261-2de78719a825','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','1','1','EP','1',1,'2015-01-29 05:55:57','2015-02-03 08:59:43'),('2e47eb3e-3582-49f8-9cf0-40a554841e7d','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','2','2','EP','2',0,'2015-01-29 05:58:34','2015-01-29 05:58:34'),('87e9f18a-9801-4353-99c8-66090109f093','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','1','1','EG','1',0,'2015-01-29 08:37:51','2015-02-02 03:35:34'),('7276c180-fd88-4d36-a9b6-724ea6efbd28','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','1','1','EP','1',0,'2015-01-30 05:37:24','2015-01-30 05:37:24'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','1','1','EP','1',0,'2015-01-30 05:40:31','2015-01-30 05:40:31'),('bf9839fe-31e2-495a-bf51-116ad2364c64','e1c83444-ad21-11e4-aa9b-cf2d72b432dc','13333245','1','EP','132',2,'2015-01-30 06:04:40','2015-02-03 08:40:29');
 /*!40000 ALTER TABLE `tc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -369,7 +368,7 @@ CREATE TABLE `tc_source` (
 
 LOCK TABLES `tc_source` WRITE;
 /*!40000 ALTER TABLE `tc_source` DISABLE KEYS */;
-INSERT INTO `tc_source` VALUES ('2e47eb3e-3582-49f8-9cf0-40a554841e7d','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('',''),('89cddcf6-eba7-42ce-a6f6-316dc51e9aa4','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('2bd7c67e-deb9-4ee6-8ded-321afe0ba38b','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('',''),('7276c180-fd88-4d36-a9b6-724ea6efbd28','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b','28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('87e9f18a-9801-4353-99c8-66090109f093','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55','28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b'),('bf9839fe-31e2-495a-bf51-116ad2364c64','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('01e87349-d3b1-4985-b261-2de78719a825','28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b');
+INSERT INTO `tc_source` VALUES ('2e47eb3e-3582-49f8-9cf0-40a554841e7d','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('',''),('89cddcf6-eba7-42ce-a6f6-316dc51e9aa4','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('2bd7c67e-deb9-4ee6-8ded-321afe0ba38b','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('',''),('7276c180-fd88-4d36-a9b6-724ea6efbd28','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('87e9f18a-9801-4353-99c8-66090109f093','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55','28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b'),('bf9839fe-31e2-495a-bf51-116ad2364c64','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('01e87349-d3b1-4985-b261-2de78719a825','28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b','28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b','9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b');
 /*!40000 ALTER TABLE `tc_source` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -397,7 +396,7 @@ CREATE TABLE `tc_step` (
 
 LOCK TABLES `tc_step` WRITE;
 /*!40000 ALTER TABLE `tc_step` DISABLE KEYS */;
-INSERT INTO `tc_step` VALUES ('87e9f18a-9801-4353-99c8-66090109f093',3,'4','4','2015-02-02 03:35:34','2015-02-02 03:35:34'),('87e9f18a-9801-4353-99c8-66090109f093',2,'3','3','2015-02-02 03:35:34','2015-02-02 03:35:34'),('87e9f18a-9801-4353-99c8-66090109f093',1,'1','1','2015-02-02 03:35:34','2015-02-02 03:35:34'),('7276c180-fd88-4d36-a9b6-724ea6efbd28',1,'1','1','2015-01-30 05:37:24','2015-01-30 05:37:24'),('7276c180-fd88-4d36-a9b6-724ea6efbd28',2,'3','3','2015-01-30 05:37:24','2015-01-30 05:37:24'),('7276c180-fd88-4d36-a9b6-724ea6efbd28',3,'4','4','2015-01-30 05:37:24','2015-01-30 05:37:24'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f',3,'4','4','2015-02-04 03:43:32','2015-02-04 03:43:32'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f',2,'3','3','2015-02-04 03:43:32','2015-02-04 03:43:32'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f',1,'1','1','2015-02-04 03:43:32','2015-02-04 03:43:32'),('01e87349-d3b1-4985-b261-2de78719a825',1,'1','11','2015-02-03 08:59:43','2015-02-03 08:59:43'),('bf9839fe-31e2-495a-bf51-116ad2364c64',2,'33','22','2015-02-03 08:40:29','2015-02-03 08:40:29'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b',1,'4','4','2015-01-30 07:59:11','2015-01-30 07:59:11'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55',1,'2','3','2015-02-02 04:12:38','2015-02-02 04:12:38'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55',2,'3','3323','2015-02-02 04:12:38','2015-02-02 04:12:38'),('bf9839fe-31e2-495a-bf51-116ad2364c64',1,'3','3','2015-02-03 08:40:29','2015-02-03 08:40:29'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55',3,'123','3213微软','2015-02-02 04:12:38','2015-02-02 04:12:38');
+INSERT INTO `tc_step` VALUES ('87e9f18a-9801-4353-99c8-66090109f093',3,'4','4','2015-02-02 03:35:34','2015-02-02 03:35:34'),('87e9f18a-9801-4353-99c8-66090109f093',2,'3','3','2015-02-02 03:35:34','2015-02-02 03:35:34'),('87e9f18a-9801-4353-99c8-66090109f093',1,'1','1','2015-02-02 03:35:34','2015-02-02 03:35:34'),('7276c180-fd88-4d36-a9b6-724ea6efbd28',1,'1','1','2015-01-30 05:37:24','2015-01-30 05:37:24'),('7276c180-fd88-4d36-a9b6-724ea6efbd28',2,'3','3','2015-01-30 05:37:24','2015-01-30 05:37:24'),('7276c180-fd88-4d36-a9b6-724ea6efbd28',3,'4','4','2015-01-30 05:37:24','2015-01-30 05:37:24'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f',3,'4','4','2015-02-04 03:43:32','2015-02-04 03:43:32'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f',2,'3','3','2015-02-04 03:43:32','2015-02-04 03:43:32'),('996417bd-d5d9-4d8d-9e72-8283feb39a8f',1,'1','1','2015-02-04 03:43:32','2015-02-04 03:43:32'),('01e87349-d3b1-4985-b261-2de78719a825',1,'1','11','2015-02-03 08:59:43','2015-02-03 08:59:43'),('bf9839fe-31e2-495a-bf51-116ad2364c64',2,'33','22','2015-02-03 08:40:29','2015-02-03 08:40:29'),('fd7bdad4-c56c-410c-95b6-910e53f1dd6b',1,'4','4','2015-02-05 06:37:29','2015-02-05 06:37:29'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55',1,'2','3','2015-02-02 04:12:38','2015-02-02 04:12:38'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55',2,'3','3323','2015-02-02 04:12:38','2015-02-02 04:12:38'),('bf9839fe-31e2-495a-bf51-116ad2364c64',1,'3','3','2015-02-03 08:40:29','2015-02-03 08:40:29'),('399b97e7-776f-49f3-b4fe-ffc218f0ff55',3,'123','3213微软','2015-02-02 04:12:38','2015-02-02 04:12:38');
 /*!40000 ALTER TABLE `tc_step` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -428,4 +427,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-02-05 11:15:28
+-- Dump completed on 2015-02-06 18:41:46

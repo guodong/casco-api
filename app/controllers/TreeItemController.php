@@ -7,6 +7,7 @@ class TreeItemController extends Controller
     {
         $doc = Document::find($foder_id);
         if ($doc->type != 'folder') {
+            
             switch ($doc->type) {
                 case 'rs':
                     $items = $doc->rss;
@@ -32,7 +33,17 @@ class TreeItemController extends Controller
         $docs = Document::where('fid', '=', $foder_id)->get();
         $rt = array();
         foreach ($docs as $d) {
-            //$lf = ($d->type == 'folder') ? false : true;
+            //判断是否有调用关系
+            $rel = Document::find(Input::get('document_id'));
+            $related = false;
+            foreach ($rel->dests as $v){
+                if ($v->id == $d->id){
+                    $related = true;
+                }
+            }
+            if(!$related){
+                continue;
+            }
             $rt[] = array(
                     'name' => $d->name,
                     'leaf' => 'false',
