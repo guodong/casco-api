@@ -1,5 +1,5 @@
 <?php
-class Project extends Eloquent {
+class Project extends BaseModel {
 
 	protected $table = 'project';
 	protected $fillable = array('name', 'description', 'graph');
@@ -8,4 +8,15 @@ class Project extends Eloquent {
 	{
 	    return $this->hasMany("Document");
 	}
+	
+	public function vatstrs()
+	{
+	    return $this->hasMany("Vatstr");
+	}
+	
+	public function participates()
+	{
+	    return $this->belongsToMany('User', 'project_user');
+	}
+	
 }

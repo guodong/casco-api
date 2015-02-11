@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Input;
 class RsController extends Controller{
 
 	public function show($id)
@@ -21,6 +22,7 @@ class RsController extends Controller{
 	            }
 	        }
 	        $v->vat;
+	        $v->vatstr;
 	    }
 	    return $rss;
 	}
@@ -28,6 +30,8 @@ class RsController extends Controller{
 	public function update($id)
 	{
 	    $m = Rs::find($id);
+	    $m->vatstr_id = Input::get('vatstr_id');
+	    $m->save();
 	    $m->vat()->detach();
 	    foreach (Input::get('vat') as $v){
 	        $m->vat()->attach($v['id']);

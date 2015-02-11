@@ -9,7 +9,13 @@ class ProjectController extends BaseController {
 		
 		$project = new Project(Input::get());
 		$project->save();
-		
+		foreach (Input::get('participates') as $v){
+		    $project->participates()->attach($v['id']);
+		}
+		foreach (Input::get('vatstrs') as $v){
+		    $vatstr = new Vatstr($v);
+		    $project->vatstrs()->save($vatstr);
+		}
 		return $project;
 	}
 

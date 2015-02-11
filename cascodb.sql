@@ -114,11 +114,9 @@ DROP TABLE IF EXISTS `project_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `project_user` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id号员工与工程一对多的关系',
-  `project_id` int(11) NOT NULL COMMENT '工程id',
-  `user_id` int(11) NOT NULL COMMENT '员工id',
-  `role_type` enum('TE','MTE','Manager') NOT NULL COMMENT '与user_role里面的role_type是否重复？',
-  PRIMARY KEY (`id`)
+  `project_id` varchar(36) NOT NULL COMMENT '工程id',
+  `user_id` varchar(36) NOT NULL COMMENT '员工id',
+  `role_type` enum('TE','MTE','Manager') NOT NULL COMMENT '与user_role里面的role_type是否重复？'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -128,6 +126,7 @@ CREATE TABLE `project_user` (
 
 LOCK TABLES `project_user` WRITE;
 /*!40000 ALTER TABLE `project_user` DISABLE KEYS */;
+INSERT INTO `project_user` VALUES ('90640116-ad10-450c-9d30-91b8a6acc607','a7b12e32-b0f5-11e4-abb7-c17404b78885','TE');
 /*!40000 ALTER TABLE `project_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -201,12 +200,12 @@ CREATE TABLE `rs` (
   `contribution` varchar(10) NOT NULL COMMENT '安全性',
   `category` varchar(20) NOT NULL COMMENT '类别',
   `allocation` varchar(200) NOT NULL COMMENT '分配对象',
-  `source_id` int(11) NOT NULL,
+  `vatstr_id` varchar(36) NOT NULL COMMENT '对应管理员分配的vat',
+  `varstr_result` int(1) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `title` (`tag`),
-  KEY `source_id` (`source_id`),
   FULLTEXT KEY `title_2` (`tag`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -217,7 +216,7 @@ CREATE TABLE `rs` (
 
 LOCK TABLES `rs` WRITE;
 /*!40000 ALTER TABLE `rs` DISABLE KEYS */;
-INSERT INTO `rs` VALUES ('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','d6889236-ad21-11e4-aa9b-cf2d72b432dc','132313','3123','32','High','33','12','321',0,'0000-00-00 00:00:00','2015-02-03 08:59:15'),('9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b','d6889236-ad21-11e4-aa9b-cf2d72b432dc','[TSP-SyRS-0001]','Trackside safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n',' 1.1.0','',' SIL0',' Functional',' [TSP-SyAD]\r\n',0,'2014-12-09 03:50:31','2015-02-03 09:02:34');
+INSERT INTO `rs` VALUES ('28b38466-a6c0-11e4-b3f2-2eb1ec8cf52b','d6889236-ad21-11e4-aa9b-cf2d72b432dc','132313','3123','32','High','33','12','321','b85c2c4a-b01f-11e4-8ace-bdc5a2dd6e8c',0,'0000-00-00 00:00:00','2015-02-09 07:23:48'),('9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b','d6889236-ad21-11e4-aa9b-cf2d72b432dc','[TSP-SyRS-0001]','Trackside safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n',' 1.1.0','',' SIL0',' Functional',' [TSP-SyAD]\r\n','bcd23d6e-b01f-11e4-8ace-bdc5a2dd6e8c',0,'2014-12-09 03:50:31','2015-02-10 04:57:49');
 /*!40000 ALTER TABLE `rs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -401,6 +400,61 @@ INSERT INTO `tc_step` VALUES ('87e9f18a-9801-4353-99c8-66090109f093',3,'4','4','
 UNLOCK TABLES;
 
 --
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user` (
+  `id` varchar(36) NOT NULL,
+  `jobnumber` varchar(30) NOT NULL,
+  `password` varchar(32) NOT NULL,
+  `account` varchar(30) NOT NULL,
+  `realname` varchar(30) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `account` (`account`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES ('a7b12e32-b0f5-11e4-abb7-c17404b78885','123','202cb962ac59075b964b07152d234b70','guodong','郭栋','2015-02-10 00:00:00','2015-02-10 00:00:00');
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `vatstr`
+--
+
+DROP TABLE IF EXISTS `vatstr`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vatstr` (
+  `name` varchar(30) NOT NULL,
+  `project_id` varchar(36) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vatstr`
+--
+
+LOCK TABLES `vatstr` WRITE;
+/*!40000 ALTER TABLE `vatstr` DISABLE KEYS */;
+INSERT INTO `vatstr` VALUES ('5','acb9a4bb-4a3e-401f-9243-23de4aac8918','2015-02-10 10:11:05','2015-02-10 10:11:05'),('vat a','1','0000-00-00 00:00:00','0000-00-00 00:00:00'),('vat b','1','0000-00-00 00:00:00','0000-00-00 00:00:00'),('6','d4a36d2e-860d-4426-82f7-7fe7dad1def7','2015-02-10 10:12:47','2015-02-10 10:12:47');
+/*!40000 ALTER TABLE `vatstr` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Final view structure for view `tag`
 --
 
@@ -427,4 +481,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-02-06 18:41:46
+-- Dump completed on 2015-02-11 13:07:04

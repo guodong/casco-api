@@ -13,5 +13,10 @@ class Rs extends Eloquent {
 	{
 	    return $this->belongsToMany('Tag', 'rs_vat', 'rs_id', 'vat_id');
 	}
+	
+	public function vatstr()
+	{
+	    return $this->belongsTo('Vatstr');
+	}
 
 }
