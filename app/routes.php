@@ -11,7 +11,7 @@
 |
 */
 
-
+Route::resource('accesstoken', 'AccesstokenController');
 Route::get('tc/export', 'TcController@export');
 Route::resource('project', 'ProjectController');
 

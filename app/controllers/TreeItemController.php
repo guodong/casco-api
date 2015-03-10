@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Input;
 class TreeItemController extends Controller
 {
 
@@ -33,17 +34,20 @@ class TreeItemController extends Controller
         $docs = Document::where('fid', '=', $foder_id)->get();
         $rt = array();
         foreach ($docs as $d) {
-            //判断是否有调用关系
-            $rel = Document::find(Input::get('document_id'));
-            $related = false;
-            foreach ($rel->dests as $v){
-                if ($v->id == $d->id){
-                    $related = true;
+            if(Input::get('document_id')){
+                //判断是否有调用关系
+                $rel = Document::find(Input::get('document_id'));
+                $related = false;
+                foreach ($rel->dests as $v){
+                    if ($v->id == $d->id){
+                        $related = true;
+                    }
+                }
+                if(!$related){
+                    continue;
                 }
             }
-            if(!$related){
-                continue;
-            }
+            
             $rt[] = array(
                     'name' => $d->name,
                     'leaf' => 'false',

@@ -7,7 +7,10 @@ class UserController extends BaseController {
 	public function index()
 	{
 		$users = User::orderBy('created_at', 'desc')->get();
-		return $users->toJson();
+		$users->each(function($u){
+		    $u->projects;
+		});
+		return $users;
 	}
 	
 	// GET /user/$id
@@ -36,16 +39,8 @@ class UserController extends BaseController {
 	// PUT /user/$id
 	public function update($id)
 	{
-	    $this->auth($id);
 	    $user = User::find($id);
-	    foreach (Input::get() as $k=>$v){
-	        if (is_string($v) || is_numeric($v)){
-	            $user->{$k} = $v;
-	            //echo $user->realname;
-	        }
-	    }
-	    //echo $user->realname;
-	    $user->save();
-	    return $user->toJson();
+	    $user->update(Input::get());
+	    return $user;
 	}
 }

@@ -14,7 +14,7 @@ class Project extends BaseModel {
 	    return $this->hasMany("Vatstr");
 	}
 	
-	public function participates()
+	public function participants()
 	{
 	    return $this->belongsToMany('User', 'project_user');
 	}

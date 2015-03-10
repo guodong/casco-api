@@ -5,4 +5,8 @@ class User extends BaseModel {
 
 	protected $fillable = array('password', 'account', 'realname', 'jobnumber');
 
+	public function projects()
+	{
+	    return $this->belongsToMany('Project');
+	}
 }
