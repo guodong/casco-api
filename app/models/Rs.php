@@ -1,5 +1,5 @@
 <?php
-class Rs extends Eloquent {
+class Rs extends BaseModel {
 
 	protected $table = 'rs';
 	protected $fillable = array();

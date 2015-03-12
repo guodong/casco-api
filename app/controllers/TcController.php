@@ -15,6 +15,8 @@ class TcController extends Controller{
         $tcs->each(function($tc){
             $tc->steps;
             $tc->sources;
+            $tc->testmethod;
+            $tc->result *= 1;
         });
         return $tcs;
 	}

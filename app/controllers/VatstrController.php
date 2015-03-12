@@ -11,7 +11,8 @@ class VatstrController extends Controller{
 	public function index()
 	{
 	    $project = Project::find(Input::get('project_id'));
-	    return $project->vatstrs;
+	    $vatstrs = $project->vatstrs()->orderBy('name')->get();
+	    return $vatstrs;
 	}
 	
 	public function store()

@@ -2,7 +2,7 @@
 class Tc extends BaseModel {
 
 	protected $table = 'tc';
-	protected $fillable = array('tag', 'document_id', 'description', 'test_method', 'pre_condition', 'result');
+	protected $fillable = array('tag', 'document_id', 'description', 'testmethod_id', 'pre_condition', 'result');
 
 	public function steps()
 	{
@@ -12,5 +12,10 @@ class Tc extends BaseModel {
 	public function sources()
 	{
 	    return $this->belongsToMany('Tag', 'tc_source', 'tc_id', 'source_id');
+	}
+	
+	public function testmethod()
+	{
+	    return $this->belongsTo('Testmethod');
 	}
 }

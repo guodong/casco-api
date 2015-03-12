@@ -27,3 +27,4 @@ Route::get('treemod', 'TreeController@treemod');
 Route::post('docfile', 'ProjectController@docfile');
 Route::resource('vatstr', 'VatstrController');
 Route::resource('user', 'UserController');
+Route::resource('testmethod', 'TestmethodController');
