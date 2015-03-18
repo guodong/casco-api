@@ -21,13 +21,48 @@ class ProjectController extends BaseController
 
     public function docfile()
     {
-        set_time_limit(9999);
+        set_time_limit(0);
         $name = uniqid() . '.doc';
         move_uploaded_file($_FILES["file"]["tmp_name"], public_path() . '/files/' . $name);
+        if (Input::get('type') == 'tc') {
+            $url = 'http://192.100.212.31:8080/files/' . $name;
+            $u = 'http://192.100.212.33/WebService1.asmx/readtc?url=' . $url;
+            $data = file_get_contents($u);
+            $d = json_decode($data);
+            if (! $d) {
+                return 1;
+            }
+            foreach ($d as $v) {
+                if (empty($v))
+                    continue;
+                $tc = new Tc();
+                $tc->document_id = $_POST['document_id'];
+                $tc->tag = $v->tag;
+                $tc->description = $v->description;
+                $tc->pre_condition = $v->pre_condition;
+                $tc->version = Input::get('version');
+                $tc->save();
+                foreach ($v->steps as $step){
+                    $step = new TcStep((array)$step);
+                    $tc->steps()->save($step);
+                }
+                foreach ($v->source as $source){
+                    $s = Rs::where('tag', '=', $source)->first();
+                    if($s){
+                        $tc->sources()->attach($s->id);
+                    }
+                }
+            }
+            $rt = Tc::where('document_id', '=', Input::get('document_id'))->get();
+            return $rt;
+        }
         $url = 'http://192.100.212.31:8080/files/' . $name;
         $u = 'http://192.100.212.33/WebService1.asmx/InputWord?url=' . $url;
         $data = file_get_contents($u);
         $d = json_decode($data);
+        if (! $d) {
+            return 1;
+        }
         foreach ($d as $v) {
             if (empty($v))
                 continue;
@@ -40,16 +75,12 @@ class ProjectController extends BaseController
             $rs->priority = $v->Priority;
             $rs->contribution = $v->Contribution;
             $rs->description = $v->description;
+            $rs->source = json_encode($v->Source);
+            $rs->version = Input::get('version');
             $rs->save();
-//             foreach ($v->Source as $s) {
-//                 $source = new Source();
-//                 $source->item_id = $rs->id;
-//                 $source->source = $s;
-//                 $source->save();
-//             }
         }
-        $rt = Rs::all();
-        return $rt->toJson();
+        $rt = Rs::where('document_id', '=', Input::get('document_id'))->get();
+        return $rt;
     }
     
     // 项目列表
@@ -86,7 +117,7 @@ class ProjectController extends BaseController
             }
         }
         $project->update($data);
-        if (Input::get('participants')){
+        if (Input::get('participants')) {
             $ids = array();
             foreach (Input::get('participants') as $v) {
                 $ids[] = $v['id'];
@@ -94,8 +125,8 @@ class ProjectController extends BaseController
             $project->participants()->sync($ids);
         }
         
-        //vatstr的修改处理可能有问题，当有的tc已经指派了vatstr，下面的操作会删掉全部vatstr重新添加，修改了vatstr的id，导致tc的vatstr索引野指针
-        if (Input::get('vatstrs')){
+        // vatstr的修改处理可能有问题，当有的tc已经指派了vatstr，下面的操作会删掉全部vatstr重新添加，修改了vatstr的id，导致tc的vatstr索引野指针
+        if (Input::get('vatstrs')) {
             $project->vatstrs()->delete();
             foreach (Input::get('vatstrs') as $v) {
                 $vatstr = new Vatstr($v);
