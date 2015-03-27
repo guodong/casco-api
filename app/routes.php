@@ -28,3 +28,6 @@ Route::post('docfile', 'ProjectController@docfile');
 Route::resource('vatstr', 'VatstrController');
 Route::resource('user', 'UserController');
 Route::resource('testmethod', 'TestmethodController');
+Route::get('dump', 'DumpController@dump');
+Route::resource('build', 'BuildController');
+Route::get('version', 'DocumentController@version');

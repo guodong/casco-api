@@ -3,7 +3,7 @@ class Document extends BaseModel {
 
 
 	protected $table = 'document';
-	protected $fillable = array('name', 'project_id', 'type', 'graph', 'regex');
+	protected $fillable = array('name', 'project_id', 'type', 'graph', 'regex', 'filename');
 
 	
 	public function tcs()

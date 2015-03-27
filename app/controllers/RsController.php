@@ -12,6 +12,8 @@ class RsController extends Controller{
 	{
 	    $rss = Rs::where('document_id','=',$_GET['document_id'])->get();
 	    foreach ($rss as $v){
+	        $v->vat;
+	        $v->vatstr;
 	        $v->result = 1;
 	        if(count($v->tcs) == 0 && $v->vatstr_result == 0){
 	            $v->result = 0;
@@ -30,8 +32,6 @@ class RsController extends Controller{
 	                $v->result = 2;
 	            }
 	        }
-	        $v->vat;
-	        $v->vatstr;
 	    }
 	    return $rss;
 	}

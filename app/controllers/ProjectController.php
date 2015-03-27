@@ -24,9 +24,12 @@ class ProjectController extends BaseController
         set_time_limit(0);
         $name = uniqid() . '.doc';
         move_uploaded_file($_FILES["file"]["tmp_name"], public_path() . '/files/' . $name);
+        $document = Document::find(Input::get('document_id'));
+        $document->filename = $name;
+        $document->save();
         if (Input::get('type') == 'tc') {
             $url = 'http://192.100.212.31:8080/files/' . $name;
-            $u = 'http://192.100.212.33/WebService1.asmx/readtc?url=' . $url;
+            $u = 'http://192.100.212.33/WebService1.asmx/readtc?url=' . $url.'&filename='.$name;
             $data = file_get_contents($u);
             $d = json_decode($data);
             if (! $d) {
@@ -57,7 +60,7 @@ class ProjectController extends BaseController
             return $rt;
         }
         $url = 'http://192.100.212.31:8080/files/' . $name;
-        $u = 'http://192.100.212.33/WebService1.asmx/InputWord?url=' . $url;
+        $u = 'http://192.100.212.33/WebService1.asmx/InputWord?url=' . $url.'&filename='.$name;
         $data = file_get_contents($u);
         $d = json_decode($data);
         if (! $d) {
@@ -78,6 +81,12 @@ class ProjectController extends BaseController
             $rs->source = json_encode($v->Source);
             $rs->version = Input::get('version');
             $rs->save();
+            foreach ($v->Source as $source){
+                $s = Rs::where('tag', '=', $source)->first();
+                if($s){
+                    $rs->sources()->attach($s->id);
+                }
+            }
         }
         $rt = Rs::where('document_id', '=', Input::get('document_id'))->get();
         return $rt;
