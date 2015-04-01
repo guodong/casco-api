@@ -1,32 +1,43 @@
 <?php
 use Illuminate\Support\Facades\Input;
 
-class DocumentController extends Controller
+class StatController extends Controller
 {
-
-    private function calresult($rs)
+    private function getNum($project, $timestamp)
     {
-        $v = $rs;
-        $result = 1;
-        $v->vat;
-        $v->vatstr;
-        if (count($v->tcs) == 0 && $v->vatstr_result == 0) {
-            return 0;
-        }
-        foreach ($v->tcs as $vv) {
-            if ($vv->result == 2) {
-                $result = 2;
-                break;
-            } elseif ($vv->result == 0) {
-                $result = 0;
+        $num = 0;
+        foreach ($project->documents as $doc){
+            if ($doc->type == 'rs'){
+                $num += Rs::where('document_id', '=', $doc->id)->where('created_at', '<=', date('Y-m-d H:i:s', $timestamp))->count();
+            }elseif ($doc->type == 'tc'){
+                $num += Tc::where('document_id', '=', $doc->id)->where('created_at', '<=', date('Y-m-d H:i:s', $timestamp))->count();
             }
         }
-        if ($result == 1) {
-            if ($v->vatstr_result == 2) {
-                $result = 2;
-            }
+        return $num;
+    }
+    
+    public function count()
+    {
+        $from = Input::get('from');
+        $to = Input::get('to');
+        $step = Input::get('step');
+        if (!$step){
+            $step = 3600*24;
         }
-        return $result;
+        $projects = Project::all();
+        foreach ($projects as $p){
+            $time = (int)$from;
+            $stat = array();
+            while ($time <= $to){
+                $data = new stdClass();
+                $data->time = $time;
+                $data->number = $this->getNum($p, $time);
+                array_push($stat, $data);
+                $time += $step;
+            }
+            $p->stat = $stat;
+        }
+        return $projects;
     }
 
     public function index()

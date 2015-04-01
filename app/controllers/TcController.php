@@ -35,6 +35,13 @@ class TcController extends Controller{
 	    return $tc;
 	}
 	
+	public function setresult()
+	{
+	    $tc = Tc::find(Input::get('id'));
+	    $tc->result = Input::get('result');
+	    $tc->save();
+	}
+	
 	public function update($id)
 	{
 	    $m = Tc::find($id);

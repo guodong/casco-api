@@ -31,3 +31,6 @@ Route::resource('testmethod', 'TestmethodController');
 Route::get('dump', 'DumpController@dump');
 Route::resource('build', 'BuildController');
 Route::get('version', 'DocumentController@version');
+Route::get('stat/count', 'StatController@count');
+Route::post('setresult', 'TcController@setresult');
+Route::get('fix', 'FixController@index');

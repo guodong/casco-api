@@ -38,17 +38,22 @@ class ProjectController extends BaseController
             foreach ($d as $v) {
                 if (empty($v))
                     continue;
-                $tc = new Tc();
+                $tc = Tc::find($v->tag);
+                if (!$tc){
+                    $tc = new Tc();
+                }
                 $tc->document_id = $_POST['document_id'];
                 $tc->tag = $v->tag;
                 $tc->description = $v->description;
                 $tc->pre_condition = $v->pre_condition;
                 $tc->version = Input::get('version');
                 $tc->save();
+                $tc->steps()->delete();
                 foreach ($v->steps as $step){
                     $step = new TcStep((array)$step);
                     $tc->steps()->save($step);
                 }
+                $v->sources()->detach();
                 foreach ($v->source as $source){
                     $s = Rs::where('tag', '=', $source)->first();
                     if($s){
@@ -69,7 +74,10 @@ class ProjectController extends BaseController
         foreach ($d as $v) {
             if (empty($v))
                 continue;
-            $rs = new Rs();
+            $rs = Rs::find($v->title);
+            if (!$rs){
+                $rs = new Rs();
+            }
             $rs->document_id = $_POST['document_id'];
             $rs->tag = $v->title;
             $rs->allocation = $v->Allocation;
@@ -81,6 +89,7 @@ class ProjectController extends BaseController
             $rs->source = json_encode($v->Source);
             $rs->version = Input::get('version');
             $rs->save();
+            $rs->sources()->detach();
             foreach ($v->Source as $source){
                 $s = Rs::where('tag', '=', $source)->first();
                 if($s){
@@ -95,7 +104,12 @@ class ProjectController extends BaseController
     // 项目列表
     public function index()
     {
-        $projects = Project::all();
+        if (Input::get('user_id')){
+            $user = User::find(Input::get('user_id'));
+            $projects = $user->projects;
+        }else{
+            $projects = Project::all();
+        }
         $projects->each(function ($v) {
             $v->participants;
             $v->vatstrs;

@@ -5,7 +5,7 @@ class DumpController extends Controller
 {
 
     public function dump()
-    {
+    {if(1){
         $item = Tag::where('tag', '=', Input::get('tag'))->first();
         if (! $item) {
             return Response::json(array(
@@ -123,7 +123,8 @@ class DumpController extends Controller
         );
         
         // return $d;
-        return '{"name":"[TSP-SyRS-0001]","children":[{"name":"[TSP-SyRTC-0117]","isparent": false},{"name":"2","isparent": false}],"parents":[{"name":"[TSP-SyRTC-0117]","isparent": true},{"name":"2","isparent": true}]}';
+    }
+        return '{"name":"[TSP-SyRS-0001]","children":[{"name":"[TSP-SyRTC-011]","isparent": true},{"name":"2","isparent":true,"parents":[{"name":1,"isparent":true}]}],"parents":[{"name":"[TSP-SyRTC-01117]","isparent":false},{"name":"21","isparent":false}]}';
         return Response::json($data);
     }
 
