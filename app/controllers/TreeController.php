@@ -17,7 +17,8 @@ class TreeController extends Controller{
                     'name' => $d->name,
                     'leaf' => $lf,
                     'id' => $d->id,
-                    'type' => $d->type
+                    'type' => $d->type,
+                    'versions' => $d->versions
             );
         }
         $r = array('children'=>$rt);
@@ -34,7 +35,8 @@ class TreeController extends Controller{
                      'name' => $d->name,
                      'leaf' => $lf,
                      'id' => $d->id,
-                     'type' => $d->type
+                     'type' => $d->type,
+                    'versions' => $d->versions
              );
          }
          $r = array('children'=>$rt);

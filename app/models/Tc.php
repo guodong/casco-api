@@ -18,4 +18,9 @@ class Tc extends BaseModel {
 	{
 	    return $this->belongsTo('Testmethod');
 	}
+	
+	public function results()
+	{
+	    return $this->hasMany('Result');
+	}
 }

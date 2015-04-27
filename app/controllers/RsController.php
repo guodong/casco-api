@@ -10,7 +10,12 @@ class RsController extends Controller{
 
 	public function index()
 	{
-	    $rss = Rs::where('document_id','=',$_GET['document_id'])->get();
+	    $document = Document::find(Input::get('document_id'));
+	    $rsv = $document->latest_version();
+	    if (!$rsv){
+	        return '[]';
+	    }
+	    $rss = $rsv->rss;
 	    foreach ($rss as $v){
 	        $v->vat;
 	        $v->vatstr;	        

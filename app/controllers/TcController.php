@@ -10,13 +10,29 @@ class TcController extends Controller{
 
 	public function index()
 	{
-	    $tcs = Tc::where('document_id', '=', $_GET['document_id'])->get();
+	    if (Input::get('version_id')) {
+	        $version = Version::find(Input::get('version_id'));
+	        $tcs = $version->tcs;
+	    }else{
+	        $document = Document::find(Input::get('document_id'));
+	        $tcv = $document->latest_version();
+	        if (!$tcv){
+	            return '[]';
+	        }
+	        $tcs = $tcv->tcs;
+	    }
+	    
         
         $tcs->each(function($tc){
             $tc->steps;
             $tc->sources;
             $tc->testmethod;
-            $tc->result *= 1;
+            $tc->result = 0;
+            foreach ($tc->results as $r){
+                if ($r->rs_version_id == Input::get('rs_version_id') && $r->build_id == Input::get('build_id')){
+                    $tc->result = $r->result;
+                }
+            }
         });
         return $tcs;
 	}
@@ -37,9 +53,13 @@ class TcController extends Controller{
 	
 	public function setresult()
 	{
-	    $tc = Tc::find(Input::get('id'));
-	    $tc->result = Input::get('result');
-	    $tc->save();
+	    $result = Result::where('tc_id','=',Input::get('tc_id'))->where('rs_version_id','=',Input::get('rs_version_id'))->where('build_id','=',Input::get('build_id'))->first();
+	    if (!$result){
+	        $result = Result::create(Input::get());
+	    }else{
+	        $result->result = Input::get('result');
+	        $result->save();
+	    }
 	}
 	
 	public function update($id)

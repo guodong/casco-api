@@ -25,8 +25,11 @@ class ProjectController extends BaseController
         $name = uniqid() . '.doc';
         move_uploaded_file($_FILES["file"]["tmp_name"], public_path() . '/files/' . $name);
         $document = Document::find(Input::get('document_id'));
-        $document->filename = $name;
-        $document->save();
+        // create version info
+        $version = new Version(array('name'=>Input::get('version'), 'filename'=>$name));
+        $document->versions()->save($version);
+        
+        ////
         if (Input::get('type') == 'tc') {
             $url = 'http://192.100.212.31:8080/files/' . $name;
             $u = 'http://192.100.212.33/WebService1.asmx/readtc?url=' . $url.'&filename='.$name;
@@ -38,32 +41,29 @@ class ProjectController extends BaseController
             foreach ($d as $v) {
                 if (empty($v))
                     continue;
-                $tc = Tc::find($v->tag);
-                if (!$tc){
-                    $tc = new Tc();
-                }
+                $tc = new Tc();
                 $tc->document_id = $_POST['document_id'];
                 $tc->tag = $v->tag;
                 $tc->description = $v->description;
                 $tc->pre_condition = $v->pre_condition;
-                $tc->version = Input::get('version');
+                $tc->version_id = $version->id;
                 $tc->save();
-                $tc->steps()->delete();
                 foreach ($v->steps as $step){
                     $step = new TcStep((array)$step);
                     $tc->steps()->save($step);
                 }
-                $v->sources()->detach();
                 foreach ($v->source as $source){
-                    $s = Rs::where('tag', '=', $source)->first();
+                    $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
                     if($s){
                         $tc->sources()->attach($s->id);
                     }
                 }
             }
-            $rt = Tc::where('document_id', '=', Input::get('document_id'))->get();
+            $rt = Tc::where('version_id', '=', $version->id)->get();
             return $rt;
         }
+        
+        // RS 
         $url = 'http://192.100.212.31:8080/files/' . $name;
         $u = 'http://192.100.212.33/WebService1.asmx/InputWord?url=' . $url.'&filename='.$name;
         $data = file_get_contents($u);
@@ -74,10 +74,7 @@ class ProjectController extends BaseController
         foreach ($d as $v) {
             if (empty($v))
                 continue;
-            $rs = Rs::find($v->title);
-            if (!$rs){
-                $rs = new Rs();
-            }
+            $rs = new Rs();
             $rs->document_id = $_POST['document_id'];
             $rs->tag = $v->title;
             $rs->allocation = $v->Allocation;
@@ -87,17 +84,17 @@ class ProjectController extends BaseController
             $rs->contribution = $v->Contribution;
             $rs->description = $v->description;
             $rs->source = json_encode($v->Source);
-            $rs->version = Input::get('version');
+            $rs->version_id = $version->id;
             $rs->save();
             $rs->sources()->detach();
             foreach ($v->Source as $source){
-                $s = Rs::where('tag', '=', $source)->first();
+                $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
                 if($s){
                     $rs->sources()->attach($s->id);
                 }
             }
         }
-        $rt = Rs::where('document_id', '=', Input::get('document_id'))->get();
+        $rt = Rs::where('version_id', '=', $version->id)->get();
         return $rt;
     }
     
