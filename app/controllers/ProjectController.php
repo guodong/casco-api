@@ -24,11 +24,9 @@ class ProjectController extends BaseController
         set_time_limit(0);
         $name = uniqid() . '.doc';
         move_uploaded_file($_FILES["file"]["tmp_name"], public_path() . '/files/' . $name);
-        $document = Document::find(Input::get('document_id'));
-        // create version info
-        $version = new Version(array('name'=>Input::get('version'), 'filename'=>$name));
-        $document->versions()->save($version);
-        
+        $version = Version::find(Input::get('version_id'));
+        $version->filename = $name;
+        $version->save();        
         ////
         if (Input::get('type') == 'tc') {
             $url = 'http://192.100.212.31:8080/files/' . $name;
@@ -55,7 +53,7 @@ class ProjectController extends BaseController
                 foreach ($v->source as $source){
                     $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
                     if($s){
-                        $tc->sources()->attach($s->id);
+                        $tc->sources()->attach($s->id, array('tag'=>$source));
                     }
                 }
             }

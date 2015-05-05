@@ -9,4 +9,10 @@ class VersionController extends BaseController {
 		return $versions;
 	}
 	
+	public function store()
+	{
+	    $version = Version::create(Input::get());
+	    return $version;
+	}
+	
 }

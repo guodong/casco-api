@@ -10,8 +10,7 @@ class RsController extends Controller{
 
 	public function index()
 	{
-	    $document = Document::find(Input::get('document_id'));
-	    $rsv = $document->latest_version();
+	    $rsv = Version::find(Input::get('version_id'));
 	    if (!$rsv){
 	        return '[]';
 	    }
