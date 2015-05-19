@@ -45,17 +45,18 @@ class ProjectController extends BaseController
                 $tc->description = $v->description;
                 $tc->pre_condition = $v->pre_condition;
                 $tc->version_id = $version->id;
+                $tc->source_json = json_encode($v->source);
                 $tc->save();
                 foreach ($v->steps as $step){
                     $step = new TcStep((array)$step);
                     $tc->steps()->save($step);
                 }
-                foreach ($v->source as $source){
-                    $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
-                    if($s){
-                        $tc->sources()->attach($s->id, array('tag'=>$source));
-                    }
-                }
+//                 foreach ($v->source as $source){
+//                     $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
+//                     if($s){
+//                         $tc->sources()->attach($s->id, array('tag'=>$source));
+//                     }
+//                 }
             }
             $rt = Tc::where('version_id', '=', $version->id)->get();
             return $rt;
@@ -81,16 +82,16 @@ class ProjectController extends BaseController
             $rs->priority = $v->Priority;
             $rs->contribution = $v->Contribution;
             $rs->description = $v->description;
-            $rs->source = json_encode($v->Source);
+            $rs->source_json = json_encode($v->Source);
             $rs->version_id = $version->id;
             $rs->save();
-            $rs->sources()->detach();
-            foreach ($v->Source as $source){
-                $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
-                if($s){
-                    $rs->sources()->attach($s->id);
-                }
-            }
+//             $rs->sources()->detach();
+//             foreach ($v->Source as $source){
+//                 $s = Rs::where('tag', '=', $source)->orderBy('created_at', 'desc')->first();
+//                 if($s){
+//                     $rs->sources()->attach($s->id);
+//                 }
+//             }
         }
         $rt = Rs::where('version_id', '=', $version->id)->get();
         return $rt;

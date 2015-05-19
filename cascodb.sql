@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: 2015-05-09 11:31:08
+-- Generation Time: 2015-05-09 15:31:07
 -- 服务器版本： 5.6.19
 -- PHP Version: 5.4.30
 
@@ -258,7 +258,7 @@ CREATE TABLE IF NOT EXISTS `rs` (
   `varstr_result` int(1) NOT NULL DEFAULT '0',
   `version` varchar(30) NOT NULL,
   `version_id` varchar(36) NOT NULL,
-  `source` varchar(255) NOT NULL,
+  `source_json` text NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS `rs` (
 -- 转存表中的数据 `rs`
 --
 
-INSERT INTO `rs` (`id`, `document_id`, `tag`, `description`, `implement`, `priority`, `contribution`, `category`, `allocation`, `vatstr_id`, `varstr_result`, `version`, `version_id`, `source`, `created_at`, `updated_at`) VALUES
+INSERT INTO `rs` (`id`, `document_id`, `tag`, `description`, `implement`, `priority`, `contribution`, `category`, `allocation`, `vatstr_id`, `varstr_result`, `version`, `version_id`, `source_json`, `created_at`, `updated_at`) VALUES
 ('9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52b', 'd6889236-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRS-0001]', 'Trackside safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n', ' 1.1.0', 'High', ' SIL0', ' Functional', ' [TSP-SyAD]\r\n', '6ffd5327-f853-4b05-bcad-f741536afb93', 0, '1', '0aa31d8e-ebed-11e4-bbec-081d7a0ed70e', '', '2014-12-09 03:50:31', '2015-03-10 02:57:25'),
 ('9123ffb2-a6c5-11e4-b3f2-2eb11a8cf52a', 'd6889236-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRS-0004]', 'Safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n', ' 1.1.0', 'Average', ' SIL0', ' Functional', ' [TSP-SyAD]\r\n', '', 0, '2', '0aa31d8e-ebed-11e4-bbec-081d7a0ed70e', '', '2014-12-09 03:50:31', '2015-03-12 07:19:11'),
 ('9123ffb2-a6c5-11e4-b3f2-2eb1ec8cf52a', 'd6889236-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRS-0002]', 'Safety product shall consist of TSP and application software (APP).\r\nTrackside safety product shall consist of TSP and application software (APP).\r\n轨旁安全产品由TSP和应用软件（APP）组成。\r\n', ' 1.1.0', 'Average', ' SIL0', ' Functional', ' [TSP-SyAD]\r\n', '', 0, '2', '0aa31d8e-ebed-11e4-bbec-081d7a0ed70e', '', '2014-12-09 03:50:31', '2015-03-26 06:23:15'),
@@ -376,6 +376,7 @@ CREATE TABLE IF NOT EXISTS `tc` (
   `result` tinyint(1) NOT NULL DEFAULT '0' COMMENT '结果，0未测试，1表示成功，2表示失败',
   `version` varchar(30) NOT NULL,
   `version_id` varchar(36) NOT NULL,
+  `source_json` text NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -384,12 +385,12 @@ CREATE TABLE IF NOT EXISTS `tc` (
 -- 转存表中的数据 `tc`
 --
 
-INSERT INTO `tc` (`id`, `document_id`, `tag`, `description`, `testmethod_id`, `test_item`, `pre_condition`, `input`, `exec_step`, `exp_step`, `result`, `version`, `version_id`, `created_at`, `updated_at`) VALUES
-('399b97e7-776f-49f3-b4fe-ffc218f0ff55', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0117]', 'Check TSP shall be a hot-redundant 2×2oo2 system.', '34af2239-94c5-486b-98a3-b118a75f', '', 'APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ', '', '', '', 0, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '2015-01-28 08:22:08', '2015-03-30 10:27:46'),
-('fd7bdad4-c56c-410c-95b6-910e53f1dd6b', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0117]', 'Check TSP shall be a hot-redundant 2×2oo2 system.', '34af2239-94c5-486b-98a3-b118a75f', '', 'APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ', '', '', '', 1, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '2015-01-28 08:23:47', '2015-03-12 06:46:31'),
-('01e87349-d3b1-4985-b261-2de78719a825', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0116]', '1', 'EP', '', '1', '', '', '', 1, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '2015-01-29 05:55:57', '2015-02-03 08:59:43'),
-('2e47eb3e-3582-49f8-9cf0-40a554841e7d', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0115]', '2', '405b5232-5592-4303-8d79-307c80b7', '', '2', '', '', '', 1, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '2015-01-29 05:58:34', '2015-03-30 10:27:52'),
-('bf9839fe-31e2-495a-bf51-116ad2364c64', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '13333245', '1', 'EP', '', '132', '', '', '', 2, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '2015-01-30 06:04:40', '2015-02-03 08:40:29');
+INSERT INTO `tc` (`id`, `document_id`, `tag`, `description`, `testmethod_id`, `test_item`, `pre_condition`, `input`, `exec_step`, `exp_step`, `result`, `version`, `version_id`, `source_json`, `created_at`, `updated_at`) VALUES
+('399b97e7-776f-49f3-b4fe-ffc218f0ff55', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0117]', 'Check TSP shall be a hot-redundant 2×2oo2 system.', '34af2239-94c5-486b-98a3-b118a75f', '', 'APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ', '', '', '', 0, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '', '2015-01-28 08:22:08', '2015-03-30 10:27:46'),
+('fd7bdad4-c56c-410c-95b6-910e53f1dd6b', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0117]', 'Check TSP shall be a hot-redundant 2×2oo2 system.', '34af2239-94c5-486b-98a3-b118a75f', '', 'APP installed on A MPU1 and A MPU2 is the same as B MPU1 and B MPU2. ', '', '', '', 1, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '', '2015-01-28 08:23:47', '2015-03-12 06:46:31'),
+('01e87349-d3b1-4985-b261-2de78719a825', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0116]', '1', 'EP', '', '1', '', '', '', 1, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '', '2015-01-29 05:55:57', '2015-02-03 08:59:43'),
+('2e47eb3e-3582-49f8-9cf0-40a554841e7d', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '[TSP-SyRTC-0115]', '2', '405b5232-5592-4303-8d79-307c80b7', '', '2', '', '', '', 1, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '', '2015-01-29 05:58:34', '2015-03-30 10:27:52'),
+('bf9839fe-31e2-495a-bf51-116ad2364c64', 'e1c83444-ad21-11e4-aa9b-cf2d72b432dc', '13333245', '1', 'EP', '', '132', '', '', '', 2, '', '42232e70-ebed-11e4-bbec-081d7a0ed70e', '', '2015-01-30 06:04:40', '2015-02-03 08:40:29');
 
 -- --------------------------------------------------------
 
