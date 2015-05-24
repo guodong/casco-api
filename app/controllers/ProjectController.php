@@ -40,7 +40,7 @@ class ProjectController extends BaseController
                 if (empty($v))
                     continue;
                 $tc = new Tc();
-                $tc->document_id = $_POST['document_id'];
+                //$tc->document_id = $_POST['document_id'];
                 $tc->tag = $v->tag;
                 $tc->description = $v->description;
                 $tc->pre_condition = $v->pre_condition;
@@ -74,7 +74,7 @@ class ProjectController extends BaseController
             if (empty($v))
                 continue;
             $rs = new Rs();
-            $rs->document_id = $_POST['document_id'];
+            //$rs->document_id = $_POST['document_id'];
             $rs->tag = $v->title;
             $rs->allocation = $v->Allocation;
             $rs->category = $v->Category;
