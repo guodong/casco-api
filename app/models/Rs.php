@@ -10,14 +10,10 @@ class Rs extends BaseModel {
 	    $srcs = $this->version->document->srcs;
 	    foreach($srcs as $src){
 	       if($src->type == 'tc'){
-	           $doc = $src->latest_version();
-	           if($doc){
-	               foreach($doc->tcs as $tc){
-	                   if(strstr($tc->source_json, $this->tag)){
-    	                   $tcs[] = $tc;
-	                   }
-	               };
-	           }
+	            $version = $src->latest_version();
+	            if($version){
+	                $tcs = Tc::where('version_id', '=', $version->id)->where('source_json', 'like', '%'.$this->tag.'%')->get();
+	            }
 	       } 
 	    };
 	    return $tcs;
@@ -31,13 +27,9 @@ class Rs extends BaseModel {
 	    $srcs = $this->version->document->srcs;
 	    foreach($srcs as $src){
 	        if($src->type == 'rs'){
-	            $doc = $src->latest_version();
-	            if($doc){
-	                foreach($doc->rss as $rs){
-	                    if(strstr($rs->source_json, $this->tag)){
-	                        $rss[] = $rs;
-	                    }
-	                };
+	            $version = $src->latest_version();
+	            if($version){
+	                $rss = Rs::where('version_id', '=', $version->id)->where('source_json', 'like', '%'.$this->tag.'%')->get();
 	            }
 	        }
 	    };

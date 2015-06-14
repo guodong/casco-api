@@ -17,6 +17,6 @@ class Version extends BaseModel {
 	
 	public function document()
 	{
-	    return $this->belongsTo('document');
+	    return $this->belongsTo('Document');
 	}
 }
