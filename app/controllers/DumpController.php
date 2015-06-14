@@ -14,7 +14,7 @@ class DumpController extends Controller
                 'parents' => array()
             ));
         }
-        $document = $item->document;
+        $document = $item->version->document;
         $data = new stdClass();
         
         if ($document->type == 'rs') {
@@ -22,24 +22,24 @@ class DumpController extends Controller
             $data->name = $item->tag;
             $data->children = array();
             $data->parents = array();
-            $item->sources->each(function ($rs) use($data) {
+            foreach($item->sources() as $rs){
                 $d = new stdClass();
-                $d->name = $rs->tag;
+                $d->name = $rs;
                 $d->isparent = true;
                 $data->parents[] = $d;
-            });
-            $item->tcs->each(function ($tc) use($data) {
+            };
+            foreach($item->tcs() as $tc){
                 $d = new stdClass();
                 $d->name = $tc->tag;
                 $d->isparent = false;
                 $data->children[] = $d;
-            });
-            $item->rss->each(function ($rs) use($data) {
+            };
+            foreach($item->rss() as $rs){
                 $d = new stdClass();
                 $d->name = $rs->tag;
                 $d->isparent = false;
                 $data->children[] = $d;
-            });
+            };
             $item->vat->each(function ($v) use($data) {
                 $d = new stdClass();
                 $d->name = $v->tag;
@@ -58,12 +58,12 @@ class DumpController extends Controller
             $data->name = $item->tag;
             $data->children = array();
             $data->parents = array();
-            $item->sources->each(function ($rs) use($data) {
+            foreach($item->sources() as $rs){
                 $d = new stdClass();
-                $d->name = $rs->tag;
+                $d->name = $rs;
                 $d->isparent = true;
                 $data->parents[] = $d;
-            });
+            };
         }
         return Response::json($data);
         

@@ -25,7 +25,7 @@ class TcController extends Controller{
         
         $tcs->each(function($tc){
             $tc->steps;
-            $tc->sources;
+            $tc->sources();
             $tc->testmethod;
             $tc->result = 0;
             foreach ($tc->results as $r){

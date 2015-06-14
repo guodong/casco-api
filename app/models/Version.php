@@ -14,4 +14,9 @@ class Version extends BaseModel {
 	{
 	    return $this->hasMany('Rs');
 	}
+	
+	public function document()
+	{
+	    return $this->belongsTo('document');
+	}
 }

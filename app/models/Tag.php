@@ -5,9 +5,9 @@ class Tag extends BaseModel {
 	//protected $fillable = array('tag', 'document_id', 'description', 'test_method', 'pre_condition', 'result');
 
 
-	public function document()
+	public function version()
 	{
-	    return $this->belongsTo('Document');
+	    return $this->belongsTo('Version');
 	}
 	
 }

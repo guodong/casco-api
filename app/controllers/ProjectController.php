@@ -115,7 +115,7 @@ class ProjectController extends BaseController
         $projects->each(function ($v)
         {
             $v->participants;
-            $v->vatstrs;
+            //$v->vatstrs;
         });
         return $projects;
     }
