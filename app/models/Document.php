@@ -26,7 +26,7 @@ class Document extends BaseModel {
 	
 	public function srcs()
 	{
-	    return $this->belongsToMany('Document', 'relation', 'dest', 'src');
+	    return $this->belongsToMany('Document', 'relation', 'dest', 'src')->groupby('src');
 	}
 	
 	public function dests()
