@@ -31,10 +31,11 @@ class ProjectController extends BaseController
         if (Input::get('type') == 'tc') {
             $url = 'http://192.100.212.31:8080/files/' . $name;
             $u = 'http://192.100.212.33/WebService1.asmx/readtc?url=' . $url.'&filename='.$name;
-            $data = file_get_contents($u);
+            $data = @file_get_contents($u);
+            if(!$data) return array('success'=>false, 'msg'=>'parse error');
             $d = json_decode($data);
             if (! $d) {
-                return 1;
+                return array('success'=>false, 'msg'=>'parse error');
             }
             foreach ($d as $v) {
                 if (empty($v))
@@ -59,7 +60,7 @@ class ProjectController extends BaseController
 //                 }
             }
             $rt = Tc::where('version_id', '=', $version->id)->get();
-            return $rt;
+            return array('success'=>true, 'msg'=>'parse error');
         }
         
         // RS 
@@ -100,13 +101,19 @@ class ProjectController extends BaseController
     // 项目列表
     public function index()
     {
-        if (Input::get('user_id')){
+        if (Input::get('user_id')) {
             $user = User::find(Input::get('user_id'));
-            $projects = $user->projects;
-        }else{
+            if ($user->role == 'admin') {
+                $projects = Project::all();
+            } else {
+                
+                $projects = $user->projects;
+            }
+        } else {
             $projects = Project::all();
         }
-        $projects->each(function ($v) {
+        $projects->each(function ($v)
+        {
             $v->participants;
             $v->vatstrs;
         });

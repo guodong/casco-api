@@ -15,4 +15,10 @@ class VersionController extends BaseController {
 	    return $version;
 	}
 	
+	public function show($id)   //在线浏览文档
+	{
+	    $version = Version::find($id);
+	    return $version;
+	}
+	
 }

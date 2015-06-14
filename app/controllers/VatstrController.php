@@ -27,7 +27,7 @@ class VatstrController extends Controller{
 	        $tc->steps()->save($step);
 	    }
 	    return $tc;
-	}
+	} 
 	
 	public function update($id)
 	{
