@@ -16,24 +16,30 @@ class TcController extends Controller{
 	    }else{
 	        $document = Document::find(Input::get('document_id'));
 	        $tcv = $document->latest_version();
-	        if (!$tcv){
+	        if (!$tcv){ 
 	            return '[]';
 	        }
 	        $tcs = $tcv->tcs;
 	    }
-	    
-        
-        $tcs->each(function($tc){
+	    foreach($tcs as $tc){
             $tc->steps;
             $tc->sources();
-            $tc->testmethod;
+            $arr = explode(',',$tc->testmethod_id);
+            $tms = [];
+            foreach($arr as $v ){
+                $tmp = Testmethod::find($v);
+                   if($tmp){
+                       $tms[] = $tmp;
+                   }
+            }
+            $tc->testmethod = $tms;
             $tc->result = 0;
             foreach ($tc->results as $r){
                 if ($r->rs_version_id == Input::get('rs_version_id') && $r->build_id == Input::get('build_id')){
                     $tc->result = $r->result;
                 }
             }
-        });
+        };
         return $tcs;
 	}
 	
@@ -65,11 +71,14 @@ class TcController extends Controller{
 	public function update($id)
 	{
 	    $m = Tc::find($id);
-	    $m->update(Input::get());
-	    $m->sources()->detach();
-	    foreach (Input::get('sources') as $v){
-	        $m->sources()->attach($v['id']);
+	    $m->update(Input::get());	  
+	      $data = Input::get('sources');
+	      $arr = [];
+	    foreach ($data as $v){
+	        $arr[] = $v['tag'];
 	    }
+	    $m->source_json = json_encode($arr);
+	    $m->save();
 	    $m->steps()->delete();
 	    foreach (Input::get('steps') as $v){
 	        $step = new TcStep($v);
