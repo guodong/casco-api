@@ -12,7 +12,7 @@ class Version extends BaseModel {
 	
 	public function rss()
 	{
-	    return $this->hasMany('Rs');
+	    return $this->hasMany('Rs')->orderBy('tag');
 	}
 	
 	public function document()

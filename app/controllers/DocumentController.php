@@ -10,14 +10,14 @@ class DocumentController extends Controller
         $result = 1;
         $v->vat;
         $v->vatstr;
-        if (count($v->tcs) == 0 && $v->vatstr_result == 0) {
+        if (count($v->tcs()) == 0 && $v->vatstr_result == 0) {
             return 0;
         }
-        foreach ($v->tcs as $vv) {
+        foreach ($v->tcs() as $vv) {  
             if ($vv->result == 2) {
                 $result = 2;
                 break;
-            } elseif ($vv->result == 0) {
+            } elseif ($vv->result == 0) {  
                 $result = 0;
             }
         }
@@ -30,7 +30,7 @@ class DocumentController extends Controller
     }
 
     public function index()
-    {
+    { return;
         if (! empty($_GET['project_id'])) {
             $d = Document::where('project_id', '=', $_GET['project_id']);
             if (Input::get('type') == 'tc') {
@@ -40,15 +40,15 @@ class DocumentController extends Controller
                     $d = $d->where('type', '=', 'rs');
                 } else {
                     $d = $d->where('type', '<>', 'folder');
-                }
-            $data = $d->get();
+                }return;
+            $data = $d->get(); 
             foreach ($data as $v) {
                 if ($v->type == 'rs') {
-                    $v->count = count($v->rss);
+                    $v->count = count($v->latest_version()->rss);
                     $v->num_passed = 0;
                     $v->num_failed = 0;
                     $v->num_untested = 0;
-                    foreach ($v->rss as $rs) {
+                    foreach ($v->latest_version()->rss as $rs) {
                         if ($this->calresult($rs) == 0)
                             $v->num_untested ++;
                         elseif ($this->calresult($rs) == 1) {
@@ -58,11 +58,11 @@ class DocumentController extends Controller
                         }
                     }
                 } else {
-                    $v->count = count($v->tcs);
+                    $v->count = count($v->latest_version()->tcs);
                     $v->num_passed = 0;
                     $v->num_failed = 0;
                     $v->num_untested = 0;
-                    foreach ($v->tcs as $tc) {
+                    foreach ($v->latest_version()->tcs as $tc) {
                         if ($tc->result == 0)
                             $v->num_untested ++;
                         elseif ($tc->result == 1) {
