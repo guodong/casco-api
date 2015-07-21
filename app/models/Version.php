@@ -7,7 +7,7 @@ class Version extends BaseModel {
 
 	public function tcs()
 	{
-	    return $this->hasMany('Tc');
+	    return $this->hasMany('Tc')->orderBy('tag');
 	}
 	
 	public function rss()

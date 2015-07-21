@@ -89,7 +89,7 @@ class TcController extends Controller{
 	
 	public function export ()
 	{
-	    $doc = Document::find(Input::get("document_id"));
+	    $ver = Version::find(Input::get("version_id"));
 	
 	    include PATH_BASE . '/PE/Classes/PHPExcel.php';
 	    include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
@@ -101,7 +101,7 @@ class TcController extends Controller{
 	    $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth('40');
 	    $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('30');
 	    $row = 1;
-	    foreach ($doc->tcs as $tc){
+	    foreach ($ver->tcs as $tc){
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row++, $tc->tag);
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Test Case Description');
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->description);
