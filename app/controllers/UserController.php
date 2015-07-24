@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Session;
 class UserController extends BaseController {
 
     // GET /user
@@ -42,5 +43,17 @@ class UserController extends BaseController {
 	    $user = User::find($id);
 	    $user->update(Input::get());
 	    return $user;
+	}
+	
+	public function login()
+	{
+	    $user = User::whereRaw('account = ? and password = ?', array(Input::get('account'), md5(Input::get('password'))))->first();
+	    
+	    if($user){
+	        Session::put('uid', $user->id);
+	        return $this->output($user);
+	    }else{
+	        return $this->outputError('login error');
+	    }
 	}
 }

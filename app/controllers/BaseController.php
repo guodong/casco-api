@@ -2,17 +2,37 @@
 
 class BaseController extends Controller {
 
-	/**
-	 * Setup the layout used by the controller.
-	 *
-	 * @return void
-	 */
-	protected function setupLayout()
-	{
-		if ( ! is_null($this->layout))
-		{
-			$this->layout = View::make($this->layout);
-		}
-	}
+	protected function output($data = NULL, $code = 0, $message = "")
+    {
+        return array(
+            "code" => 0,
+            "data" => $data
+        );
+    }
+    
+    protected function outputError($message = "", $code = 1)
+    {
+        return array(
+            "code" => $code,
+            "data" => $message
+        );
+    }
+    
+    protected function auth($token = '')
+    {
+        $test = 0;
+        if($test){
+            return User::first();
+        }
+        if (! Session::has('uid')) {
+            echo json_encode(array(
+                'code' => -1,
+                'data' => 'need login'
+            ));
+            exit();
+        }else {
+            return User::find(Session::get('uid'));
+        }
+    }
 
 }

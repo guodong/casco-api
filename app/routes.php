@@ -11,7 +11,6 @@
 |
 */
 Route::get('/test', 'TestController@index');
-Route::resource('accesstoken', 'AccesstokenController');
 Route::get('tc/export', 'TcController@export');
 Route::resource('project', 'ProjectController');
 
@@ -35,3 +34,7 @@ Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
+
+Route::resource('session', 'SessionController');
+Route::post('login', 'UserController@login');
+//Route::resource('accesstoken', 'AccesstokenController');

@@ -1,5 +1,9 @@
 <?php
 define('PATH_BASE', realpath(__DIR__.'/../'));
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+header('Access-Control-Allow-Methods: GET,PUT,DELETE,POST,OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type,X-Requested-With');
 /**
  * Laravel - A PHP Framework For Web Artisans
  *
