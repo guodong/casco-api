@@ -21,10 +21,11 @@ class ProjectController extends BaseController
 
     public function docfile()
     {
+        if(Input::get('isNew') == 1) $version = Version::create(array('name'=>Input::get('version_id'),'document_id'=>Input::get('document_id')));
+        else $version = Version::find(Input::get('version_id'));
         set_time_limit(0);
         $name = uniqid() . '.doc';
         move_uploaded_file($_FILES["file"]["tmp_name"], public_path() . '/files/' . $name);
-        $version = Version::find(Input::get('version_id'));
         $version->filename = $name;
         $version->save();        
         ////

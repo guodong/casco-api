@@ -20,7 +20,7 @@ class Rs extends BaseModel {
 	       } 
 	    };
 	    return $tcs;
-	    return $this->belongsToMany('Tc', 'tc_source', 'source_id', 'tc_id');
+	    //return $this->belongsToMany('Tc', 'tc_source', 'source_id', 'tc_id');
 	}
 	
 	//V模型中纵向引用该rs的rs
@@ -40,7 +40,7 @@ class Rs extends BaseModel {
 	        }
 	    };
 	    return $rss;
-	    return $this->belongsToMany('Rs', 'rs_source', 'source_id', 'rs_id');
+	    //return $this->belongsToMany('Rs', 'rs_source', 'source_id', 'rs_id');
 	}
 	
 	public function vat()
@@ -62,7 +62,7 @@ class Rs extends BaseModel {
 	
 	public function version()
 	{
-	    return $this->belongsTo('version');
+	    return $this->belongsTo('Version');
 	}
 	
 }

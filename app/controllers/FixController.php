@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Input;
 
-class DocumentController extends Controller
+class FixController extends Controller
 {
 
     private function calresult($rs)
@@ -10,10 +10,10 @@ class DocumentController extends Controller
         $result = 1;
         $v->vat;
         $v->vatstr;
-        if (count($v->tcs) == 0 && $v->vatstr_result == 0) {
+        if (count($v->tcs()) == 0 && $v->vatstr_result == 0) {
             return 0;
         }
-        foreach ($v->tcs as $vv) {
+        foreach ($v->tcs() as $vv) {
             if ($vv->result == 2) {
                 $result = 2;
                 break;

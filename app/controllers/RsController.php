@@ -18,8 +18,8 @@ class RsController extends Controller{
 	    foreach ($rss as $v){
 	        $v->vat;
 	        $v->vatstr;	        
-	        $v->rss();
-	        $v->tcs();
+	        $v->rss = $v->rss();
+	        $v->tcs = $v->tcs();
 
 	    }
 	    return $rss;

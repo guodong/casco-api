@@ -7,12 +7,12 @@ class Version extends BaseModel {
 
 	public function tcs()
 	{
-	    return $this->hasMany('Tc');
+	    return $this->hasMany('Tc')->orderBy('tag');
 	}
 	
 	public function rss()
 	{
-	    return $this->hasMany('Rs');
+	    return $this->hasMany('Rs')->orderBy('tag');
 	}
 	
 	public function document()
