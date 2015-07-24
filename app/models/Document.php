@@ -7,9 +7,9 @@ class Document extends BaseModel {
 
 	public function latest_version()
 	{
-	    $vss = $this->versions()->orderBy('created_at', 'desc')->get();
-	    if (count($vss)){
-	        return $vss[0];
+	    $vss = $this->versions()->orderBy('created_at', 'desc')->first();
+	    if ($vss){
+	        return $vss;
 	    }
 	    return null;
 	}
@@ -36,6 +36,6 @@ class Document extends BaseModel {
 	
 	public function versions()
 	{
-	    return $this->hasMany('Version')->orderBy('created_at', 'desc');
+	    return $this->hasMany('Version');
 	}
 }
