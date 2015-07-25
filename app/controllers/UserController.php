@@ -44,7 +44,12 @@ class UserController extends BaseController {
 	    $user->update(Input::get());
 	    return $user;
 	}
-	
+	public function destroy($id){
+            $user=User::find($id);
+            $user->destroy($id);
+            return $user;
+             
+        }
 	public function login()
 	{
 	    $user = User::whereRaw('account = ? and password = ?', array(Input::get('account'), md5(Input::get('password'))))->first();
