@@ -32,7 +32,7 @@ class TcController extends Controller{
                        $tms[] = $tmp;
                    }
             }
-            $tc->testmethod = $tms;
+            $tc->testmethods = $tms;
             $tc->result = 0;
             foreach ($tc->results as $r){
                 if ($r->rs_version_id == Input::get('rs_version_id') && $r->build_id == Input::get('build_id')){

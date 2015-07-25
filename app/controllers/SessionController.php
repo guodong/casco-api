@@ -23,9 +23,8 @@ class SessionController extends BaseController
 
     public function store()
     {
-        $document = new Document(Input::get());
-        $document->save();
-        return $document;
+        Session::put('uid', 1);
+        return 'ok';
     }
 
 }

@@ -30,7 +30,17 @@ class DocumentController extends Controller
     }
 
     public function index()
-    { return;
+    {
+        $docs = Document::where('project_id', '=', Input::get('project_id'));
+        if (Input::get('type')){
+            $docs = $docs->where('type', '=', Input::get('type'));
+        }
+        if(Input::get('mode') == 'related'){
+            $doc = Document::find(Input::get('document_id'));
+            $docs = $doc->dests;
+            return $docs;
+        }
+        return $docs->get();
         if (! empty($_GET['project_id'])) {
             $d = Document::where('project_id', '=', $_GET['project_id']);
             if (Input::get('type') == 'tc') {

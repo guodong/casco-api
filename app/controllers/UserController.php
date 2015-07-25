@@ -56,4 +56,13 @@ class UserController extends BaseController {
 	        return $this->outputError('login error');
 	    }
 	}
+	
+	public function session()
+	{
+	    if (Session::has('uid')){
+	        return $this->output(User::find(Session::get('uid')));
+	    }else{
+	        return $this->outputError('not login');
+	    }
+	}
 }

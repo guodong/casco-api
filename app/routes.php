@@ -35,6 +35,5 @@ Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
 
-Route::resource('session', 'SessionController');
+Route::get('session', 'UserController@session');
 Route::post('login', 'UserController@login');
-//Route::resource('accesstoken', 'AccesstokenController');
