@@ -19,4 +19,9 @@ class Project extends BaseModel {
 	    return $this->belongsToMany('User', 'project_user');
 	}
 	
+	public function testjobs()
+	{
+	    return $this->hasMany('Testjob')->orderBy('created_at', 'desc');
+	}
+	
 }
