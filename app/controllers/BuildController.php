@@ -18,6 +18,17 @@ class BuildController extends Controller{
 	{
 	    $build = Build::create(Input::get());
 	    return $build;
-	}
+	} 
+	
+	public function  destroy($id)
+    {
+             $build=Build::find($id);
+             $build->destroy($id);
+             return  $build;
+
+     }
+
+
+
 	
 }
