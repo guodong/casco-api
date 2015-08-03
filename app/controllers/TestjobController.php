@@ -14,7 +14,9 @@ class TestjobController extends BaseController{
 	    foreach ($jobs as $v){
 	        $v->build;
 	        $v->tcVersion->document;
-	        $v->rsVersion->document;
+	        foreach ($v->rsVersions as $vv){
+	            $vv->document;
+	        }
 	    }
 	    return $jobs;
 	}
@@ -23,10 +25,15 @@ class TestjobController extends BaseController{
 	{
 	    $job = new Testjob(Input::get());
 	    $job->save();
+	    foreach (Input::get('rs_versions') as $v){
+	        $job->rsVersions()->attach($v['rs_version_id']);
+	    }
 	    $v = $job;
 	    $v->build;
 	    $v->tcVersion->document;
-	    $v->rsVersion->document;
+	    foreach ($v->rsVersions as $vv){
+	        $vv->document;
+	    }
 	    foreach ($job->tcVersion->tcs as $tc){
 	        Result::create(array(
 	            'tc_id' => $tc->id,
@@ -34,6 +41,19 @@ class TestjobController extends BaseController{
 	        ));
 	    }
 	    return $job;
+	}
+	
+	public function update()
+	{
+	    $t = Testjob::find(Input::get('id'));
+	    $t->update(Input::get());
+	    return $t;
+	}
+	
+	public function rsversion()
+	{
+	    $job = Testjob::find(Input::get('job_id'));
+	    $rsvs = $job->rsVersions;
 	}
 	
 }

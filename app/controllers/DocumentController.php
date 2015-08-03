@@ -38,6 +38,9 @@ class DocumentController extends Controller
         if(Input::get('mode') == 'related'){
             $doc = Document::find(Input::get('document_id'));
             $docs = $doc->dests;
+            foreach ($docs as $v){
+                $v->versions;
+            }
             return $docs;
         }
         return $docs->get();

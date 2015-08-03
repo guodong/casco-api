@@ -2,7 +2,7 @@
 class Testjob extends BaseModel {
 
 	protected $table = 'testjob';
-	protected $fillable = array('name', 'project_id', 'build_id', 'tc_version_id', 'rs_version_id');
+	protected $fillable = array('name', 'project_id', 'build_id', 'tc_version_id', 'rs_version_id', 'status');
 
 	public function build()
 	{
@@ -14,9 +14,9 @@ class Testjob extends BaseModel {
 	    return $this->belongsTo('Version', 'tc_version_id');
 	}
 	
-	public function rsVersion()
+	public function rsVersions()
 	{
-	    return $this->belongsTo('Version', 'rs_version_id');
+	    return $this->belongsToMany('Version', 'testjob_rs_version', 'testjob_id', 'rs_version_id');
 	}
 	
 	public function results()
