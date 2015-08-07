@@ -39,3 +39,7 @@ Route::resource('testjob', 'TestjobController');
 Route::get('session', 'UserController@session');
 Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
+
+Route::get('treevat/root', 'TreeVatController@root');
+Route::resource('treevat','TreeVatController');
+// Route::resource('vat','VatController');

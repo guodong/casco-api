@@ -8,15 +8,15 @@ class TreeItemController extends Controller
     {
         $doc = Document::find($foder_id);
         if ($doc->type != 'folder') {
-            if($doc->latest_version == null){
+            if($doc->latest_version() == null){
                 return json_encode(array('children'=> array()));
             }
             switch ($doc->type) {
                 case 'rs':
-                    $items = $doc->latest_version->rss;
+                    $items = $doc->latest_version()->rss;
                     break;
                 case 'tc':
-                    $items = $doc->latest_version->tcs;
+                    $items = $doc->latest_version()->tcs;
                     break;
                 default:
                     $items = array();
@@ -33,6 +33,7 @@ class TreeItemController extends Controller
             }
             return json_encode(array('children'=> $rt));
         }
+        
         $docs = Document::where('fid', '=', $foder_id)->get();
         $rt = array();
         foreach ($docs as $d) {
