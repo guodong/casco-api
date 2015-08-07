@@ -1,5 +1,5 @@
 <?php
-class TcStep extends Eloquent {
+class TcStep extends BaseModel {
 
 	protected $table = 'tc_step';
 	protected $fillable = array('tc_id', 'num', 'actions', 'expected_result');

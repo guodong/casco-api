@@ -3,7 +3,7 @@ class Document extends BaseModel {
 
 
 	protected $table = 'document';
-	protected $fillable = array('name', 'project_id', 'type', 'graph', 'regex', 'filename');
+	protected $fillable = array('name', 'project_id', 'type', 'fid','graph', 'regex', 'filename');
 
 	public function latest_version()
 	{

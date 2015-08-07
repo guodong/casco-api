@@ -35,8 +35,10 @@ Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
 
+Route::get('testjob/rsversion', 'TestjobController@rsversion');
 Route::resource('testjob', 'TestjobController');
 Route::get('session', 'UserController@session');
+Route::put('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
 

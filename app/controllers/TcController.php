@@ -56,6 +56,16 @@ class TcController extends Controller{
 	    }
 	    return $tc;
 	}
+    public function destroy($id){
+
+     $tc=Tc::find($id);
+	 $tc=$tc->destroy($id);
+	 return $tc;
+
+	}
+	 
+
+	
 	
 	public function setresult()
 	{
