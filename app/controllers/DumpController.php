@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Input;
 class DumpController extends Controller
 {
 
-    public function dump()
-    {if(1){
+    public function dump(){
+        if(1){
         $item = Tag::where('tag', '=', Input::get('tag'))->first();
         if (! $item) {
             return Response::json(array(

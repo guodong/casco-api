@@ -46,11 +46,11 @@ class ResultController extends BaseController{
 	{
 	    foreach (Input::get('results') as $v){
 	        $r = Result::find($v['id']);
-	        $r->begin_at = $v['begin_at'];
-	        $r->end_at = $v['end_at'];
-	        $r->result = $v['result'];
-	        $r->cr = $v['cr'];
-	        $r->save();
+// 	        $r->begin_at = $v['begin_at'];
+// 	        $r->end_at = $v['end_at'];
+// 	        $r->result = $v['result'];
+// 	        $r->cr = $v['cr'];
+	        $r->update($v);
 	        foreach ($v['steps'] as $vv){
 	            $s = ResultStep::find($vv['step_result_id']);
 	            if(!$s){
