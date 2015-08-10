@@ -18,6 +18,10 @@ class Document extends BaseModel {
 	{
 	    return $this->hasMany('Tc');
 	}
+     public function project()
+        {
+            return $this->belongsTo('Project');
+        }
 
 	public function rss()
 	{
