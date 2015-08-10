@@ -107,13 +107,57 @@ class DocumentController extends Controller
 
     public function update($id)
     {}
+
     public function destroy($id)
     {
-       $document=Document::find($id);
-       $document->destroy($id);
-       return $document;
+      $document=Document::find($id);
+       //delete project->graph
 
-     
+       $project=$document->project;
+       $graph=json_decode($project->graph);
+       $data=[];
+       if($graph){
+         foreach($graph->cells  as $nodes)
+         {  
+          if($nodes->type=='basic.Rect'&&$nodes->id==$id)
+          {
+             continue;
+         
+          }elseif($nodes->type=='fsa.Arrow'&&($nodes->source->id==$id||$nodes->target->id==$id)){
+                 continue;
+           }else{
+           $data[]=$nodes;
+           
+         }
+      
+         }//foreach
+       
+        }//if
+     //udate  project graph
+       
+        $graph->cells=($data);
+       // var_dump(json_encode($graph));       
+        $project->graph=json_encode($graph);
+        $project->save();
+
+
+       
+       foreach($document->versions  as  $vs){
+           Version::destroy($vs->id);//删除versions
+
+       }
+	        foreach($document->tcs as $tcs){
+                    $tcs->delete();}
+		foreach($document->rss as $rss){
+                    $rss->delete();}
+		//删除对应的关系表
+		$r = Relation::where('src', '=', $id);
+		$r->delete();
+		$r = Relation::where('dest', '=', $id);
+		$r->delete();
+		$document->destroy($id);
+  
+		return $document;
 
     }
     public function version()
