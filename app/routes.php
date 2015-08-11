@@ -13,6 +13,8 @@
 Route::resource('version', 'VersionController');
 Route::resource('vatstr', 'VatstrController');
 Route::resource('user', 'UserController');
+Route::get('treevat/root', 'TreeVatController@root');
+Route::resource('treevat','TreeVatController');
 Route::get('treemod', 'TreeController@treemod');
 Route::get('treeitem/root', 'TreeController@root');
 Route::resource('treeitem', 'TreeItemController');
@@ -39,5 +41,6 @@ Route::resource('document.rs', 'DocumentRsController');
 Route::resource('document', 'DocumentController');
 Route::post('docfile', 'ProjectController@docfile');
 Route::resource('build', 'BuildController');
+
 
 
