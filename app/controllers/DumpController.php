@@ -40,18 +40,23 @@ class DumpController extends Controller
                 $d->isparent = false;
                 $data->children[] = $d;
             };
-            $item->vat->each(function ($v) use($data) {
+            $item->vat = json_decode($item->vat_json)?json_decode($item->vat_json):[];
+            foreach ($item->vat as $v){
+                $has = false;
+                foreach ($data->children as $c){
+                    if ($c->name == $v->tag){
+                        $has = true;
+                        break;
+                    }
+                }
+                if($has){
+                    continue;
+                }
                 $d = new stdClass();
                 $d->name = $v->tag;
                 $d->isparent = false;
                 $data->children[] = $d;
-            });
-            if($item->vatstr){
-                $d = new stdClass();
-                $d->name = $item->vatstr->name;
-                $d->isparent = false;
-                $data->children[] = $d;
-            }
+            };
             
         } else {
             $item = Tc::find($item->id);

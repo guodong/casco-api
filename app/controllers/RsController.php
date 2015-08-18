@@ -16,8 +16,11 @@ class RsController extends Controller{
 	    }
 	    $rss = $rsv->rss;
 	    foreach ($rss as $v){
-	        $v->vat;
-	        $v->vatstr;	        
+	        if (!json_decode($v->vat_json)){
+	            $v->vat_json = '[]';
+	            $v->save();
+	        }
+	        $v->vat = json_decode($v->vat_json);
 	        $v->rss = $v->rss();
 	        $v->tcs = $v->tcs();
 
@@ -27,13 +30,9 @@ class RsController extends Controller{
 	
 	public function update($id)
 	{
+	    $data = Input::get();
 	    $m = Rs::find($id);
-	    $m->vatstr_id = Input::get('vatstr_id');
+	    $m->vat_json = json_encode($data['vat']);
 	    $m->save();
-	    $m->vat()->detach();
-	    foreach (Input::get('vat') as $v){
-	        $m->vat()->attach($v['id']);
-	    }
-	     
 	}
 }

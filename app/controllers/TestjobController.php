@@ -94,9 +94,10 @@ class TestjobController extends BaseController{
 	        $cod = $row;
 	        $step_count = 0;
 	        foreach ($tc->steps as $step){
-	            $r = $step->result == 0?'untested':($step->result == 1?'passed':'failed');
-	            if ($step->comment){
-	               $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$step->num . ' ' . $r . ': ' . $step->comment);
+	            $stepResult = ResultStep::where('result_id', $v->id)->where('step_id', $step->id)->first();
+	            $r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
+	            if ($stepResult->comment){
+	               $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$step->num . ' ' . $r . ': ' . $stepResult->comment);
 	               $step_count++;
 	            }
 	        }

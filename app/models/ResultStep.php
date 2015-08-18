@@ -6,7 +6,7 @@ class ResultStep extends BaseModel {
 
 	public function step()
 	{
-	   return $this->belongsTo('Step');
+	   return $this->belonsTo('TcStep', 'step_id');
 	}
 
 
