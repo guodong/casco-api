@@ -65,6 +65,7 @@ class ProjectController extends BaseController
         }
         
         // RS 
+        $modify=0;$delete=0;$add=0;$flag_add=true;
         $url = 'http://192.100.212.31:8080/files/' . $name;
         $u = 'http://192.100.212.33/WebService1.asmx/InputWord?url=' . $url.'&filename='.$name;
         $data = file_get_contents($u);
@@ -76,8 +77,30 @@ class ProjectController extends BaseController
             if (empty($v))
                 continue;
             $rs = new Rs();
+            
             //$rs->document_id = $_POST['document_id'];
             $rs->tag = $v->title;
+            //这里来进行一下遍历吧
+            $document_id=$_POST['document_id'];
+            foreach($document->rss as $rss){
+            if($rss->tag==$v->title){
+              //接下来查看是否所有的内容都已经修改
+             $flag_add=false;
+             $flag=($rss->allocation==$v->Allocation&&$rss->category==$$v->Category&&$rss->implement==$v->Implement
+             &&$rss->priority==$v->Priority&&$rss->contribution==$v->Contribution&&$rss->description==$v->description
+             &&$rss->source_json==json_encode($v->Source)&&$rs->version_id = $version->id);
+             if(!$flag)$modify++;
+             break;//得到结果，break;
+            }else{
+            	
+            	continue;
+            }
+            
+            $flag_add?$add++:'';
+            
+            }//foreach
+            	
+          
             $rs->allocation = $v->Allocation;
             $rs->category = $v->Category;
             $rs->implement = $v->Implement;
@@ -96,9 +119,10 @@ class ProjectController extends BaseController
 //             }
         }
         $rt = Rs::where('version_id', '=', $version->id)->get();
-        return $rt;
+        $ans='{"msg":[{"add":$add,"modify":$modify,"delete":$delete}]}';
+        return  $ans;
     }
-    
+     
     // 项目列表
     public function index()
     {

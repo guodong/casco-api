@@ -23,7 +23,7 @@ class Document extends BaseModel {
             return $this->belongsTo('Project');
         }
 
-	public function rss()
+	public function rss()//这个不是已经没用了么?
 	{
 	    return $this->hasMany('Rs');
 	}

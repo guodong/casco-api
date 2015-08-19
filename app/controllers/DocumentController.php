@@ -146,9 +146,9 @@ class DocumentController extends Controller
            Version::destroy($vs->id);//删除versions
 
        }
-	        foreach($document->tcs as $tcs){
+	    foreach($document->tcs as $tcs){
                     $tcs->delete();}
-		foreach($document->rss as $rss){
+		foreach($document->version->rss as $rss){
                     $rss->delete();}
 		//删除对应的关系表
 		$r = Relation::where('src', '=', $id);
