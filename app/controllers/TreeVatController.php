@@ -72,7 +72,7 @@ class TreeVatController extends Controller
                     'name' => $v->name,
                     'leaf' => 'true',
                     'id' => $v->id,
-                    'type' => 'item'
+                    'type' => 'vat'
                 );
             }
             $r = array(
@@ -111,7 +111,7 @@ class TreeVatController extends Controller
                     'leaf' => true,
                     'id' => 'item-' . $v->id,
                     'item_id' => $v->id,
-                    'type' => 'item'
+                    'type' => $docs->type
                 );
             }
             // echo '1';return;
