@@ -111,10 +111,15 @@ class TreeVatController extends Controller
                     $rsitem = Rs::find(Input::get('rs_id'));
                     $this->getTags_down($rsitem->tag);
                     $this->getTags_up($rsitem->tag);
-                    $items = Tc::where('version_id', $version->id)->whereIn('tag', $this->tags);
-                    foreach ($this->tags as $v){
-                        $items = $items->orWhere('source_json', 'like', '%' . $v . '%');
-                    }
+                    
+                    $items = Tc::where('version_id', $version->id);
+                    $items->where(function ($query)use($rsitem){
+                        $query->orWhere('source_json', 'like', '%' . $rsitem->tag . '%');
+                        foreach ($this->tags as $v){
+                            $query->orWhere('source_json', 'like', '%' . $v . '%');
+                        }
+                    });
+                    //echo $items->toSql();
                     $items = $items->groupBy('tag')->get();
                     break;
                 default:
