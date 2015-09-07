@@ -3,7 +3,7 @@ class Version extends BaseModel {
 
 
 	protected $table = 'version';
-	protected $fillable = array('name', 'document_id', 'filename');
+	protected $fillable = array('name', 'document_id', 'headers',);
 
 	public function tcs()
 	{

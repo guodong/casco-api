@@ -31,7 +31,7 @@ Route::resource('vatstr', 'VatstrController');
 Route::resource('user', 'UserController');
 Route::resource('testmethod', 'TestmethodController');
 Route::get('dump', 'DumpController@dump');
-Route::resource('build', 'BuildController');
+Route::resource('build', 'BuildController');    
 //Route::get('version', 'DocumentController@version');
 Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
