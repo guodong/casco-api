@@ -55,6 +55,26 @@ class UserController extends BaseController {
 	    $user->update($data);
 	    return $user;
 	}
+	public function userpros(){
+	    
+	     $user=User::find(Input::get('user_id'));
+	     $pros=$user->Projects;
+		 return $pros;
+	
+	}
+	
+	public function userprosdel(){
+		
+		$pros_user=ProjectUser::where('project_id','=',Input::get('project_id'))->where('user_id','=',Input::get("user_id"))->get();
+		if($pros_user!="[]"){
+		foreach($pros_user as $rel){$rel->delete();}
+		return '{"code":1,"Msg":"delete success!"}';
+		}
+		else {
+			return  '{"code":"0","Msg":"nothing to delete!"}';
+		}
+	
+	}
 	public function destroy($id){
             $user=User::find($id);
             $user->destroy($id);

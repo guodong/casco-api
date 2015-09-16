@@ -3,10 +3,10 @@ class User extends BaseModel {
 
 	protected $table = 'user';
 
-	protected $fillable = array('password', 'account', 'realname', 'jobnumber','role');
+	protected $fillable = array('password', 'account', 'realname', 'jobnumber','role_id','islocked');
 
 	public function projects()
-	{
-	    return $this->belongsToMany('Project');
+	{ //获取该员工的工程项目
+	    return $this->belongsToMany('Project','Project_User','user_id','project_id');
 	}
 }
