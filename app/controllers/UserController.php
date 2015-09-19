@@ -82,15 +82,44 @@ class UserController extends BaseController {
              
         }
 	public function login()
-	{
-	    $user = User::whereRaw('account = ? and password = ?', array(Input::get('account'), md5(Input::get('password'))))->first();
-	    
-	    if($user){
-	        Session::put('uid', $user->id);
-	        return $this->output($user);
-	    }else{
-	        return $this->outputError('login error');
-	    }
+	{   
+		
+		
+		$user=User::whereRaw('account = ?',array(Input::get('account')))->first();
+		
+		if($user){
+			if($user->islock){
+				
+				return $this->outputError('your account has been locked!');
+			}else{
+				
+				if($user->password==md5(Input::get('password'))){
+					
+					 Session::put('uid', $user->id);
+	                 return $this->output($user);
+				}else{
+					
+					
+					return $this->outputError('your password error!');
+					
+				}
+				
+				
+				
+				
+				
+			}
+			
+			
+			
+				
+			
+		}else{
+			
+			return $this->outputError('account error!');
+		}
+		
+		
 	}
 	public function logout(){
          
