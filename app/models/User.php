@@ -3,7 +3,7 @@ class User extends BaseModel {
 
 	protected $table = 'user';
 
-	protected $fillable = array('password', 'account', 'realname', 'jobnumber','role_id','islocked');
+	protected $fillable = array('password', 'account', 'realname', 'jobnumber','role_id','islock');
 
 	public function projects()
 	{ //获取该员工的工程项目

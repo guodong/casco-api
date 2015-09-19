@@ -9,6 +9,7 @@ class ProjectController extends BaseController
     {
         $project = new Project(Input::get());
         $project->save();
+        //表单额外的数据的接收方式哦
         foreach (Input::get('participants') as $v) {
             $project->participants()->attach($v['id']);
         }
