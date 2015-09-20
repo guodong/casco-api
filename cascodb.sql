@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.7
+-- version 4.1.14
 -- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: 2015-09-16 09:53:36
--- 服务器版本： 5.5.41-MariaDB
--- PHP Version: 5.4.16
+-- Host: 127.0.0.1
+-- Generation Time: 2015-09-20 14:57:11
+-- 服务器版本： 5.6.17
+-- PHP Version: 5.5.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS `build` (
   `name` varchar(100) NOT NULL,
   `project_id` varchar(36) NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -56,7 +57,8 @@ CREATE TABLE IF NOT EXISTS `document` (
   `headers` varchar(100) NOT NULL DEFAULT 'h1,h2.h3',
   `project_id` varchar(36) NOT NULL COMMENT '所属项目',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间'
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -85,7 +87,8 @@ CREATE TABLE IF NOT EXISTS `project` (
   `description` text NOT NULL,
   `graph` text NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -104,21 +107,28 @@ INSERT INTO `project` (`id`, `name`, `description`, `graph`, `created_at`, `upda
 --
 
 CREATE TABLE IF NOT EXISTS `project_user` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `project_id` varchar(36) NOT NULL COMMENT '工程id',
   `user_id` varchar(36) NOT NULL COMMENT '员工id',
-  `doc_noedit` text NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+  `doc_noedit` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=15 ;
 
 --
 -- 转存表中的数据 `project_user`
 --
 
 INSERT INTO `project_user` (`id`, `project_id`, `user_id`, `doc_noedit`) VALUES
-(1, '90640116-ad10-450c-9d30-91b8a6acc607', 'a7b12e32-b0f5-11e4-abb7-c17404b78885', ''),
-(2, '90640116-ad10-450c-9d30-91b8a6acc607', '75672e85-327f-46c4-90b2-aa68826f5889', ''),
-(3, '7', 'a7b12e32-b0f5-11e4-abb7-c17404b78885', ''),
-(4, '90640116-ad10-450c-9d30-91b8a6acc607', '8515062e-9a1a-407c-bb18-e5c77266e8d3', '');
+(1, '90640116-ad10-450c-9d30-91b8a6acc607', 'a7b12e32-b0f5-11e4-abb7-c17404b78885', 'af31405d-3dbc-4349-95d2-d75ed03c5993,c00dc5ad-c45f-410c-9f88-b27562414c59,d6889236-ad21-11e4-aa9b-cf2d72b432dc,dc14a208-ad21-11e4-aa9b-cf2d72b432dc,e1c83444-ad21-11e4-aa9b-cf2d72b432dc,e7146468-ad21-11e4-aa9b-cf2d72b432dc,eca32cc0-ad21-11e4-aa9b-cf2d72b432dc'),
+(2, '90640116-ad10-450c-9d30-91b8a6acc607', '75672e85-327f-46c4-90b2-aa68826f5889', '5c144c2c-f983-4d30-936b-0a17e00f8bfc, af31405d-3dbc-4349-95d2-d75ed03c5993, c00dc5ad-c45f-410c-9f88-b27562414c59, d6889236-ad21-11e4-aa9b-cf2d72b432dc, dc14a208-ad21-11e4-aa9b-cf2d72b432dc, e1c83444-ad21-11e4-aa9b-cf2d72b432dc, e7146468-ad21-11e4-aa9b-cf2d72b432dc, eca32cc0-ad21-11e4-aa9b-cf2d72b432dc'),
+(4, '90640116-ad10-450c-9d30-91b8a6acc607', '8515062e-9a1a-407c-bb18-e5c77266e8d3', 'af31405d-3dbc-4349-95d2-d75ed03c5993,c00dc5ad-c45f-410c-9f88-b27562414c59,d6889236-ad21-11e4-aa9b-cf2d72b432dc,dc14a208-ad21-11e4-aa9b-cf2d72b432dc,e1c83444-ad21-11e4-aa9b-cf2d72b432dc,e7146468-ad21-11e4-aa9b-cf2d72b432dc,eca32cc0-ad21-11e4-aa9b-cf2d72b432dc'),
+(5, 'd942b32c-3002-403b-a29d-90f11e30061b', '8515062e-9a1a-407c-bb18-e5c77266e8d3', ''),
+(9, 'd942b32c-3002-403b-a29d-90f11e30061b', '57f64694-4b12-45b7-934f-4b3465dfc3d2', ''),
+(10, '90640116-ad10-450c-9d30-91b8a6acc607', '57f64694-4b12-45b7-934f-4b3465dfc3d2', ''),
+(11, '7', '57f64694-4b12-45b7-934f-4b3465dfc3d2', ''),
+(12, '7', 'b9e80cdd-60cc-41cf-bce3-dc3c9a34d257', ''),
+(13, '90640116-ad10-450c-9d30-91b8a6acc607', 'b9e80cdd-60cc-41cf-bce3-dc3c9a34d257', ''),
+(14, 'd942b32c-3002-403b-a29d-90f11e30061b', 'b9e80cdd-60cc-41cf-bce3-dc3c9a34d257', '');
 
 -- --------------------------------------------------------
 
@@ -127,10 +137,13 @@ INSERT INTO `project_user` (`id`, `project_id`, `user_id`, `doc_noedit`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `relation` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `src` varchar(36) NOT NULL COMMENT '文档关系起点',
-  `dest` varchar(36) NOT NULL COMMENT '文档关系终点'
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
+  `dest` varchar(36) NOT NULL COMMENT '文档关系终点',
+  PRIMARY KEY (`id`),
+  KEY `src` (`src`),
+  KEY `dest` (`dest`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=30 ;
 
 --
 -- 转存表中的数据 `relation`
@@ -182,7 +195,8 @@ CREATE TABLE IF NOT EXISTS `result` (
   `comment` text NOT NULL,
   `step_result_json` text NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='tc rs_version build关联表';
 
 --
@@ -209,7 +223,8 @@ CREATE TABLE IF NOT EXISTS `result_step` (
   `result` int(11) NOT NULL,
   `comment` text NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -226,6 +241,27 @@ INSERT INTO `result_step` (`id`, `result_id`, `step_id`, `result`, `comment`, `c
 ('84cc6167-3bc8-48d0-8a33-472f8b74f100', '34e402c0-9c88-4d8e-8013-de1c56ff05f8', '17', 0, '', '2015-09-15 11:13:47', '2015-09-15 11:13:47'),
 ('9c77d2aa-7956-4388-b293-4ac06c638cb5', '7d6a4024-9482-49fb-b1ec-c9bd478a09dc', '14', 0, '', '2015-09-15 11:13:47', '2015-09-15 11:13:47'),
 ('aad1f29a-a7f5-41fe-86e0-ed3ac9769db0', '7d6a4024-9482-49fb-b1ec-c9bd478a09dc', '12', 0, '', '2015-09-15 11:13:47', '2015-09-15 11:13:47');
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `role`
+--
+
+CREATE TABLE IF NOT EXISTS `role` (
+  `id` int(11) NOT NULL,
+  `name` varchar(20) NOT NULL,
+  `description` varchar(40) CHARACTER SET utf32 NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 转存表中的数据 `role`
+--
+
+INSERT INTO `role` (`id`, `name`, `description`) VALUES
+(0, 'Staff', '普通员工'),
+(1, 'Manager', '系统管理员');
 
 -- --------------------------------------------------------
 
@@ -248,7 +284,9 @@ CREATE TABLE IF NOT EXISTS `rs` (
   `vat_json` text NOT NULL,
   `version_id` varchar(36) NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `title` (`tag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -269,11 +307,12 @@ INSERT INTO `rs` (`id`, `tag`, `description`, `implement`, `priority`, `contribu
 --
 
 CREATE TABLE IF NOT EXISTS `rs_vat` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `rs_id` varchar(36) NOT NULL,
   `vat_id` varchar(36) NOT NULL,
-  `comment` text
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
+  `comment` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16 ;
 
 --
 -- 转存表中的数据 `rs_vat`
@@ -306,7 +345,6 @@ CREATE TABLE IF NOT EXISTS `tag` (
 ,`tag` varchar(100)
 ,`version_id` varchar(36)
 );
-
 -- --------------------------------------------------------
 
 --
@@ -327,7 +365,9 @@ CREATE TABLE IF NOT EXISTS `tc` (
   `source_json` text NOT NULL,
   `version_id` varchar(36) NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `title` (`tag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -348,15 +388,17 @@ INSERT INTO `tc` (`id`, `tag`, `description`, `testmethod_id`, `test_item`, `pre
 --
 
 CREATE TABLE IF NOT EXISTS `tc_step` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `tc_id` varchar(36) NOT NULL COMMENT '所属tc的id',
   `num` int(11) NOT NULL COMMENT '步骤数',
   `indata` varchar(255) NOT NULL,
   `actions` text NOT NULL COMMENT '采取的行动',
   `expected_result` text NOT NULL COMMENT '所希望的现象',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `tc_id` (`tc_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=19 ;
 
 --
 -- 转存表中的数据 `tc_step`
@@ -396,7 +438,8 @@ CREATE TABLE IF NOT EXISTS `testjob` (
   `tc_version_id` varchar(36) NOT NULL,
   `rs_version_id` varchar(36) NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -416,10 +459,11 @@ INSERT INTO `testjob` (`id`, `name`, `project_id`, `build_id`, `tc_version_id`, 
 --
 
 CREATE TABLE IF NOT EXISTS `testjob_rs_version` (
-  `id` int(10) NOT NULL,
+  `id` int(10) NOT NULL AUTO_INCREMENT,
   `testjob_id` varchar(36) NOT NULL,
-  `rs_version_id` varchar(36) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+  `rs_version_id` varchar(36) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 --
 -- 转存表中的数据 `testjob_rs_version`
@@ -439,7 +483,8 @@ CREATE TABLE IF NOT EXISTS `testmethod` (
   `id` varchar(32) NOT NULL,
   `name` varchar(20) NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -461,22 +506,29 @@ CREATE TABLE IF NOT EXISTS `user` (
   `id` varchar(36) NOT NULL,
   `account` varchar(30) NOT NULL,
   `password` varchar(32) NOT NULL,
-  `jobnumber` varchar(30) NOT NULL,
+  `jobnumber` varchar(30) DEFAULT NULL,
   `realname` varchar(30) NOT NULL,
-  `role` enum('manager','staff') NOT NULL DEFAULT 'staff' COMMENT '职位&角色',
+  `role_id` int(11) NOT NULL DEFAULT '0' COMMENT '职位&角色',
+  `islock` int(11) DEFAULT '0',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `account` (`account`),
+  UNIQUE KEY `jobnumber_2` (`jobnumber`),
+  UNIQUE KEY `jobnumber_3` (`jobnumber`),
+  UNIQUE KEY `jobnumber_4` (`jobnumber`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- 转存表中的数据 `user`
 --
 
-INSERT INTO `user` (`id`, `account`, `password`, `jobnumber`, `realname`, `role`, `created_at`, `updated_at`) VALUES
-('4fb60451-915f-455f-ab44-e47a23615c46', 'admin', '21232f297a57a5a743894a0e4a801fc3', '000', 'admin', 'manager', '2015-06-10 17:21:13', '2015-06-10 17:21:13'),
-('8515062e-9a1a-407c-bb18-e5c77266e8d3', 'huchangwu', '202cb962ac59075b964b07152d234b70', '124', '胡长武', 'staff', '2015-06-10 16:07:46', '2015-06-10 16:07:46'),
-('9f3a8953-08dd-4e89-a5ca-52a9c77a6406', 'test', 'd9b1d7db4cd6e70935368a1efb10e377', '1233', 'tester', 'staff', '2015-02-12 06:38:32', '2015-06-10 16:22:54'),
-('a7b12e32-b0f5-11e4-abb7-c17404b78885', 'guodong', '202cb962ac59075b964b07152d234b70', '123', '郭栋', 'manager', '2015-02-10 00:00:00', '2015-06-10 17:20:23');
+INSERT INTO `user` (`id`, `account`, `password`, `jobnumber`, `realname`, `role_id`, `islock`, `created_at`, `updated_at`) VALUES
+('4fb60451-915f-455f-ab44-e47a23615c46', 'admin', 'd41d8cd98f00b204e9800998ecf8427e', '000', 'admin', 1, 0, '2015-06-10 17:21:13', '2015-09-19 14:17:38'),
+('8515062e-9a1a-407c-bb18-e5c77266e8d3', 'huchangwu', '202cb962ac59075b964b07152d234b70', '1245', '胡长武', 0, 0, '2015-06-10 16:07:46', '2015-09-19 15:51:36'),
+('9f3a8953-08dd-4e89-a5ca-52a9c77a6406', 'test', 'd41d8cd98f00b204e9800998ecf8427e', '1233', 'tester', 0, 0, '2015-02-12 06:38:32', '2015-09-19 14:18:34'),
+('a7b12e32-b0f5-11e4-abb7-c17404b78885', 'guodong', '202cb962ac59075b964b07152d234b70', '123', '郭栋', 1, 0, '2015-02-10 00:00:00', '2015-06-10 17:20:23'),
+('b9e80cdd-60cc-41cf-bce3-dc3c9a34d257', 'cjd', '6968aff4bf350b4804334f325a400543', '999', 'caeng', 0, 0, '2015-09-20 20:51:40', '2015-09-20 20:51:40');
 
 -- --------------------------------------------------------
 
@@ -489,7 +541,8 @@ CREATE TABLE IF NOT EXISTS `vatstr` (
   `name` varchar(30) NOT NULL,
   `project_id` varchar(36) NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -512,7 +565,8 @@ CREATE TABLE IF NOT EXISTS `version` (
   `document_id` varchar(36) NOT NULL,
   `headers` text NOT NULL,
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -534,147 +588,6 @@ DROP TABLE IF EXISTS `tag`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tag` AS select `rs`.`id` AS `id`,`rs`.`tag` AS `tag`,`rs`.`version_id` AS `version_id` from `rs` union select `tc`.`id` AS `id`,`tc`.`tag` AS `tag`,`tc`.`version_id` AS `version_id` from `tc`;
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `build`
---
-ALTER TABLE `build`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `document`
---
-ALTER TABLE `document`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `project`
---
-ALTER TABLE `project`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `project_user`
---
-ALTER TABLE `project_user`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `relation`
---
-ALTER TABLE `relation`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `src` (`src`),
-  ADD KEY `dest` (`dest`);
-
---
--- Indexes for table `result`
---
-ALTER TABLE `result`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `result_step`
---
-ALTER TABLE `result_step`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `rs`
---
-ALTER TABLE `rs`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `title` (`tag`);
-
---
--- Indexes for table `rs_vat`
---
-ALTER TABLE `rs_vat`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `tc`
---
-ALTER TABLE `tc`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `title` (`tag`);
-
---
--- Indexes for table `tc_step`
---
-ALTER TABLE `tc_step`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `tc_id` (`tc_id`);
-
---
--- Indexes for table `testjob`
---
-ALTER TABLE `testjob`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `testjob_rs_version`
---
-ALTER TABLE `testjob_rs_version`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `testmethod`
---
-ALTER TABLE `testmethod`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `user`
---
-ALTER TABLE `user`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `account` (`account`);
-
---
--- Indexes for table `vatstr`
---
-ALTER TABLE `vatstr`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `version`
---
-ALTER TABLE `version`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `project_user`
---
-ALTER TABLE `project_user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=5;
---
--- AUTO_INCREMENT for table `relation`
---
-ALTER TABLE `relation`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=30;
---
--- AUTO_INCREMENT for table `rs_vat`
---
-ALTER TABLE `rs_vat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=16;
---
--- AUTO_INCREMENT for table `tc_step`
---
-ALTER TABLE `tc_step`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=19;
---
--- AUTO_INCREMENT for table `testjob_rs_version`
---
-ALTER TABLE `testjob_rs_version`
-  MODIFY `id` int(10) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=3;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
