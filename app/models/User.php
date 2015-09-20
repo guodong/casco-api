@@ -7,6 +7,6 @@ class User extends BaseModel {
 
 	public function projects()
 	{ //获取该员工的工程项目
-	    return $this->belongsToMany('Project','Project_User','user_id','project_id');
+	    return $this->belongsToMany('Project','project_user','user_id','project_id');
 	}
 }

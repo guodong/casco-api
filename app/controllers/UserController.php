@@ -35,6 +35,17 @@ class UserController extends BaseController {
 	    $data = Input::get();
 	    $data['password'] = md5(Input::get('password'));
 	    $user = User::create($data);
+	    
+	    $projects_id=Input::get('project');//发送过来的就是数组了
+	 //   var_dump($projects_id);
+	    foreach($projects_id  as $id){
+	    //用这种方法生成insert简直无语了	
+	    $id = DB::table('project_user')->insertGetId(
+	    array('project_id' => $id, 'user_id' => $user->id)); 
+	    }
+	    
+	    
+	    
 	    return $user->toJson();
 	}
 	public function is_md5($password) {

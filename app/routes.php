@@ -23,7 +23,7 @@ Route::get('treevat/root', 'TreeVatController@root');
 Route::resource('treevat', 'TreeVatController');
 Route::get('tree/root', 'TreeController@root');
 Route::resource('tree', 'TreeController');
-Route::get('treeitem/root', 'TreeController@root');
+Route::get('treeitem/root', 'TreeController@root');//mine
 Route::resource('treeitem', 'TreeItemController');
 Route::get('treemod', 'TreeController@treemod');
 Route::post('docfile', 'ProjectController@docfile');
@@ -37,7 +37,7 @@ Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
-
+Route::get('projectuser','ProjectUserController@index');
 Route::get('testjob/export', 'TestjobController@export');
 Route::resource('testjob', 'TestjobController');
 Route::get('session', 'UserController@session');
