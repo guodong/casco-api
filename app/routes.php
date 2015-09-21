@@ -44,5 +44,3 @@ Route::get('session', 'UserController@session');
 Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
 Route::get('logout','UserController@logout');
-Route::get('userpros','UserController@userpros');
-Route::get('userprosdel','UserController@userprosdel');

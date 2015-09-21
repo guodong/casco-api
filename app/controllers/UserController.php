@@ -9,7 +9,7 @@ class UserController extends BaseController {
 	{
 		$users = User::orderBy('created_at', 'desc')->get();
 		$users->each(function($u){
-		    $u->projects;
+		    $u->projects;//guo dog add it!too much data!
 		});
 		return $users;
 	}
@@ -55,17 +55,27 @@ class UserController extends BaseController {
 	// PUT /user/$id
 	public function update($id)
 	{
-	    $user = User::find($id);/*
-              echo 'ans is '.preg_match("/^[a-z0-9]{32}$/",Input::get('password'));
-          */
-
-
-           $data=Input::get();
-            $va=preg_match("/^[a-z0-9]{32}$/",(Input::get('password')));
+	    $user = User::find($id);
+        $data=Input::get();
+        $va=preg_match("/^[a-z0-9]{32}$/",(Input::get('password')));
 	    if(!$va){$data['password']=md5(Input::get('password'));}
 	    $user->update($data);
+	    //还要更新projects表哦
+	    
+	    if($projects_id=Input::get('project')){
+	    $affectedrows=ProjectUser::where('user_id',$user->id)->delete();
+	    foreach($projects_id  as $id){
+	    //存在一个疑问怎样更新比较好的方法啊,全部删掉再去insert?
+	    $id = DB::table('project_user')->insertGetId(
+	    array('project_id' => $id, 'user_id' => $user->id)); 
+	    }
+	    
+	    }//修改时有有可能不发送此字段
+	    
 	    return $user;
 	}
+	
+	/*
 	public function userpros(){
 	    
 	     $user=User::find(Input::get('user_id'));
@@ -73,7 +83,7 @@ class UserController extends BaseController {
 		 return $pros;
 	
 	}
-	
+
 	public function userprosdel(){
 		
 		$pros_user=ProjectUser::where('project_id','=',Input::get('project_id'))->where('user_id','=',Input::get("user_id"))->get();
@@ -86,6 +96,7 @@ class UserController extends BaseController {
 		}
 	
 	}
+*/
 	public function destroy($id){
             $user=User::find($id);
             $user->destroy($id);
