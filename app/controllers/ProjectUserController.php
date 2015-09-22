@@ -10,7 +10,7 @@ class ProjectUserController extends BaseController
     	//根据user_id来获取相应的记录.
     	if(Input::get('user_id')){
     	//$pro_user=ProjectUser::where('user_id','=',Input::get('user_id'))->get();
-    	  $user_docs=DB::table('project_user')->where('user_id',Input::get('user_id'))->join('project','project_user.project_id','=','project.id')->select('project_user.user_id','project.name as project_name','project_user.doc_noedit as documents_id')->get();
+    	  $user_docs=DB::table('project_user')->where('user_id',Input::get('user_id'))->join('project','project_user.project_id','=','project.id')->select('project_user.user_id','project.name as project_name','project_user.doc_edit as documents_id')->get();
     	//	echo $user_docs->toSql();
     		//exit();
     	   return $user_docs;
@@ -38,8 +38,16 @@ class ProjectUserController extends BaseController
         return $document;
     }
 
-    public function update($id)
-    {}
+    public function update()
+    {
+    
+    	
+    	
+    	
+    	
+    	
+    	
+    }
     
     
     
