@@ -30,8 +30,10 @@ class DocumentController extends Controller
     }
 
     public function index()
-    {
-        $docs = Document::where('project_id', '=', Input::get('project_id'));
+    {   
+    	
+       if(!Input::get('project_id')){return  DB::table('document')->join('project','document.project_id','=','project.id')->select('document.project_id as project_id','project.name as project_name','document.id as document_id','document.name as document_name','document.type as document_type')->get();}
+        $docs =(Document::where('project_id', '=', Input::get('project_id')));
         if (Input::get('type')){
             $docs = $docs->where('type', '=', Input::get('type'));
         }
@@ -90,7 +92,7 @@ class DocumentController extends Controller
         }
         return Document::all();
     }
-
+    
     public function show($id)
     {
         $document = Document::find($id);
