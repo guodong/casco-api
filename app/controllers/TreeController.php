@@ -25,6 +25,20 @@ class TreeController extends Controller{
         return json_encode($r);
     }
 
+    public function poweredit()
+    {
+        $data = Input::get('data');
+        foreach ($data as $v){
+            $pu = ProjectUser::where('project_id', $v['project_id'])->where('user_id', $v['user_id'])->get();
+            if(!count($pu)){
+                ProjectUser::create(['project_id'=>$v['project_id'], 'user_id'=>$v['user_id'], 'doc_edit'=>implode(',', $v['doc_edit'])]);
+            }else{
+                $pu->doc_edit = implode(',', $v['doc_edit']);
+                $pu->save();
+            }
+        }
+    }
+    
     public function root()
     {    
     	//思考:如何返回所有的工程的文档结构呢?怎样显示用户已经具有的权限呢?部署机上面的数据库格式是什么样子的呢？
