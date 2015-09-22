@@ -38,8 +38,16 @@ class ProjectUserController extends BaseController
         return $document;
     }
 
-    public function update($id)
-    {}
+    public function update()
+    {
+    
+    	
+    	
+    	
+    	
+    	
+    	
+    }
     
     
     

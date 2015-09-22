@@ -129,20 +129,22 @@ class ProjectController extends BaseController
     {
         if (Input::get('user_id')) {
             $user = User::find(Input::get('user_id'));
-            if ($user->role == 'admin') {
-                $projects = Project::all();
-            } else {
-                
+            if ($user) {
                 $projects = $user->projects;
+            }else{
+            	
+            	$projects=null;
             }
         } else {
             $projects = Project::all();
         }
+        if($projects){
         $projects->each(function ($v)
         {
             $v->participants;
-            //$v->vatstrs;
+            
         });
+        }
         return $projects;
     }
 

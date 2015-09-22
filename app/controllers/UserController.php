@@ -17,12 +17,9 @@ class UserController extends BaseController {
 	// GET /user/$id
 	public function show($id)
 	{
-	    $user = User::find($id);
+	    $user = User::find($id);//原来两者url走向并不一样
 	    if($user){
-	        $user->school;
-	        $user->major;
-	        $user->tags;
-                
+	        $user->projects;    
 	        return $user;
 	    }else{
 	        return json_encode(array('error'=>1, 'msg'=>'no user'));
@@ -99,7 +96,16 @@ class UserController extends BaseController {
 */
 	public function destroy($id){
             $user=User::find($id);
+            //还要删掉其对应的project_user记录
+            if($user->projects_user){
+            	$user->projects_user->each(function($u){
+            		
+            		$u->delete();
+            	});
+            	
+            }
             $user->destroy($id);
+            
             return $user;
              
         }
