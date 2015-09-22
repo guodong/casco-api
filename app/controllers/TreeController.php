@@ -46,13 +46,13 @@ class TreeController extends Controller{
     	}else{
          	//假设认为文档project_id是可以信任的那么,行吧就写着里面的了
              //checked掉用户已经拥有的id,把用户已经拥有的document_id拼接为数组
-            $user_docs=DB::table('project_user')->where('user_id','=',Input::get('user_id'))->select('doc_noedit')->get();
+            $user_docs=DB::table('project_user')->where('user_id','=',Input::get('user_id'))->select('doc_edit')->get();
             //有可能是个数组
       //      var_dump($user_docs);
             $mine_docs=array();
             foreach($user_docs  as $docs){
             	
-            	$mine_docs=array_merge($mine_docs,explode(',',json_encode($docs->doc_noedit)));
+            	$mine_docs=array_merge($mine_docs,explode(',',json_encode($docs->doc_edit)));
             		
             }
             //
