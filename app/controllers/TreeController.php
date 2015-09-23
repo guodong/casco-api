@@ -27,13 +27,16 @@ class TreeController extends Controller{
 
     public function poweredit()
     {
-        $data = Input::get('data');
-        foreach ($data as $v){
-            $pu = ProjectUser::where('project_id', $v['project_id'])->where('user_id', $v['user_id'])->get();
+        $data =(Input::get('data'));
+        $user_id=Input::get('user_id');
+       // var_dump($data);
+        
+        foreach ($data as $key=>$value){
+            $pu = ProjectUser::where('project_id', $key)->where('user_id', $user_id)->first();
             if(!count($pu)){
-                ProjectUser::create(['project_id'=>$v['project_id'], 'user_id'=>$v['user_id'], 'doc_edit'=>implode(',', $v['doc_edit'])]);
+                ProjectUser::create(['project_id'=>"$key", 'user_id'=>"$user_id", 'doc_edit'=>"$value"]);
             }else{
-                $pu->doc_edit = implode(',', $v['doc_edit']);
+                $pu->doc_edit = $value;
                 $pu->save();
             }
         }

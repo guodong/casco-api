@@ -21,6 +21,7 @@ Route::resource('document', 'DocumentController');
 Route::resource('document.rs', 'DocumentRsController');
 Route::get('treevat/root', 'TreeVatController@root');
 Route::resource('treevat', 'TreeVatController');
+Route::post('tree/poweredit','TreeController@poweredit');
 Route::get('tree/root', 'TreeController@root');
 Route::resource('tree', 'TreeController');
 Route::get('treeitem/root', 'TreeController@root');//mine
