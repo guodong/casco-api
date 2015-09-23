@@ -27,13 +27,16 @@ class TreeController extends Controller{
 
     public function poweredit()
     {
-        $data = Input::get('data');
-        foreach ($data as $v){
-            $pu = ProjectUser::where('project_id', $v['project_id'])->where('user_id', $v['user_id'])->get();
+        $data =(Input::get('data'));
+        $user_id=Input::get('user_id');
+       // var_dump($data);
+        
+        foreach ($data as $key=>$value){
+            $pu = ProjectUser::where('project_id', $key)->where('user_id', $user_id)->first();
             if(!count($pu)){
-                ProjectUser::create(['project_id'=>$v['project_id'], 'user_id'=>$v['user_id'], 'doc_edit'=>implode(',', $v['doc_edit'])]);
+                ProjectUser::create(['project_id'=>"$key", 'user_id'=>"$user_id", 'doc_edit'=>"$value"]);
             }else{
-                $pu->doc_edit = implode(',', $v['doc_edit']);
+                $pu->doc_edit = $value;
                 $pu->save();
             }
         }
@@ -102,6 +105,8 @@ class TreeController extends Controller{
             'checked'=>in_array($chils->id,$mine_docs)?true:false,
             'doc_id' => $chils->id,
             'doc_type' => $chils->type,
+            'type'=>'doc'
+            
             
             );
             	
@@ -114,7 +119,8 @@ class TreeController extends Controller{
                      'checked'=>in_array($d->id,$mine_docs)?true:false,
                      'doc_id' => $d->id,
                      'doc_type' => $d->type,
-                     'children'=>$children
+                     'children'=>$children,
+                     'type'=>'folder'
              );
             
             }else{//if folder else leaf
@@ -126,6 +132,7 @@ class TreeController extends Controller{
                      'checked'=>in_array($d->id,$mine_docs)?true:false,
                      'doc_id' => $d->id,
                      'doc_type' => $d->type,
+                     'type'=>'doc'
                     
              );
             }//else
@@ -137,6 +144,7 @@ class TreeController extends Controller{
             'id'=>$pros->id,
           //  'checked'=>true,
             'leaf'=>false,
+            'type'=>'project',
             'children'=>$rt
             );
          	
