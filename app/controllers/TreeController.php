@@ -88,6 +88,8 @@ class TreeController extends Controller{
             'checked'=>in_array($chils->id,$mine_docs)?true:false,
             'doc_id' => $chils->id,
             'doc_type' => $chils->type,
+            'type'=>'doc'
+            
             
             );
             	
@@ -100,7 +102,8 @@ class TreeController extends Controller{
                      'checked'=>in_array($d->id,$mine_docs)?true:false,
                      'doc_id' => $d->id,
                      'doc_type' => $d->type,
-                     'children'=>$children
+                     'children'=>$children,
+                     'type'=>'folder'
              );
             
             }else{//if folder else leaf
@@ -112,6 +115,7 @@ class TreeController extends Controller{
                      'checked'=>in_array($d->id,$mine_docs)?true:false,
                      'doc_id' => $d->id,
                      'doc_type' => $d->type,
+                     'type'=>'doc'
                     
              );
             }//else
@@ -123,6 +127,7 @@ class TreeController extends Controller{
             'id'=>$pros->id,
           //  'checked'=>true,
             'leaf'=>false,
+            'type'=>'project',
             'children'=>$rt
             );
          	
