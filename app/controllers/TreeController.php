@@ -25,6 +25,23 @@ class TreeController extends Controller{
         return json_encode($r);
     }
 
+    public function poweredit()
+    {
+        $data =(Input::get('data'));
+        $user_id=Input::get('user_id');
+       // var_dump($data);
+        
+        foreach ($data as $key=>$value){
+            $pu = ProjectUser::where('project_id', $key)->where('user_id', $user_id)->first();
+            if(!count($pu)){
+                ProjectUser::create(['project_id'=>"$key", 'user_id'=>"$user_id", 'doc_edit'=>"$value"]);
+            }else{
+                $pu->doc_edit = $value;
+                $pu->save();
+            }
+        }
+    }
+    
     public function root()
     {    
     	//思考:如何返回所有的工程的文档结构呢?怎样显示用户已经具有的权限呢?部署机上面的数据库格式是什么样子的呢？
@@ -46,13 +63,13 @@ class TreeController extends Controller{
     	}else{
          	//假设认为文档project_id是可以信任的那么,行吧就写着里面的了
              //checked掉用户已经拥有的id,把用户已经拥有的document_id拼接为数组
-            $user_docs=DB::table('project_user')->where('user_id','=',Input::get('user_id'))->select('doc_noedit')->get();
+            $user_docs=DB::table('project_user')->where('user_id','=',Input::get('user_id'))->select('doc_edit')->get();
             //有可能是个数组
       //      var_dump($user_docs);
             $mine_docs=array();
             foreach($user_docs  as $docs){
             	
-            	$mine_docs=array_merge($mine_docs,explode(',',json_encode($docs->doc_noedit)));
+            	$mine_docs=array_merge($mine_docs,explode(',',json_encode($docs->doc_edit)));
             		
             }
             //
@@ -88,6 +105,8 @@ class TreeController extends Controller{
             'checked'=>in_array($chils->id,$mine_docs)?true:false,
             'doc_id' => $chils->id,
             'doc_type' => $chils->type,
+            'type'=>'doc'
+            
             
             );
             	
@@ -100,7 +119,8 @@ class TreeController extends Controller{
                      'checked'=>in_array($d->id,$mine_docs)?true:false,
                      'doc_id' => $d->id,
                      'doc_type' => $d->type,
-                     'children'=>$children
+                     'children'=>$children,
+                     'type'=>'folder'
              );
             
             }else{//if folder else leaf
@@ -112,6 +132,7 @@ class TreeController extends Controller{
                      'checked'=>in_array($d->id,$mine_docs)?true:false,
                      'doc_id' => $d->id,
                      'doc_type' => $d->type,
+                     'type'=>'doc'
                     
              );
             }//else
@@ -123,6 +144,7 @@ class TreeController extends Controller{
             'id'=>$pros->id,
           //  'checked'=>true,
             'leaf'=>false,
+            'type'=>'project',
             'children'=>$rt
             );
          	

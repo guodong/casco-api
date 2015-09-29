@@ -2,8 +2,9 @@
 class ProjectUser extends BaseModel {
 
 	protected $table = 'project_user';
-
-	protected $fillable = array('project_id','user_id','doc_noedit');
+    public $timestamps = false;//烦人的多余字段
+    public  $id=false;
+	protected $fillable = array('project_id','user_id','doc_edit');
     protected $guarded = array('id', 'updated_at','created_at');
 	
 
