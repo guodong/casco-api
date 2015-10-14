@@ -142,7 +142,7 @@ class TreeController extends Controller{
             'pro_name'=>$pros->name,
             'text'=>$pros->name,
             'id'=>$pros->id,
-          //  'checked'=>true,
+            'checked'=>true,
             'leaf'=>false,
             'type'=>'project',
             'children'=>$rt
