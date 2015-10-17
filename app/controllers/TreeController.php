@@ -45,7 +45,7 @@ class TreeController extends Controller{
     public function root()
     {    
     	//思考:如何返回所有的工程的文档结构呢?怎样显示用户已经具有的权限呢?部署机上面的数据库格式是什么样子的呢？
-    	if(Input::get('project_id')){
+    	if(!Input::get('user_id')){
          $docs = Document::whereRaw("project_id = ? and fid = ?", array($_GET['project_id'], 0))->get();
          $rt = array();
          foreach($docs as $d){
@@ -61,6 +61,7 @@ class TreeController extends Controller{
          $r = array('children'=>$rt);
          return json_encode($r);
     	}else{
+
          	//假设认为文档project_id是可以信任的那么,行吧就写着里面的了
              //checked掉用户已经拥有的id,把用户已经拥有的document_id拼接为数组
             $user_docs=DB::table('project_user')->where('user_id','=',Input::get('user_id'))->select('doc_edit')->get();
@@ -79,9 +80,9 @@ class TreeController extends Controller{
             	
             }
             $mine_docs=array_map("m_trim",$mine_docs);
-          //  var_dump($mine_docs);
-   
-         	$project=DB::table('project')->select('name','id')->get();
+          //  这里只用显示出用户的project既可以的了
+           
+         	$project=DB::table('project')->where('id','=',Input::get('project_id'))->select('name','id')->get();
          	$root=array();
          	foreach($project as $pros){
             //遍历每个工程的文档,fid=0是为了查找第一级的节点哦
@@ -154,9 +155,9 @@ class TreeController extends Controller{
          	}//foreach $projects
          	return json_encode($root);
          	
-         }
+         
         
-         	
+    	}//else  	
          	
          	
        

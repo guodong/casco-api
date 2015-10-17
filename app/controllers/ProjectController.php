@@ -84,7 +84,7 @@ class ProjectController extends BaseController {
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag' && $key != 'test steps') {
-							$tc->column .= $key . ":" . $item . ",";
+							$tc->column .= $key . ":" . $item . ";";
 						} else if ($key == 'test steps') {
 							//做相应的处理哦
 							$wait_save = json_decode ( $item,true );
@@ -117,7 +117,7 @@ class ProjectController extends BaseController {
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag' && $key != 'test steps') {
-							$tc->column .= $key . ":" . $item . ",";
+							$tc->column .= $key . ":" . $item . ";";
 						} else if ($key == 'test steps') {
 							//做相应的处理哦
 							$wait_save = json_decode ( $item, true );
@@ -172,7 +172,7 @@ class ProjectController extends BaseController {
 						
 						if ($key != 'tag') {
 							
-							$rs->column .= $key . ":" . $item . ",";
+							$rs->column .= $key . ":" . $item . ";";
 						}
 					}
 					$rs->column = substr ( $rs->column, 0, - 1 );
@@ -186,7 +186,7 @@ class ProjectController extends BaseController {
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag') {
-							$rs->column .= $key . ":" . $item . ",";
+							$rs->column .= $key . ":" . $item . ";";
 						}else{
 							
 						    $rs->tag=$item;	

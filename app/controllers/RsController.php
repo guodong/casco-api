@@ -25,6 +25,29 @@ class RsController extends Controller{
 	        $v->tcs = $v->tcs();
 
 	    }
+	    //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
+	   /* foreach($rsv as $col){
+	    	
+	    	
+	     $cols=explode(";",$col->column);
+	     
+	     
+	     
+	     
+	    	
+	    	
+	    	
+	    }
+*/
+	    
+	  
+	    
+	    
+	    
+	    
+	    
+	    
+	    
 	    return $rss;
 	}
 	

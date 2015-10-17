@@ -14,4 +14,8 @@ class User extends BaseModel {
 		return  $this->hasMany('Project_User','user_id','id');
 		
 	}
+	public function role(){
+		
+		return $this->belongsTo("role","role_id","id");
+	}
 }
