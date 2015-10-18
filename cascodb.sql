@@ -563,7 +563,7 @@ CREATE TABLE IF NOT EXISTS `version` (
   `id` varchar(36) NOT NULL,
   `name` varchar(100) NOT NULL,
   `document_id` varchar(36) NOT NULL,
-  `headers` text NOT NULL,
+  `headers` text NOT NULL comment '动态的列名',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)

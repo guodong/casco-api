@@ -39,14 +39,20 @@ class ProjectController extends BaseController {
 		//echo $name;
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
 		$version->filename = $name;
-		$version->save ();
+		//$version->save ();
 		
 		$url_path = public_path () . '/files/' . $name;
+		//存贮列名到version里面的headers
+		$column = Input::get ("column");
+		$version->headers=strtolower($column);//此时column还没有过滤
+		$version->save();
+		
+		
 		
 		try {
 			$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
 			//$result2 = $soap->test( array ('url'=>'123' ) );
-			$column = Input::get ( "column" );
+			
 			$type = Input::get ( "type" );
 			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			
@@ -84,7 +90,7 @@ class ProjectController extends BaseController {
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag' && $key != 'test steps') {
-							$tc->column .= $key . ":" . $item . ";";
+							$tc->column .= '"'.strtolower($key) . '":"' . $item . '",';
 						} else if ($key == 'test steps') {
 							//做相应的处理哦
 							$wait_save = json_decode ( $item,true );
@@ -117,7 +123,7 @@ class ProjectController extends BaseController {
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag' && $key != 'test steps') {
-							$tc->column .= $key . ":" . $item . ";";
+							$tc->column .= '"'.strtolower($key) . '":"' . $item . '",';
 						} else if ($key == 'test steps') {
 							//做相应的处理哦
 							$wait_save = json_decode ( $item, true );
@@ -172,7 +178,7 @@ class ProjectController extends BaseController {
 						
 						if ($key != 'tag') {
 							
-							$rs->column .= $key . ":" . $item . ";";
+							$rs->column .=  '"'.strtolower($key) . '":"' . $item . '",';
 						}
 					}
 					$rs->column = substr ( $rs->column, 0, - 1 );
@@ -186,7 +192,7 @@ class ProjectController extends BaseController {
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag') {
-							$rs->column .= $key . ":" . $item . ";";
+							$rs->column .= '"'.strtolower($key) . '":"' . $item . '",';
 						}else{
 							
 						    $rs->tag=$item;	
