@@ -9,7 +9,53 @@ class TcController extends Controller{
 	}
 
 	public function index()
-	{
+	{    
+		
+		$version= Input::get('document_id')?Document::find(Input::get('document_id'))->latest_version():(Input::get('version_id')?Version::find(Input::get('version_id')):'');
+	    if (!$version){
+	        return '[]';
+	    }
+	    $tcs = $version->tcs;
+	    if(Input::get('act')=="stat"){
+	    foreach ($rss as $v){
+	        if (!json_decode($v->vat_json)){
+	            $v->vat_json = '[]';
+	            $v->save();
+	        }
+	        $v->vat = json_decode($v->vat_json);
+	        $v->rss = $v->rss();
+	        $v->tcs = $v->tcs();
+
+	    }
+         return  $rss;
+	    }
+
+	    $data=array();
+	    //return var_dump($tcs);
+	    foreach ($tcs as $v){
+	    
+	    
+	    $data[]=json_decode('{"tag":"'.$v->tag.'",'.$v->column."}");//票漂亮哦
+	    
+	    
+        }
+	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
+	   $version = Version::find ( Input::get ( 'version_id' ) );
+	   $column=explode(",",$version->headers);
+	   
+	   $columModle=array();
+	   $fieldsNames=array();
+	   $columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
+	    $fieldsNames[]=array('name'=>'tag');
+	   foreach($column as $item){
+	   
+	    $columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
+	    $fieldsNames[]=array('name'=>$item);
+	   
+	   }
+	    
+	   return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
+	     /*
 	    if (Input::get('version_id')) {
 	        $version = Version::find(Input::get('version_id'));
 	        $tcs = $version->tcs;
@@ -40,7 +86,9 @@ class TcController extends Controller{
                 }
             }
         };
-        return $tcs;
+        return $tcs;  */
+		
+		
 	}
 	
 	public function store()

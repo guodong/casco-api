@@ -83,14 +83,14 @@ class ProjectController extends BaseController {
 		if (Input::get ( 'type' ) == 'tc') {
 			foreach ( ( array ) $resolveResult as $value ) {
 				
-				$num = Tc::where ( "tag", "=", $value->tag )->where ( "version_id", "=", Input::get ( 'version_id' ) )->first ();
+				$num = Tc::where ( "tag", "=", $value->tag )->where ( "version_id", "=", $version->id )->first ();
 				
 				if ($num) {
 					$num->column = "";
 					foreach ( $value as $key => $item ) {
 						
 						if ($key != 'tag' && $key != 'test steps') {
-							$tc->column .= '"'.strtolower($key) . '":"' . $item . '",';
+							$num->column .= '"'.strtolower($key) . '":"' . $item . '",';
 						} else if ($key == 'test steps') {
 							//做相应的处理哦
 							$wait_save = json_decode ( $item,true );
@@ -134,7 +134,7 @@ class ProjectController extends BaseController {
 						}
 					} //foreach
 					$tc->column = substr ( $tc->column, 0, - 1 );
-					$tc->version_id = Input::get ( "version_id" );
+					$tc->version_id = $version->id ;
 					$tc->save ();
 					//再存储tc_steps
 					
@@ -171,7 +171,7 @@ class ProjectController extends BaseController {
 			
 			foreach ( ( array ) $resolveResult as $value ) {
 				
-				$rs = Rs::where ( "tag", "=", $value->tag )->where ( "version_id", "=", Input::get ( 'version_id' ) )->first ();
+				$rs = Rs::where ( "tag", "=", $value->tag )->where ( "version_id", "=", $version->id  )->first ();
 				if ($rs) {
 					$rs->column='';
 					foreach ( $value as $key => $item ) {
@@ -199,7 +199,7 @@ class ProjectController extends BaseController {
 						}
 					} //foreach
 					$rs->column = substr ( $rs->column, 0, - 1 );
-					$rs->version_id = Input::get ( "version_id" );
+					$rs->version_id = $version->id ;
 					$rs->save ();
 					$add++;
 					 
