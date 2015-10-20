@@ -15,6 +15,7 @@ class RsController extends Controller{
 	        return '[]';
 	    }
 	    $rss = $rsv->rss;
+	    if(Input::get('act')=="stat"){
 	    foreach ($rss as $v){
 	        if (!json_decode($v->vat_json)){
 	            $v->vat_json = '[]';
@@ -25,7 +26,60 @@ class RsController extends Controller{
 	        $v->tcs = $v->tcs();
 
 	    }
-	    return $rss;
+         return  $rss;
+	    }
+
+	    $data=array();
+	    
+	    foreach ($rss as $v){
+	    
+	    
+	    $data[]=json_decode('{"tag":"'.$v->tag.'",'.$v->column."}");//票漂亮哦
+	    
+	    
+        }
+	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
+	   $version = Version::find ( Input::get ( 'version_id' ) );
+	   $column=explode(",",$version->headers);
+	   
+	   $columModle=array();
+	   $fieldsNames=array();
+	   $columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
+	    $fieldsNames[]=array('name'=>'tag');
+	   foreach($column as $item){
+	   
+	    $columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
+	    $fieldsNames[]=array('name'=>$item);
+	   
+	   }
+	    
+	   return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
+	  // return  json_encode(array('columModle'=>$columModle));
+	   
+	   
+	   /* foreach($rsv as $col){
+	    	
+	    	
+	     $cols=explode(";",$col->column);
+	     
+	     
+	     
+	     
+	    	
+	    	
+	    	
+	    }
+*/
+	    
+	  
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	     
 	}
 	
 	public function update($id)

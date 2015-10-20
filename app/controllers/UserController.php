@@ -9,7 +9,11 @@ class UserController extends BaseController {
 	{
 		$users = User::orderBy('created_at', 'desc')->get();
 		$users->each(function($u){
-		    $u->projects;  //add it!too much data!
+
+			$u->role;
+		    $u->projects;//guo dog add it!too much data!
+		    
+
 		});
 		return $users;
 	}
@@ -122,7 +126,7 @@ class UserController extends BaseController {
 			}else{
 				
 				if($user->password==md5(Input::get('password'))){
-					
+					 $user->role;
 					 Session::put('uid', $user->id);
 	                 return $this->output($user);
 				}else{
