@@ -1,5 +1,5 @@
 <?php
-use Rhumsaa\Uuid\Uuid;
+use Rhumsaa\Uuid\Uuid;  //???使用Ramsey/Uuid
 class BaseModel extends Eloquent
 {
     /**

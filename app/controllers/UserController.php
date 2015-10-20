@@ -9,7 +9,7 @@ class UserController extends BaseController {
 	{
 		$users = User::orderBy('created_at', 'desc')->get();
 		$users->each(function($u){
-		    $u->projects;//guo dog add it!too much data!
+		    $u->projects;  //add it!too much data!
 		});
 		return $users;
 	}
