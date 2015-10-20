@@ -15,7 +15,7 @@ class RsController extends Controller{
 	        return '[]';
 	    }
 	    $rss = $rsv->rss;
-	    /*
+	    if(Input::get('act')=="stat"){
 	    foreach ($rss as $v){
 	        if (!json_decode($v->vat_json)){
 	            $v->vat_json = '[]';
@@ -26,13 +26,15 @@ class RsController extends Controller{
 	        $v->tcs = $v->tcs();
 
 	    }
+         return  $rss;
+	    }
 
-*/     $data=array();
+	    $data=array();
 	    
 	    foreach ($rss as $v){
 	    
 	    
-	    $data[]=json_decode("{".$v->column."}");//票漂亮哦
+	    $data[]=json_decode('{"tag":"'.$v->tag.'",'.$v->column."}");//票漂亮哦
 	    
 	    
         }
@@ -42,6 +44,8 @@ class RsController extends Controller{
 	   
 	   $columModle=array();
 	   $fieldsNames=array();
+	   $columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
+	    $fieldsNames[]=array('name'=>'tag');
 	   foreach($column as $item){
 	   
 	    $columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));

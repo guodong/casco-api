@@ -45,7 +45,7 @@ class ProjectController extends BaseController {
 		//存贮列名到version里面的headers
 		$column = Input::get ("column");
 		$version->headers=strtolower($column);//此时column还没有过滤
-		$version->save();
+		//$version->save();
 		
 		
 		
@@ -206,8 +206,11 @@ class ProjectController extends BaseController {
 				
 				}//else
 			} //foreach
-		} //if rs
-		 return   "{增添$add条,修改$modify条!}";
+		} //if rs 
+		
+		         $version->result="增添".$add."条,修改".$modify."条!";
+		         $version->save();
+		 return  array('success'=>true,"msg"=>"增添".$add."条,修改".$modify."条!");
 	/*          
             $d = json_decode($data);
             if (! $d) {
