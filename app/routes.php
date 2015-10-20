@@ -30,6 +30,7 @@ Route::get('treemod', 'TreeController@treemod');
 Route::post('docfile', 'ProjectController@docfile');
 Route::resource('vatstr', 'VatstrController');
 Route::resource('user', 'UserController');
+Route::resource('role','RoleController');
 Route::resource('testmethod', 'TestmethodController');
 Route::get('dump', 'DumpController@dump');
 Route::resource('build', 'BuildController');    
