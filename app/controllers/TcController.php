@@ -35,10 +35,11 @@ class TcController extends Controller{
 	    foreach ($tcs as $v){
 	    
 	    
-	    $data[]=json_decode('{"tag":"'.$v->tag.'",'.$v->column."}");//票漂亮哦
+	   $data[]=json_decode('{"tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');
 	    
-	    
+	      
         }
+       
 	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
 	   $version = Version::find ( Input::get ( 'version_id' ) );
 	   $column=explode(",",$version->headers);

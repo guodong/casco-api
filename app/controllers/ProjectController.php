@@ -50,15 +50,18 @@ class ProjectController extends BaseController {
 		
 		
 		try {
-			$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
+		
+		/*	$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
 			//$result2 = $soap->test( array ('url'=>'123' ) );
 			
-			$type = Input::get ( "type" );
-			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			
 			$result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			// echo  "{success:true,info:'kaka!'}";
-		
+*/          $type = Input::get ( "type" );
+			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+		    $u = 'http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.$column.'&type='.$type;
+            $result2 = file_get_contents($u);
+             
 
 		//   return (array("success"=>true, "msg"=>$this->objtoarr($result2)));
 		
@@ -72,9 +75,10 @@ class ProjectController extends BaseController {
 		$add = 0;
 		$modify = 0;
 		$wait_save = array ();
-		$data = $this->objtoarr ( $result2 ); //返回tc文档的具体信息
-		$resolveResult = json_decode ( $data ['resolveResult'] );
-		if (! $data) {
+		 
+	  //$data = $this->objtoarr ( $result2 ); //返回tc文档的具体信息
+		$resolveResult = json_decode ($result2);
+		if (! $resolveResult) {
 			return "读取文档失败，请检查字段或配置";
 		}
 		// var_dump(($resolveResult));

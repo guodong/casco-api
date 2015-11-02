@@ -17,8 +17,5 @@ class User extends BaseModel {
 	public function role(){
 	    return $this->belongsTo('Role');
 	}
-	public function role(){
-		
-		return $this->belongsTo("role","role_id","id");
-	}
+	
 }
