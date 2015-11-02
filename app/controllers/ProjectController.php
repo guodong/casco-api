@@ -59,7 +59,7 @@ class ProjectController extends BaseController {
 			// echo  "{success:true,info:'kaka!'}";
 */          $type = Input::get ( "type" );
 			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-		    $u = 'http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.$column.'&type='.$type;
+		    $u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
             $result2 = file_get_contents($u);
              
 
@@ -79,7 +79,7 @@ class ProjectController extends BaseController {
 	  //$data = $this->objtoarr ( $result2 ); //返回tc文档的具体信息
 		$resolveResult = json_decode ($result2);
 		if (! $resolveResult) {
-			return "读取文档失败，请检查字段或配置";
+			return "读取文档失败，请检查字段或配置".$u;
 		}
 		// var_dump(($resolveResult));
 		
