@@ -33,13 +33,11 @@ Route::resource('user', 'UserController');
 Route::resource('role','RoleController');
 Route::resource('testmethod', 'TestmethodController');
 Route::get('dump', 'DumpController@dump');
-Route::resource('build', 'BuildController');    
-//Route::get('version', 'DocumentController@version');
+Route::resource('build', 'BuildController');  
 Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
-
 Route::get('projectuser','ProjectUserController@index');
 Route::get('testjob/export', 'TestjobController@export');
 Route::resource('testjob', 'TestjobController');

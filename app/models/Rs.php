@@ -2,7 +2,7 @@
 class Rs extends BaseModel {
 
 	protected $table = 'rs';
-	protected $fillable = array();
+	protected $fillable = array('tag','column','version_id');
     
 	public function tcs()
 	{

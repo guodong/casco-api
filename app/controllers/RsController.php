@@ -34,7 +34,7 @@ class RsController extends Controller{
 	    foreach ($rss as $v){
 	    
 	    
-	    $data[]=json_decode('{"tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
+	    $data[]=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
 	    
 	    
         }
@@ -81,11 +81,23 @@ class RsController extends Controller{
 	    
 	     
 	}
+	public function store($id){
+		
+		
+		
+		
+	}
 	
+	
+	
+	
+	//走的是put头
 	public function update($id)
 	{
 	    $data = Input::get();
 	    $m = Rs::find($id);
+	    $m->column=$data['column'];
+	    $m->tag=$data['tag'];
 	    $m->vat_json = json_encode($data['vat']);
 	    $m->save();
 	}

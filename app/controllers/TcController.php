@@ -35,8 +35,7 @@ class TcController extends Controller{
 	    foreach ($tcs as $v){
 	    
 	    
-	   $data[]=json_decode('{"tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');
-	    
+	   $data[]=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');
 	      
         }
        
@@ -94,7 +93,7 @@ class TcController extends Controller{
 	
 	public function store()
 	{
-	    $tc = Tc::create(Input::get());
+	    $tc = Tc::create(Input::get());//这种create方式碉堡了
 	    foreach (Input::get('sources') as $v){
 	        $tc->sources()->attach($v['id']);
 	    }
