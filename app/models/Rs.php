@@ -12,9 +12,11 @@ class Rs extends BaseModel {
 	       if($src->type == 'tc'){
 	            $version = $src->latest_version();
 	            if($version){
-	                $tmp = Tc::where('version_id', '=', $version->id)->where('source_json', 'like', '%'.$this->tag.'%')->get();
+	                $tmp = Tc::where('version_id', '=', $version->id)->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
 	                foreach ($tmp as $v){
-	                    $tcs[] = $v;
+	                	$v->column=json_decode('{'.$v->column.'}');
+	                    if($v->column&&property_exists($v->column,'source')&&in_array($this->tag,explode(',',$v->column->source))){$tcs[]=array('id' => $v->id,'tag' => $v->tag);}
+	                	
 	                }
 	            }
 	       } 
@@ -27,18 +29,24 @@ class Rs extends BaseModel {
 	public function rss()
 	{
 	    $rss = [];
+	 
 	    $srcs = $this->version->document->srcs;
+	   
 	    foreach($srcs as $src){
 	        if($src->type == 'rs'){
 	            $version = $src->latest_version();
 	            if($version){
-	                $tmp = Rs::where('version_id', '=', $version->id)->where('source_json', 'like', '%'.$this->tag.'%')->get();
-	                foreach ($tmp as $v){
-	                    $rss[] = $v;
+	                $tmp = Rs::where('version_id', '=', $version->id)->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
+	                 foreach ($tmp as $v){
+	                	$v->column=json_decode('{'.$v->column.'}');
+	                    if($v->column&&property_exists($v->column,'source')&&in_array($this->tag,explode(',',$v->column->source))){$rss[]=array('id' => $v->id,'tag' => $v->tag);}
+	                	
 	                }
 	            }
 	        }
 	    };
+	     
+	   // var_dump($rss);
 	    return $rss;
 	    //return $this->belongsToMany('Rs', 'rs_source', 'source_id', 'rs_id');
 	}
@@ -55,9 +63,12 @@ class Rs extends BaseModel {
 
 	public function sources()
 	{
-	    $arr = json_decode($this->source_json);
-	    return $arr?$arr:[];
-	    return $this->belongsToMany('Tag', 'rs_source', 'rs_id', 'source_id');
+	    $arr = json_decode('{'.$this->column.'}');
+	    //var_dump($arr);
+	    if(!$arr)return [];//var_dump( property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[]);
+	    return property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[];
+	    return $this->belongsToMany('Tag', 'tc_source', 'tc_id', 'source_id');
+	  //  return $this->belongsToMany('Tag', 'rs_source', 'rs_id', 'source_id');
 	}
 	
 	public function version()

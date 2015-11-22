@@ -13,7 +13,7 @@
 Route::get('/test', 'TestController@index');
 Route::get('tc/export', 'TcController@export');
 Route::resource('project', 'ProjectController');
-
+Route::get('tc/tc_steps', 'TcController@tc_steps');
 Route::get('tc/maxtag', 'TcController@maxtag');
 Route::resource('rs', 'RsController');
 Route::resource('tc', 'TcController');

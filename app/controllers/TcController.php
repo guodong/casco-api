@@ -7,7 +7,18 @@ class TcController extends Controller{
 	{
 		return Tc::find($id);
 	}
-
+  
+  public function tc_steps(){
+  	
+  	 if(Input::get('tc_id')){
+	     
+	    	$tc=Tc::find(Input::get('tc_id'));
+	    	return $tc?json_encode($tc->steps):null;
+	  
+	    }
+  	
+  	
+  }
 	public function index()
 	{    
 		
@@ -29,14 +40,15 @@ class TcController extends Controller{
 	    }
          return  $rss;
 	    }
+	   
 
 	    $data=array();
-	    //return var_dump($tcs);
 	    foreach ($tcs as $v){
 	    
 	    
-	   $data[]=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');
-	      
+	   $obj=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
+	    if(!$obj)continue;
+	    $data[]=$obj;
         }
        
 	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
@@ -48,7 +60,8 @@ class TcController extends Controller{
 	   $columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
 	    $fieldsNames[]=array('name'=>'tag');
 	   foreach($column as $item){
-	   
+	    
+	    if($item=='test steps')continue;
 	    $columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
 	    $fieldsNames[]=array('name'=>$item);
 	   
@@ -130,12 +143,7 @@ class TcController extends Controller{
 	{
 	    $m = Tc::find($id);
 	    $m->update(Input::get());	  
-	      $data = Input::get('sources');
-	      $arr = [];
-	    foreach ($data as $v){
-	        $arr[] = $v['tag'];
-	    }
-	    $m->source_json = json_encode($arr);
+	     
 	    $m->save();
 	    $m->steps()->delete();
 	    foreach (Input::get('steps') as $v){
@@ -173,7 +181,7 @@ class TcController extends Controller{
 	        foreach ($tc->steps as $step){
 	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $step->num);
 	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $step->actions);
-	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, $step->expected_result);
+	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, $step['expected result']);
 	        }
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Result');
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->result==0?'untested':($tc->result==1?'passed':'failed'));

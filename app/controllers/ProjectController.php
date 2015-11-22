@@ -17,6 +17,44 @@ class ProjectController extends BaseController {
 		}
 		return $project;
 	}
+	
+	public function array_column($input,$column_key,$index_key=''){
+
+      if(!is_array($input)) return;
+         $results=array();
+         if($column_key===null){
+                 if(!is_string($index_key)&&!is_int($index_key)) return false;
+                 foreach($input as $_v){
+                         if(array_key_exists($index_key,$_v)){
+                                 $results[$_v[$index_key]]=$_v;
+                         }
+                 }
+                 if(empty($results)) $results=$input;
+         }else if(!is_string($column_key)&&!is_int($column_key)){
+                 return false;
+         }else{
+                 if(!is_string($index_key)&&!is_int($index_key)) return false;                        
+                 if($index_key===''){
+                         foreach($input as $_v){
+                                 if(is_array($_v)&&array_key_exists($column_key,$_v)){
+                                         $results[]=$_v[$column_key];
+                                 }
+                         }                                
+                 }else{
+                         foreach($input as $_v){
+                                 if(is_array($_v)&&array_key_exists($column_key,$_v)&&array_key_exists($index_key,$_v)){
+                                         $results[$_v[$index_key]]=$_v[$column_key];
+                                 }
+                         }
+                 }
+
+         }
+         return $results;
+	
+		
+	
+		
+	}
 	public function objtoarr($obj) {
 		$ret = array ();
 		foreach ($obj as $key => $value ) {
@@ -30,7 +68,9 @@ class ProjectController extends BaseController {
 	}
 
 	public function docfile() {
-
+  
+	
+   	    
 		if (Input::get ( 'isNew' ) == 1){
 			$old_version=Version::where('document_id','=',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
@@ -53,6 +93,7 @@ class ProjectController extends BaseController {
 		//echo $name;
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
 		$version->filename = $name;
+		$version->touch();
 		//先save一下方便后续更新?
 		$version->save ();
 
@@ -63,12 +104,15 @@ class ProjectController extends BaseController {
 		//$version->save();
 
 
-
-		try {
-
+       
+		try{
+			
+			
 			/*	$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
 			 //$result2 = $soap->test( array ('url'=>'123' ) );
-			 	
+	  		 
+   
+		
 			 	
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 // echo  "{success:true,info:'kaka!'}";
@@ -76,20 +120,22 @@ class ProjectController extends BaseController {
 			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
 			$result2 = file_get_contents($u);
-
+             
 			$add = 0;
 			$modify = 0;
 			$wait_save = array ();
 				
 	  //$data = $this->objtoarr ( $result2 ); //返回tc文档的具体信息
-			$resolveResult =$this->objtoarr(json_decode($result2));
-			if (! $resolveResult) {
-				$version->result="读取文档失败，请检查字段或配置".$u;
+			//echo (json_decode($result2));
+			 
+			if (! json_decode($result2)) {
+				$version->result="读取文档失败，远程服务器返回结果:".$result2;
 				$version->save();
-				return $version->result;
+			 
+				return $result2;
 			}
 			//var_dump(($resolveResult));
-
+            $resolveResult =$this->objtoarr(json_decode($result2));
 
 			if (Input::get ( 'type' ) == 'tc') {
 				foreach ( $resolveResult as $value ) {
@@ -101,7 +147,7 @@ class ProjectController extends BaseController {
 						foreach ( $value as $key => $item ) {
 
 							if ($key != 'tag' && $key != 'test steps') {
-								$num->column .= '"'.strtolower($key) . '":"' . $item . '",';
+								$num->column .= '"'.strtolower(trim($key)) . '":"' . trim($item) . '",';
 							} else if ($key == 'test steps') {
 								//做相应的处理哦
 								$wait_save = json_decode ( $item,true );
@@ -134,7 +180,7 @@ class ProjectController extends BaseController {
 						foreach ( $value as $key => $item ) {
 
 							if ($key != 'tag' && $key != 'test steps') {
-								$tc->column .= '"'.strtolower($key) . '":"' . $item . '",';
+								$tc->column .= '"'.strtolower(trim($key)) . '":"' . trim($item) . '",';
 							} else if ($key == 'test steps') {
 								//做相应的处理哦
 								$wait_save = json_decode ( $item, true );
@@ -189,7 +235,7 @@ class ProjectController extends BaseController {
 
 							if ($key != 'tag') {
 									
-								$rs->column .=  '"'.strtolower($key) . '":"' . $item . '",';
+								$rs->column .=  '"'.strtolower(trim($key)) . '":"' . trim($item) . '",';
 							}
 						}
 						$rs->column = substr ( $rs->column, 0, - 1 );
@@ -202,7 +248,7 @@ class ProjectController extends BaseController {
 						foreach ( $value as $key => $item ) {
 
 							if ($key != 'tag') {
-								$rs->column .= '"'.strtolower($key) . '":"' . $item . '",';
+								$rs->column .= '"'.strtolower(trim($key)) . '":"' . trim($item) . '",';
 							}else{
 									
 								$rs->tag=$item;
@@ -228,15 +274,25 @@ class ProjectController extends BaseController {
 				foreach($new_array  as $new){
 
 					if($old['tag']==$new['tag']){
-
-						$olds=$this->objtoarr(json_decode('{'.$old['column'].'}'));
+                        
+						if(!$std=json_decode('{'.$old['column'].'}')){
+							
+							var_dump("hehhe".$old['column']);
+							
+							array_push($updates,$old['tag']);
+							
+							break;
+							
+							}
+						$olds=$this->objtoarr($std);
 
 						//注意此函数tag在前才行哦
 						$news=array_slice($new,1);
-						//var_dump($news);
-							
+					    $news=array_map('trim',$news);
+					   // var_dump(array_diff($olds,$news));
+					  //  var_dump(array_diff($news,$olds));
 						//这个函数有问题哇
-						if(array_diff_assoc($olds,$news)==null&&array_diff_assoc($news,$olds)==null){
+						if(array_diff($olds,$news)==null&&array_diff($news,$olds)==null){
 								
 								
 							//说明此时并未修改;
@@ -258,15 +314,24 @@ class ProjectController extends BaseController {
 
 
 			 
-			$old_tag=array_column(($old_array),'tag');
-			$new_tag=array_column(($new_array),'tag');
+			$old_tag=$this->array_column(($old_array),'tag');
+			$new_tag=$this->array_column(($new_array),'tag');
 			//   var_dump($old_tag); var_dump($new_tag);
 			$delete=array_diff($old_tag,$new_tag);
 			$adds=array_diff($new_tag,$old_tag);
-			var_dump($delete);var_dump($adds);
+			function filter_self($item){
+				
+				preg_match('/(\[[^\]]*?\])/',$item,$matches);
+				return $matches[1];
+			}
+			//var_dump($delete);var_dump($adds);
 			//删除delete项目?新建的就不删,重复的就删除
-			if(Input::get ( 'isNew' )==0)
-			$items=DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',$delete)->delete();
+			if(Input::get ( 'isNew' )==0&&$delete=null){
+		    echo DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',($delete))->toSql();
+		   return ;
+			$items=DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',($delete))->delete();
+           
+			}
 		 /*  $items=Input::get ('type')=="rs"?(Rs::where("tag", "in", $delete)->toSql()):(Tc::where("tag", "in", $delete)->toSql());
 		  var_dump($items);exit();
 		  foreach($items as $item ){
@@ -290,13 +355,16 @@ class ProjectController extends BaseController {
 		 	
 		}catch ( SoapFault $e ) {
 				
-			$version->result=array ('success' => false, 'msg' => $e->getMessage () );
+			$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage () ));
 			$version->save();
 			return array ('success' => false, 'msg' => $e->getMessage () );
 		} catch ( Exception $e ) {
 				
-			$version->result=array ('success' => false, 'msg' => $e->getMessage () );
+			if($version){
+			$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage ()));
+			 
 			$version->save();
+			}
 			return array ('success' => false, 'msg' => $e->getMessage () );
 		}
 

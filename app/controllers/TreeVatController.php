@@ -34,27 +34,35 @@ class TreeVatController extends Controller
     
     private $tags = [];
 
-    private function getTags_down($tag)
+    private function getTags_down($tag,$version_id)
     {
-        $rss = Rs::where('source_json', 'like', '%'.$tag.'%')->get();
+        $rss = Rs::where("version_id","=",$version_id)->where('column', 'like', '%"source":%'.$tag.'%')->get();
         foreach ($rss as $v){
             if (!in_array($v->tag, $this->tags)){
                 $this->tags[] = $v->tag;
-                $this->getTags_down($v->tag);
+                $this->getTags_down($v->tag,$version_id);
             }
         }
     }
 
-    private function getTags_up($tag)
+    private function getTags_up($tag,$version_id)
     {
-        $rs = Rs::where('tag', $tag)->first();
+        $rs = Rs::where("version_id","=",$version_id)->where('tag','=',$tag)->first();
         if ($rs){
-            foreach (json_decode($rs->source_json) as $v){
+        	  
+        	 $rs->column=json_decode('{'.$rs->column.'}');
+	        if($rs->column&&property_exists($rs->column,'source')&&$array=explode(',',$rs->column->source))
+	        {
+	        	foreach ($array as $v){
                 if (!in_array($v, $this->tags)){
                     $this->tags[] = $v;
-                    $this->getTags_up($v);
+                    $this->getTags_up($v,$version_id);
                 }
             }
+	        	
+	        	
+	        }
+	                	
         }
     }
 
@@ -100,26 +108,29 @@ class TreeVatController extends Controller
                         $items = [];
                         break;
                     }
-                    $this->getTags_down($rsitem->tag);
-                    $this->getTags_up($rsitem->tag);
+                    $this->getTags_down($rsitem->tag,$version->id);
+                    $this->getTags_up($rsitem->tag,$version->id);
                     $items = Rs::where('version_id', $version->id)->whereIn('tag', $this->tags)->get();
                     break;
                 case 'tc':
-                    $items = Tc::where('version_id', $version->id)->where('source_json', 'like', '%' . Input::get('tag') . '%');
-                    
+                      
+                    //$items = Tc::where('version_id', $version->id)->where('column', 'like', '"source":%' . Input::get('tag') . '%');
                     //获取相关rs的tc
                     $rsitem = Rs::find(Input::get('rs_id'));
-                    $this->getTags_down($rsitem->tag);
-                    $this->getTags_up($rsitem->tag);
+                    $this->getTags_down($rsitem->tag,$version->id);
+                    $this->getTags_up($rsitem->tag,$version->id);
                     
-                    $items = Tc::where('version_id', $version->id);
+                    $items = Tc::where('version_id','=', $version->id);
+                   
                     $items->where(function ($query)use($rsitem){
-                        $query->orWhere('source_json', 'like', '%' . $rsitem->tag . '%');
+                        $query->orWhere('column', 'like', '%"source":%' . $rsitem->tag . '%');
                         foreach ($this->tags as $v){
-                            $query->orWhere('source_json', 'like', '%' . $v . '%');
+                            $query->orWhere('column', 'like', '%"source":%' . $v . '%');
                         }
                     });
-                    //echo $items->toSql();
+                  //  var_dump($version->id);
+                   // echo $items->toArray();
+                   // var_dump($items->toSql());
                     $items = $items->groupBy('tag')->get();
                     break;
                 default:
