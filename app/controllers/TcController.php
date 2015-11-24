@@ -106,11 +106,7 @@ class TcController extends Controller{
 	
 	public function store()
 	{
-	    $tc = Tc::create(Input::get());//这种create方式碉堡了
-	    foreach (Input::get('sources') as $v){
-	        $tc->sources()->attach($v['id']);
-	    }
-	    
+	    $tc = Tc::create(Input::get());//这种create方式碉堡了 
 	    foreach (Input::get('steps') as $v){
 	        $step = new TcStep($v);
 	        $tc->steps()->save($step);
@@ -156,7 +152,7 @@ class TcController extends Controller{
 	public function export ()
 	{
 	    $ver = Version::find(Input::get("version_id"));
-	
+	    $columns=explode(',',$ver->headers);
 	    include PATH_BASE . '/PE/Classes/PHPExcel.php';
 	    include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 	    $objPHPExcel = new PHPExcel();
@@ -168,9 +164,56 @@ class TcController extends Controller{
 	    $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth('30');
 	    $row = 1;
 	    foreach ($ver->tcs as $tc){
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row++, $tc->tag);
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Test Case Description');
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->description);
+	    	  $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row++, $tc->tag);
+	    	  $tc->column=json_decode('{'.$tc->column.'}',true);
+	        if(!$tc->column)continue;
+	        
+	    foreach($columns as $column){
+	    	 /*var_dump($column);
+	        if(!array_key_exists($column,$tc->column)){
+	         continue;
+	        }
+	        */
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'sdf');
+	        switch($column){
+	        	
+	        case 'description':
+	       
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $column);
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->column['description']);//."\r\n".
+	       
+	        break;
+	       
+	        case 'test case description':
+	        
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $column);
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->column['test case description']);//."\r\n".
+	        
+	        break;
+	        
+	        case  'test steps':
+	        
+	         $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'test steps');
+	         $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, 'actions');
+	         $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'expected result');
+	        foreach ($tc->steps as $step){
+	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $step['num']);
+	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $step['actions']);
+	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, $step['expected result']);
+	        }
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Result');
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->result==0?'untested':($tc->result==1?'passed':'failed'));
+	        break;
+	        
+	        default:
+	        
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $column);
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->column[$column]);
+	        
+	        
+	        
+	      }
+	      /*
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Test Method');
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->test_method);
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Pre-condition');
@@ -178,16 +221,12 @@ class TcController extends Controller{
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Test Steps');
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, 'Actions');
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'Expected Result');
-	        foreach ($tc->steps as $step){
-	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $step->num);
-	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $step->actions);
-	            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, $step['expected result']);
-	        }
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Result');
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->result==0?'untested':($tc->result==1?'passed':'failed'));
-	        $row++;$row++;
-	    }
-	
+	        */
+	       
+	        
+	    }//foreach
+	       $row++;$row++;
+	  	}
 	    header('Content-Type: application/vnd.ms-excel');
 	    header('Content-Disposition: attachment;filename="output.xls"');
 	    header('Cache-Control: max-age=0');

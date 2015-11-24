@@ -42,6 +42,7 @@ Route::get('projectuser','ProjectUserController@index');
 Route::get('testjob/export', 'TestjobController@export');
 Route::resource('testjob', 'TestjobController');
 Route::get('session', 'UserController@session');
+Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
 Route::get('logout','UserController@logout');

@@ -86,21 +86,42 @@ class TestjobController extends BaseController{
 	        $tc = $v->tc;
 	        $startrow = $row;
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $tc->tag);
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $tc->description);
+	        $item=json_decode('{'.$tc->column.'}',true);
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, array_key_exists('description',$item)?$item['description']:$item['test case description']);
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $user->realname);
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $row, substr($v->begin_at, 0, 1)=='0'?'':$v->begin_at);
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
 	        $cod = $row;
 	        $step_count = 0;
+	        
 	        foreach ($tc->steps as $step){
-	            $stepResult = ResultStep::where('result_id', $v->id)->where('step_id', $step->id)->first();
+	        	  
+	        	  $id=json_decode($step->toJson())->id;
+	            $stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
+	            
+	            if(!$stepResult)continue;
+	           // echo ($stepResult->step_id);
 	            $r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
 	            if ($stepResult->comment){
 	               $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$step->num . ' ' . $r . ': ' . $stepResult->comment);
 	               $step_count++;
 	            }
 	        }
+           /*
+           $stepResult = ResultStep::where('result_id', $v->id)->get();
+           foreach($stepResult as $value){
+           $r = $value->result == 0?'untested':($value->result == 1?'passed':'failed');
+           if($value->comment){
+           	
+           	  $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$->num . ' ' . $r . ': ' . $value->comment);
+           	  $step_count++;
+           	
+          }
+          }
+          */
+
+
 	        if ($step_count>1){
 	            $row += $step_count-1;
 	        }

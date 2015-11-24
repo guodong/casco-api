@@ -11,6 +11,7 @@ class Rs extends BaseModel {
 	    foreach($srcs as $src){
 	       if($src->type == 'tc'){
 	            $version = $src->latest_version();
+	            
 	            if($version){
 	                $tmp = Tc::where('version_id', '=', $version->id)->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
 	                foreach ($tmp as $v){

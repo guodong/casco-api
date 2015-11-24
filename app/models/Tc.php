@@ -16,8 +16,7 @@ class Tc extends BaseModel {
 	    if(!$arr)return [];
 	    return property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[];
 	}
-	
-	
+
 	
 	public function results()
 	{

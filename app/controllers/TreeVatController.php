@@ -33,7 +33,39 @@ class TreeVatController extends Controller
     }
     
     private $tags = [];
+     private function getTags_down($tag)
+    {
+        $rss = Rs::where('column', 'like', '%"source":%'.$tag.'%')->get();
+        foreach ($rss as $v){
+            if (!in_array($v->tag, $this->tags)){
+                $this->tags[] = $v->tag;
+                $this->getTags_down($v->tag);
+            }
+        }
+    }
 
+    private function getTags_up($tag)
+    {
+        $rs = Rs::where('tag','=',$tag)->first();
+        if ($rs){
+        	  
+        	 $rs->column=json_decode('{'.$rs->column.'}');
+	        if($rs->column&&property_exists($rs->column,'source')&&$array=explode(',',$rs->column->source))
+	        {
+	        	foreach ($array as $v){
+                if (!in_array($v, $this->tags)){
+                    $this->tags[] = $v;
+                    $this->getTags_up($v);
+                }
+            }
+	        	
+	        	
+	        }
+	                	
+        }
+    }
+
+/*
     private function getTags_down($tag,$version_id)
     {
         $rss = Rs::where("version_id","=",$version_id)->where('column', 'like', '%"source":%'.$tag.'%')->get();
@@ -65,7 +97,7 @@ class TreeVatController extends Controller
 	                	
         }
     }
-
+*/
     public function show($foder_id)
     {
         if ($foder_id == 'vatstr') {
@@ -108,8 +140,8 @@ class TreeVatController extends Controller
                         $items = [];
                         break;
                     }
-                    $this->getTags_down($rsitem->tag,$version->id);
-                    $this->getTags_up($rsitem->tag,$version->id);
+                    $this->getTags_down($rsitem->tag);
+                    $this->getTags_up($rsitem->tag);
                     $items = Rs::where('version_id', $version->id)->whereIn('tag', $this->tags)->get();
                     break;
                 case 'tc':
@@ -117,8 +149,8 @@ class TreeVatController extends Controller
                     //$items = Tc::where('version_id', $version->id)->where('column', 'like', '"source":%' . Input::get('tag') . '%');
                     //获取相关rs的tc
                     $rsitem = Rs::find(Input::get('rs_id'));
-                    $this->getTags_down($rsitem->tag,$version->id);
-                    $this->getTags_up($rsitem->tag,$version->id);
+                    $this->getTags_down($rsitem->tag);
+                    $this->getTags_up($rsitem->tag);
                     
                     $items = Tc::where('version_id','=', $version->id);
                    
