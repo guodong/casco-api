@@ -34,6 +34,7 @@ class RsController extends Controller{
 	    foreach ($rss as $v){
 	    
 	    
+
 	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);//票漂亮哦
 	    if(!$base)continue;
 	    if (!json_decode($v->vat_json)){
