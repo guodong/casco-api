@@ -7,7 +7,7 @@ class ResultController extends BaseController{
 	{
 		return Tc::find($id);
 	}
-
+  
 	public function index()
 	{
 	    $job = Testjob::find(Input::get('job_id'));
@@ -15,16 +15,29 @@ class ResultController extends BaseController{
 	    foreach ($results as $v){
 	        $sr = json_decode($v->step_result_json)?json_decode($v->step_result_json):[];
 	        foreach ($v->tc->steps as $step){
-	            $sr = ResultStep::where('result_id', $v->id)->where('step_id', $step->id)->first();
+	        	  //$step=json_decode($step->toJson());//ÍÂ²Ûµã
+	            $sr = ResultStep::where('result_id', $v->id)->where('step_id', json_decode($step->toJson())->id)->first();
 	            if(!$sr){
-	                $sr = ResultStep::create(array('result_id'=>$v->id, 'step_id'=>$step->id, 'result'=>0, 'comment'=>''));
+	                $sr = ResultStep::create(array('result_id'=>$v->id, 'step_id'=>json_decode($step->toJson())->id, 'result'=>0, 'comment'=>''));
 	            }
 	            $step->result = $sr->result;
 	            $step->comment = $sr->comment;
 	            $step->step_result_id = $sr->id;
 	        }
-	        
-	        $arr = explode(',',$v->tc->testmethod_id);
+	       
+		
+		      		$arr = json_decode('{'.$v->tc->column.'}',true);
+	            if(!$arr)return [];
+	             
+	         		(count($test_methods=explode('/',$arr['test method']))>1)||
+	         	  (count($test_methods=explode('+',$arr['test method']))>1)||
+	         	  (count($test_methods=explode('&',$arr['test method']))>1);       		
+							//var_dump($test_methods);					
+							 
+							$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
+		          $v->tc->testmethods = $ids;
+	       
+	      /*  $arr = explode(',',$v->tc->testmethod_id);
 	        $tms = [];
 	        foreach($arr as $vv){
 	            $tmp = Testmethod::find($vv);
@@ -32,14 +45,16 @@ class ResultController extends BaseController{
 	                $tms[] = $tmp;
 	            }
 	        }
-	        $v->tc->testmethods = $tms;
+	        */
+	       
 	    }
 	    return $results;
 	}
 	
-	public function update()
-	{
-	    Result::update(Input::get());
+	public function update($id)
+	{   
+		 $r = Result::find($id);
+	   $r->update(Input::get());
 	}
 	
 	public function updateall()
@@ -56,9 +71,13 @@ class ResultController extends BaseController{
 	            if(!$s){
 	                $s = ResultStep::create(array('result_id'=>$r['id'],'step_id'=>$vv['id'],'result'=>$vv['result'],'comment'=>$vv['comment']));
 	            }else{
+	            	  $s->delete();
+	            	  $s = ResultStep::create(array('result_id'=>$r['id'],'step_id'=>$vv['id'],'result'=>$vv['result'],'comment'=>$vv['comment']));
+	            	  /*
 	                $s->result = $vv['result'];
 	                $s->comment = $vv['comment'];
 	                $s->save();
+	                */
 	            }
 	        }
 	    }

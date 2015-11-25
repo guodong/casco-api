@@ -58,8 +58,10 @@ class UserController extends BaseController {
 	{
 	    $user = User::find($id);
         $data=Input::get();
-        $va=preg_match("/^[a-z0-9]{32}$/",(Input::get('password')));
+        if(Input::get('password')){
+        $va=preg_match("/^[a-z0-9]{32}$/i",(Input::get('password')));
 	    if(!$va){$data['password']=md5(Input::get('password'));}
+        }
 	    $user->update($data);
 	    //还要更新projects表哦
 	    

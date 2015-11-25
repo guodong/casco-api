@@ -34,8 +34,21 @@ class RsController extends Controller{
 	    foreach ($rss as $v){
 	    
 	    
-	    $data[]=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
+
+	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);//票漂亮哦
+	    if(!$base)continue;
+	    if (!json_decode($v->vat_json)){
+	            $v->vat_json = '[]';
+	            $v->save();
+	        }
+	    $obj=array();
+	    //前端压力太大，非常不合理
+	   // $obj['rss']=$v->rss();
+	   // $obj['tcs']=$v->tcs();
+	    $obj['vat']=json_decode($v->vat_json);
+	    $obj=array_merge($base,$obj);
 	    
+	    $data[]=$obj;
 	    
         }
 	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
@@ -81,11 +94,23 @@ class RsController extends Controller{
 	    
 	     
 	}
+	public function store($id){
+		
+		
+		
+		
+	}
 	
+	
+	
+	
+	//走的是put头
 	public function update($id)
 	{
 	    $data = Input::get();
 	    $m = Rs::find($id);
+	    $m->column=$data['column'];
+	    $m->tag=$data['tag'];
 	    $m->vat_json = json_encode($data['vat']);
 	    $m->save();
 	}

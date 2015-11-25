@@ -6,10 +6,11 @@ class DumpController extends Controller
 
     public function dump(){
         if(1){
-        $item = Tag::where('tag', '=', Input::get('tag'))->first();
+		//fuck,有重复的怎么办!shit
+        $item = Tag::where('id','=',Input::get('id'))->first();
         if (! $item) {
             return Response::json(array(
-                'name' => Input::get('tag'),
+                'name' => '',
                 'children' => array(),
                 'parents' => array()
             ));
@@ -29,14 +30,14 @@ class DumpController extends Controller
                 $data->parents[] = $d;
             };
             foreach($item->tcs() as $tc){
-                $d = new stdClass();
-                $d->name = $tc->tag;
+                $d = new stdClass();         
+                $d->name = $tc['tag'];
                 $d->isparent = false;
                 $data->children[] = $d;
             };
             foreach($item->rss() as $rs){
                 $d = new stdClass();
-                $d->name = $rs->tag;
+                $d->name = $rs['tag'];
                 $d->isparent = false;
                 $data->children[] = $d;
             };

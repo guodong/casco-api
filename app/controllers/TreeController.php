@@ -139,11 +139,20 @@ class TreeController extends Controller{
             }//else
             }//foreach docs
             
+            function  filt($array){
+            	
+            	return $array['checked'];
+            	
+            	
+            }
+           
+           $ans=(count(array_filter($rt,'filt'))==sizeof($rt));
+            
             $root[]=array(
             'pro_name'=>$pros->name,
             'text'=>$pros->name,
             'id'=>$pros->id,
-            'checked'=>true,
+            'checked'=>$ans,
             'leaf'=>false,
             'type'=>'project',
             'children'=>$rt

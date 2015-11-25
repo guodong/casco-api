@@ -7,7 +7,7 @@ class Document extends BaseModel {
 
 	public function latest_version()
 	{
-	    $vss = $this->versions()->orderBy('created_at', 'desc')->first();
+	    $vss = $this->versions()->orderBy('updated_at', 'desc')->first();
 	    if ($vss){
 	        return $vss;
 	    }

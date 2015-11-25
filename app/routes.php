@@ -13,7 +13,7 @@
 Route::get('/test', 'TestController@index');
 Route::get('tc/export', 'TcController@export');
 Route::resource('project', 'ProjectController');
-
+Route::get('tc/tc_steps', 'TcController@tc_steps');
 Route::get('tc/maxtag', 'TcController@maxtag');
 Route::resource('rs', 'RsController');
 Route::resource('tc', 'TcController');
@@ -33,17 +33,16 @@ Route::resource('user', 'UserController');
 Route::resource('role','RoleController');
 Route::resource('testmethod', 'TestmethodController');
 Route::get('dump', 'DumpController@dump');
-Route::resource('build', 'BuildController');    
-//Route::get('version', 'DocumentController@version');
+Route::resource('build', 'BuildController');  
 Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
-
 Route::get('projectuser','ProjectUserController@index');
 Route::get('testjob/export', 'TestjobController@export');
 Route::resource('testjob', 'TestjobController');
 Route::get('session', 'UserController@session');
+Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
 Route::get('logout','UserController@logout');

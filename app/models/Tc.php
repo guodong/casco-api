@@ -11,12 +11,12 @@ class Tc extends BaseModel {
 	
 	public function sources() 
 	{
-	    $arr = json_decode($this->source_json);
-	    return $arr?$arr:[];
-	    return $this->belongsToMany('Tag', 'tc_source', 'tc_id', 'source_id');
+	    $arr = json_decode('{'.$this->column.'}');
+	    //var_dump($arr);
+	    if(!$arr)return [];
+	    return property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[];
 	}
-	
-	
+
 	
 	public function results()
 	{
