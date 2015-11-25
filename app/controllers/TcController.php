@@ -27,19 +27,32 @@ class TcController extends Controller{
 	        return '[]';
 	    }
 	    $tcs = $version->tcs;
+	    $final=array();
 	    if(Input::get('act')=="stat"){
-	    foreach ($rss as $v){
-	        if (!json_decode($v->vat_json)){
-	            $v->vat_json = '[]';
-	            $v->save();
-	        }
-	        $v->vat = json_decode($v->vat_json);
-	        $v->rss = $v->rss();
-	        $v->tcs = $v->tcs();
-
-	    }
-         return  $rss;
-	    }
+	     foreach($tcs as $tc){
+           // $tc->steps;
+            //$tc->sources();
+            $arr = json_decode('{'.$tc->column.'}',true);
+	           if($arr&&array_key_exists('test method',$arr))
+	           {
+	         		(count($test_methods=explode('/',$arr['test method']))>1)||
+	         	  (count($test_methods=explode('+',$arr['test method']))>1)||
+	         	  (count($test_methods=explode('&',$arr['test method']))>1);       		
+							//var_dump($test_methods);					
+							 
+							$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
+		          $tc->testmethods = $ids;
+              $tc->result = 0;}
+            foreach ($tc->results as $r){
+                if ($r->rs_version_id == Input::get('rs_version_id') && $r->build_id == Input::get('build_id')){
+                    $tc->result = $r->result;
+                }
+            }
+            $final[]=array('tc'=>$tc);
+        }
+	   
+         return  $final;
+	    }//if
 	   
 
 	    $data=array();

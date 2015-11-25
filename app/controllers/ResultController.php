@@ -24,19 +24,15 @@ class ResultController extends BaseController{
 	            $step->comment = $sr->comment;
 	            $step->step_result_id = $sr->id;
 	        }
-	       
-		
 		      		$arr = json_decode('{'.$v->tc->column.'}',true);
 	            if(!$arr)return [];
 	             
 	         		(count($test_methods=explode('/',$arr['test method']))>1)||
 	         	  (count($test_methods=explode('+',$arr['test method']))>1)||
-	         	  (count($test_methods=explode('&',$arr['test method']))>1);       		
-							//var_dump($test_methods);					
-							 
+	         	  (count($test_methods=explode('&',$arr['test method']))>1);
 							$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
 		          $v->tc->testmethods = $ids;
-	       
+	             
 	      /*  $arr = explode(',',$v->tc->testmethod_id);
 	        $tms = [];
 	        foreach($arr as $vv){
