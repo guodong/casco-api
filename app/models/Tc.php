@@ -2,7 +2,7 @@
 class Tc extends BaseModel {
 
 	protected $table = 'tc';
-	protected $fillable = array('tag','column','version_id', 'description', 'testmethod_id', 'pre_condition', 'result','source_json');
+	protected $fillable = array('tag','column','checklog','robot','version_id', 'description', 'testmethod_id', 'pre_condition', 'result','source_json');
 
 	public function steps()
 	{

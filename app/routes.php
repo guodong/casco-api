@@ -40,6 +40,7 @@ Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
 Route::get('projectuser','ProjectUserController@index');
 Route::get('testjob/export', 'TestjobController@export');
+Route::get('testjob/export_pro', 'TestjobController@export_pro');
 Route::resource('testjob', 'TestjobController');
 Route::get('session', 'UserController@session');
 Route::post('result/updateall', 'ResultController@updateall');

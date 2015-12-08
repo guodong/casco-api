@@ -154,14 +154,19 @@ class TcController extends Controller{
 	    $m->update(Input::get());	  
 	     
 	    $m->save();
+	    if(Input::get('steps')){
 	    $m->steps()->delete();
 	    foreach (Input::get('steps') as $v){
 	        $step = new TcStep($v);
 	        $m->steps()->save($step);
 	    }
+	    }
 	    return $m;
 	}
-	
+
+		
+		
+		
 	public function export ()
 	{
 	    $ver = Version::find(Input::get("version_id"));
@@ -221,7 +226,7 @@ class TcController extends Controller{
 	        default:
 	        
 	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $column);
-	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->column[$column]);
+	        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, array_key_exists($column,$tc->column)?$tc->column[$column]:null);
 	        
 	        
 	        
