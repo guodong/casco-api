@@ -119,24 +119,22 @@ class TestjobController extends BaseController{
 		
 	   
 		$zip_name='result.zip';
-		fopen($zip_name,"w");
-		
+		$fp_zip=fopen($zip_name,"wb");
 		if($zip->open($zip_name, ZipArchive::OVERWRITE)=== TRUE){
 			$this->addFileToZip($path, $zip);
-			$zip->close();
 		}
-		 
-//  		 chmod($path,0755);
-         $this->del($path);
-       
+		 fclose($fp_zip);
+		 $zip->close();
 		header ( "Cache-Control: max-age=0" );
 		header ( "Content-Description: File Transfer" );
 		header ( 'Content-disposition: attachment; filename=' . basename ( $zip_name ) ); // 文件名
 		header ( "Content-Type: application/zip" ); // zip格式的
 		header ( "Content-Transfer-Encoding: binary" ); // 告诉浏览器，这是二进制文件
 		header ( 'Content-Length: ' . filesize ( $zip_name ) ); // 告诉浏览器，文件大小
-		readfile ( $zip_name );//输出文件;
-		// echo basename($zip_name);
+		@readfile ( $zip_name );//输出文件;
+		$this->del($zip_name);
+		$this->del($path);
+        //rmdir($path);
 	}
 
 
