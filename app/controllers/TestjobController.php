@@ -102,6 +102,7 @@ class TestjobController extends BaseController{
 		foreach ($results as $v){
 			$tc = $v->tc;
 			$path="./case";
+// 			chmod($path,0777);
 			if(!file_exists($path)){mkdir($path);}
 			// $handler=opendir($path); //打开当前文件夹由$path指定。
 			$filename=$path."/".trim($tc->tag,"[]");
@@ -115,13 +116,17 @@ class TestjobController extends BaseController{
 			fclose($fp);
 			 
 		}//foreach
-	  
+		
+	   
 		$zip_name='result.zip';
+		fopen($zip_name,"w");
+		
 		if($zip->open($zip_name, ZipArchive::OVERWRITE)=== TRUE){
 			$this->addFileToZip($path, $zip);
+			$zip->close();
 		}
-		 $zip->close();
-		 chmod($path,0755);
+		 
+//  		 chmod($path,0755);
          $this->del($path);
        
 		header ( "Cache-Control: max-age=0" );
@@ -130,8 +135,8 @@ class TestjobController extends BaseController{
 		header ( "Content-Type: application/zip" ); // zip格式的
 		header ( "Content-Transfer-Encoding: binary" ); // 告诉浏览器，这是二进制文件
 		header ( 'Content-Length: ' . filesize ( $zip_name ) ); // 告诉浏览器，文件大小
-		@readfile ( $zip_name );//输出文件;
-		 
+		readfile ( $zip_name );//输出文件;
+		// echo basename($zip_name);
 	}
 
 
