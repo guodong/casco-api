@@ -102,6 +102,7 @@ class TestjobController extends BaseController{
 		foreach ($results as $v){
 			$tc = $v->tc;
 			$path="./case";
+// 			chmod($path,0777);
 			if(!file_exists($path)){mkdir($path);}
 			// $handler=opendir($path); //打开当前文件夹由$path指定。
 			$filename=$path."/".trim($tc->tag,"[]");
@@ -115,7 +116,8 @@ class TestjobController extends BaseController{
 			fclose($fp);
 			 
 		}//foreach
-	  
+		
+	   
 		$zip_name='result.zip';
 		$fp_zip=fopen($zip_name,"wb");
 		if($zip->open($zip_name, ZipArchive::OVERWRITE)=== TRUE){
@@ -123,7 +125,6 @@ class TestjobController extends BaseController{
 		}
 		 fclose($fp_zip);
 		 $zip->close();
-		 //chmod($path,0755);
 		header ( "Cache-Control: max-age=0" );
 		header ( "Content-Description: File Transfer" );
 		header ( 'Content-disposition: attachment; filename=' . basename ( $zip_name ) ); // 文件名
