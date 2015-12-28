@@ -23,5 +23,9 @@ class Project extends BaseModel {
 	{
 	    return $this->hasMany('Testjob')->orderBy('created_at', 'desc');
 	}
+	public function verifications()
+	{
+	    return $this->hasMany('Verification')->orderBy('created_at', 'desc');
+	}
 	
 }

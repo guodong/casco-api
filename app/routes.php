@@ -12,6 +12,7 @@
 */
 Route::get('/test', 'TestController@index');
 Route::get('tc/export', 'TcController@export');
+Route::get('tc/matrix','TcController@matirx');
 Route::resource('project', 'ProjectController');
 Route::get('tc/tc_steps', 'TcController@tc_steps');
 Route::get('tc/maxtag', 'TcController@maxtag');
@@ -42,6 +43,9 @@ Route::get('projectuser','ProjectUserController@index');
 Route::get('testjob/export', 'TestjobController@export');
 Route::get('testjob/export_pro', 'TestjobController@export_pro');
 Route::resource('testjob', 'TestjobController');
+Route::get('verification/export', 'VerificationController@export');
+Route::get('verification/export_pro', 'VerificationController@export_pro');
+Route::resource('verification', 'VerificationController');
 Route::get('session', 'UserController@session');
 Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');

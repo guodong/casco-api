@@ -402,9 +402,13 @@ class ProjectController extends BaseController {
 	}
 
 	public function show($id) {
-	$p = Project::find ( $id );
+
+	if(!$id||$id=='null')
+	{$p=Project::orderBy('updated_at','desc')->first();}
+	else{$p = Project::find ( $id );}
+	
 	// $p->graph = json_decode($p->graph);
-	$p->documents;
+	if($p)$p->documents;
 	return $p;
 	}
 

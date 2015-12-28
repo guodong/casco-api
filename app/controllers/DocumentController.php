@@ -95,8 +95,8 @@ class DocumentController extends Controller
     }
     
     public function show($id)
-    {
-        $document = Document::find($id);
+    {    
+        $document =Document::find($id);
         $document->versions;
         return $document;
     }

@@ -31,11 +31,11 @@ class TcController extends Controller{
 	    if(Input::get('act')=="stat"){
 	     foreach($tcs as $tc){
            // $tc->steps;
-            //$tc->sources();
+            //$tc->sources()
             $arr = json_decode('{'.$tc->column.'}',true);
 	           if($arr&&array_key_exists('test method',$arr))
 	           {
-	         		(count($test_methods=explode('/',$arr['test method']))>1)||
+	         	  (count($test_methods=explode('/',$arr['test method']))>1)||
 	         	  (count($test_methods=explode('+',$arr['test method']))>1)||
 	         	  (count($test_methods=explode('&',$arr['test method']))>1);       		
 							//var_dump($test_methods);					
@@ -56,9 +56,7 @@ class TcController extends Controller{
 	   
 
 	    $data=array();
-	    foreach ($tcs as $v){
-	    
-	    
+	   foreach ($tcs as $v){ 
 	   $obj=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
 	    if(!$obj)continue;
 	    $data[]=$obj;
@@ -113,6 +111,45 @@ class TcController extends Controller{
             }
         };
         return $tcs;  */
+		
+		
+	}
+	
+	public function matrix(){
+		
+		//默认选取最新的版本么?
+		$version=(Input::get('version_id')?Version::find(Input::get('version_id')):Version::orderBy('updated_at','desc')->first());
+	    if (!$version){
+	        return '[]';
+	    }
+	   $tcs = $version->tcs;
+	   $final=array();
+	   $data=array();
+	   foreach ($tcs as $v){ 
+	   $obj=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
+	    if(!$obj)continue;
+	    $data[]=$obj;
+        }
+       
+	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
+	   $column=explode(",",$version->headers);
+	   $columModle=array();
+	   $fieldsNames=array();
+	   $columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
+	    $fieldsNames[]=array('name'=>'tag');
+	   foreach($column as $item){
+	    
+	    if($item=='test steps')continue;
+	    $columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
+	    $fieldsNames[]=array('name'=>$item);
+	   
+	   }
+	    
+	   return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
+		
+		
+		
+		
 		
 		
 	}
