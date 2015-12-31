@@ -3,12 +3,35 @@
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
 class VerificationController extends BaseController{
-
+    
+	public $column_prefix='(P) // (C)';
+	
 	public function show($id)
 	{
 		return Verification::find($id);
 	}
-
+    
+	public function destroy($id){
+            
+		$ver=Verification::find($id);
+		if($ver->child_matrix){
+        $ver->child_matrix->each(function($u){ 	
+        	$u->delete();
+        });
+		}
+		if($ver->parent_matrix){
+        $ver->parent_matrix->each(function($u){
+        	$u->delete();
+        });
+		}
+       //删掉关系记录
+        DB::table('verification_parent_version')->where('verification_id','=',$id)->delete();
+        $ver->delete();
+        return $ver;
+            
+    
+	}
+	
 	public function index()
 	{
 		$vefs = Project::find(Input::get('project_id'))->verifications;
@@ -21,11 +44,42 @@ class VerificationController extends BaseController{
 		}
 		return $vefs;
 	}
-
+    
+	public function summary(){
+		
+		//尼玛根据某个verison来哦,version是唯一的罢
+		Input::get('version')?($version=Input::get('verison')):($version=(Verification::orderBy('created_at','desc')->first()->version));
+		$ver=Verification::where('version','=',$version)->orderBy('created_at','desc')->first();
+		if(!$ver)return [];
+		$ans=[];     
+		//从数据库中取太慢了吧
+		$child=$ver->childVersion;
+		$middleware=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id);	
+		$num=$middleware->first();
+	    $num_ok=$middleware->where('Traceability','like','%OK%')->first();
+        $num_nok=$middleware->where('Traceability','like','%NOK%')->first();
+        $num_na=$middleware->where('Traceability','like','%NA%')->first();
+		$ans[]=array('doc_name'=>$child->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?floatval($num_ok->num)/floatval($num->num):0);		
+		
+        foreach($ver->parentVersions as $parent){
+        //	var_dump($parent->document->name);return;
+        $middleware=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id)->where('parent_v_id','=',$parent->id);
+	    $num=$middleware->first();
+	    $num_ok=$middleware->where('Completeness','like','%OK%')->first();
+        $num_nok=$middleware->where('Completeness','like','%NOK%')->first();
+        $num_na=$middleware->where('Completeness','like','%NA%')->first();
+		$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?floatval($num_ok->num)/floatval($num->num):0);
+        } 
+		return  $ans;
+			
+	}
+	
+	
 	public function store()
 	{
 		$job = Verification::create(Input::get());
 		$job->status = 0;
+		$job->author=Input::get('account')?Input::get('account'):null;
 		foreach (Input::get('parent_versions') as $v){
 			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
 		}
@@ -46,17 +100,18 @@ class VerificationController extends BaseController{
 		$comment='';$column=[];$child_text='';$parent_text='';
 		foreach($array_child as $child){
 			foreach($parent_items[0] as  $parent){//for循环结束就是空行记录的了
+				$column=[];
 				$parent_column=json_decode('{'.$parent['column'].'}',true);
 				$child_column=json_decode('{'.$child['column'].'}',true);
 				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
 				{
 					if($child_column&&$parent_column){
 						foreach($parent_column as $key=>$value){
-							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key.'(P) // (C)',$value.' // '.$child_column['safety']):$column[]=array($key,$value.' // ');}
-							array_key_exists($key,$child_column)?$column[]=array($key.'(P) // (C)'=>$child_column[$key].' // '.$value)
-							:$column[]=array($key.'(P) // (C)'=>$value.' // ');
+							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.' // '.$child_column['safety']):$column[]=array($key,$value.' // ');}
+							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].' // '.$value)
+							:$column[]=array($key=>$value.' // ');
 						}//foreach
-
+                    // var_dump($column);
 					}//if
 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
@@ -66,7 +121,7 @@ class VerificationController extends BaseController{
                 	             'Child Requirement Text'=>$child_text,
                 	             'Parent Requirement Tag'=>$parent['tag'],
                 	             'Parent Requirement Text'=>$parent_text,
-                                 'column'=>json_encode($column),
+                                 'column'=>json_encode($column[0]),
                                  'verification_id'=>$job->id
 					);
 					//var_dump($array);
@@ -80,7 +135,8 @@ class VerificationController extends BaseController{
 		 
 		 
 		foreach($parent_items[0] as  $parent){
-			$flag=false;
+			//var_dump($parent);return;
+			$flag=false;$column=[];
 			$parent_column=json_decode('{'.$parent['column'].'}',true);
 			foreach($array_child as $child){
 				$child_column=json_decode('{'.$child['column'].'}',true);
@@ -88,17 +144,18 @@ class VerificationController extends BaseController{
 				{
 					$flag=true;
 					foreach($parent_column as $key=>$value){
-						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key.'(P) // (C)',$value.' // '.$child_column['safety']):$column[]=array($key,$value.' // ');}
-						array_key_exists($key,$child_column)?$column[]=array($key.'(P) // (C)'=>$child_column[$key].' // '.$value)
-						:$column[]=array($key.'(P) // (C)'=>$value.' // ');
+						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.' // '.$child_column['safety']):$column[]=array($key,$value.' // ');}
+						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].' // '.$value)
+						:$column[]=array($key=>$value.' // ');
 					}//foreach
 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
-					$array=array( 'Parent Requirement Tag'=>$parent['tag'],
+					$array=array('Parent Requirement Tag'=>$parent['tag'],
                 	             'Parent Requirement Text'=>$parent_text,
                   				 'Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
-                                 'column'=>json_encode($column),
+                                 'column'=>json_encode($column[0]),
+					             'parent_v_id'=>$parent['version_id'],
                                  'verification_id'=>$job->id
 					);
 					//var_dump($array);
@@ -106,13 +163,15 @@ class VerificationController extends BaseController{
 				}//if
 			}//foreach
 			if(!$flag){
+				$column=[];
 				foreach($parent_column as $key=>$value){
-					$column[]=array($key.'(P) // (C)'=>$value.' // ');
+					$column[]=array($key=>$value.' // ');
 				}
 				array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
 				$array=array('Parent Requirement Tag'=>$parent['tag'],
             	             'Parent Requirement Text'=>$parent_text,
-                             'column'=>json_encode($column),
+                             'column'=>json_encode($column[0]),
+				             'parent_v_id'=>$parent['version_id'],
                              'verification_id'=>$job->id
 				);
 				//var_dump($array);

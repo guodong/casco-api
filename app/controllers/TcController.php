@@ -38,7 +38,7 @@ class TcController extends Controller{
 	         	  (count($test_methods=explode('/',$arr['test method']))>1)||
 	         	  (count($test_methods=explode('+',$arr['test method']))>1)||
 	         	  (count($test_methods=explode('&',$arr['test method']))>1);       		
-							//var_dump($test_methods);					
+											
 							 
 							$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
 		          $tc->testmethods = $ids;
