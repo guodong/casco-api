@@ -10,15 +10,15 @@ class Verification extends BaseModel {
 	    return $this->belongsTo('Version', 'child_version_id');
 	}
 	
-	public function child_matrix(){
+	public function childMatrix(){
 		
 		
-		return $this->hasMany('ChildMatrix');
+		return $this->hasMany('ChildMatrix')->orderBy('Child Requirement Tag','asc');
 		
 		
 	}
 
-	public function parent_matrix(){
+	public function parentMatrix(){
 		
 		
 		return $this->hasMany('ParentMatrix');

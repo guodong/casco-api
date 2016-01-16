@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
 class VerificationController extends BaseController{
     
-	public $column_prefix='(P) // (C)';
+	public $column_prefix=COL_PREFIX;
 	
 	public function show($id)
 	{
@@ -48,11 +48,11 @@ class VerificationController extends BaseController{
 	public function summary(){
 		
 		//尼玛根据某个verison来哦,version是唯一的罢
-		Input::get('version')?($version=Input::get('verison')):($version=(Verification::orderBy('created_at','desc')->first()->version));
+		Input::get('version')!=null?($version=Input::get('verison')):($version=(Verification::orderBy('created_at','desc')->first()->version));
 		$ver=Verification::where('version','=',$version)->orderBy('created_at','desc')->first();
 		if(!$ver)return [];
 		$ans=[];     
-		//从数据库中取太慢了吧
+		//从数据库中取太慢了吧,使用count就行了
 		$child=$ver->childVersion;
 		$middleware=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id);	
 		$num=$middleware->first();
@@ -107,9 +107,9 @@ class VerificationController extends BaseController{
 				{
 					if($child_column&&$parent_column){
 						foreach($parent_column as $key=>$value){
-							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.' // '.$child_column['safety']):$column[]=array($key,$value.' // ');}
-							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].' // '.$value)
-							:$column[]=array($key=>$value.' // ');
+							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
+							:$column[]=array($key=>$value.MID_COMPOSE);
 						}//foreach
                     // var_dump($column);
 					}//if
@@ -144,9 +144,9 @@ class VerificationController extends BaseController{
 				{
 					$flag=true;
 					foreach($parent_column as $key=>$value){
-						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.' // '.$child_column['safety']):$column[]=array($key,$value.' // ');}
-						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].' // '.$value)
-						:$column[]=array($key=>$value.' // ');
+						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
+						:$column[]=array($key=>$value.MID_COMPOSE);
 					}//foreach
 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
@@ -165,7 +165,7 @@ class VerificationController extends BaseController{
 			if(!$flag){
 				$column=[];
 				foreach($parent_column as $key=>$value){
-					$column[]=array($key=>$value.' // ');
+					$column[]=array($key=>$value.MID_COMPOSE);
 				}
 				array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
 				$array=array('Parent Requirement Tag'=>$parent['tag'],
@@ -183,10 +183,17 @@ class VerificationController extends BaseController{
 		return $job;
 	}
 
-	public function update()
+	public function update($id)
 	{
-		$t = Testjob::find(Input::get('id'));
+		$t = Verification::find($id);
 		$t->update(Input::get());
+		foreach(Input::get('data') as $item)
+		{  
+		// $t->child_matrix->attach(json_encode($item));
+		 ($matrix=ChildMatrix::find($item['id']))||($matrix=ParentMatrix::find($item['id']));
+		 $matrix->update($item);
+
+		}
 		return $t;
 	}
 
@@ -273,99 +280,6 @@ class VerificationController extends BaseController{
 		$this->del($zip_name);
 		$this->del($path);
 		//rmdir($path);
-	}
-
-
-	public function export()
-	{
-		$job = Testjob::find(Input::get("job_id"));
-		$results = $job->results;
-		$user = User::find(Session::get('uid'));
-		 
-		include PATH_BASE . '/PE/Classes/PHPExcel.php';
-		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
-		$objPHPExcel = new PHPExcel();
-		$objPHPExcel->setActiveSheetIndex(0);
-		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth('20');
-		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('20');
-		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('20');
-
-
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, 1, 'Tc tag');
-
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, 1, 'Description');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, 1, 'Tester');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, 1, 'Begin at');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, 1, 'End at');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, 1, 'Result');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 1, 'Comment');
-		$row = 2;
-		foreach ($results as $v){
-			$tc = $v->tc;
-			$startrow = $row;
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $tc->tag);
-			$item=json_decode('{'.$tc->column.'}',true);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, array_key_exists('description',$item)?$item['description']:$item['test case description']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $user->realname);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $row, substr($v->begin_at, 0, 1)=='0'?'':$v->begin_at);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
-			$cod = $row;
-			$step_count = 0;
-
-			foreach ($tc->steps as $step){
-
-				$id=json_decode($step->toJson())->id;
-				$stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
-					
-				if(!$stepResult)continue;
-				// echo ($stepResult->step_id);
-				$r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
-				if ($stepResult->comment){
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$step->num . ' ' . $r . ': ' . $stepResult->comment);
-					$step_count++;
-				}
-			}
-			/*
-			 $stepResult = ResultStep::where('result_id', $v->id)->get();
-			 foreach($stepResult as $value){
-			 $r = $value->result == 0?'untested':($value->result == 1?'passed':'failed');
-			 if($value->comment){
-
-			 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$->num . ' ' . $r . ': ' . $value->comment);
-			 $step_count++;
-
-			 }
-			 }
-			 */
-
-
-			if ($step_count>1){
-				$row += $step_count-1;
-			}
-			$endrow = $row;
-
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(0, $startrow, 0, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(1, $startrow, 1, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(2, $startrow, 2, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(3, $startrow, 3, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(4, $startrow, 4, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(5, $startrow, 5, $endrow);
-			$row++;
-		}
-		 
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="output.xls"');
-		header('Cache-Control: max-age=0');
-		header('Cache-Control: max-age=1');
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-		header('Pragma: public'); // HTTP/1.0
-		 
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
 	}
 
 }
