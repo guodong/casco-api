@@ -82,31 +82,43 @@ class ChildMatrixController extends BaseController {
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new PHPExcel();
+		$objPHPExcel->getProperties()
+							 ->setTitle('New_Casco_Parent Matrix')
+							 ->setSubject('PHPExcel Test Document')
+							 ->setDescription('Test document for PHPExcel, generated using PHP classes.')
+							 ->setKeywords('office PHPExcel php')
+							 ->setCategory('Test result file');
 		$objPHPExcel->setActiveSheetIndex(0);
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-		$array_config=array('A'=>20,'B'=>20,'C'=>20,'D'=>20);
+		$array_config=array('A'=>20,'B'=>20,'C'=>20,'D'=>20);$line_num=5;
 		foreach($array_config as $key=>$config){
 		$objPHPExcel->getActiveSheet()->getColumnDimension($key)->setWidth($config);
 		}
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, 1, 'Child Requirement Tag');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, 1, 'Child Requirement Text');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, 1, 'Parent Requirement Tag');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, 1, 'Parent Requirement Text');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, 1, 'Traceability');//注意头部多选
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, 1, 'No compliance description');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 1, 'Already described in completeness');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, 1,'Verif. Assessment');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, 1,'Verif. Assesst');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, 1,'Verif. opinion justification');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, 1,'CR');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11, 1,'Comment');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $line_num, 'Child Requirement Tag');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $line_num, 'Child Requirement Text');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_num, 'Parent Requirement Tag');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_num, 'Parent Requirement Text');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_num, 'Traceability');//注意头部多选
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_num, 'No compliance description');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_num, 'Already described in completeness');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_num,'Verif. Assessment');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_num,'Verif. Assesst');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $line_num,'Verif. opinion justification');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10,$line_num,'CR');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11,$line_num,'Comment');
 		$i=11;
 		foreach($column as $value){
-	    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$i, 1,$value.COL_PREFIX);
+	    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$i, $line_num,$value.COL_PREFIX);
 	    //设置自定义列宽度
 	    $objPHPExcel->getActiveSheet()->getColumnDimension(chr($i+ord('A')))->setWidth(20);
 		}
-		$row = 2;
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setBold(true);
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setName('Arial');
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setSize(10);
+		//设置过滤
+		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
+		
+		$row = 1+$line_num;
 		foreach ($child_matrix as $item){
 			$item=json_decode($item,true);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $this->filter($item,'Child Requirement Tag'));

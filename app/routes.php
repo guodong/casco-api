@@ -48,6 +48,7 @@ Route::get('parentmatrix/export', 'ParentMatrixController@export');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
 Route::get('verification/summary','VerificationController@summary');
+Route::get('verification/export','VerificationController@export');
 Route::resource('verification', 'VerificationController');
 Route::get('session', 'UserController@session');
 Route::post('result/updateall', 'ResultController@updateall');

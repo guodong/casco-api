@@ -3,35 +3,35 @@
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
 class VerificationController extends BaseController{
-    
+
 	public $column_prefix=COL_PREFIX;
-	
+
 	public function show($id)
 	{
 		return Verification::find($id);
 	}
-    
+
 	public function destroy($id){
-            
+
 		$ver=Verification::find($id);
 		if($ver->child_matrix){
-        $ver->child_matrix->each(function($u){ 	
-        	$u->delete();
-        });
+			$ver->child_matrix->each(function($u){
+				$u->delete();
+			});
 		}
 		if($ver->parent_matrix){
-        $ver->parent_matrix->each(function($u){
-        	$u->delete();
-        });
+			$ver->parent_matrix->each(function($u){
+				$u->delete();
+			});
 		}
-       //删掉关系记录
-        DB::table('verification_parent_version')->where('verification_id','=',$id)->delete();
-        $ver->delete();
-        return $ver;
-            
-    
+		//删掉关系记录
+		DB::table('verification_parent_version')->where('verification_id','=',$id)->delete();
+		$ver->delete();
+		return $ver;
+
+
 	}
-	
+
 	public function index()
 	{
 		$vefs = Project::find(Input::get('project_id'))->verifications;
@@ -44,37 +44,37 @@ class VerificationController extends BaseController{
 		}
 		return $vefs;
 	}
-    
+
 	public function summary(){
-		
+
 		//尼玛根据某个verison来哦,version是唯一的罢
 		Input::get('version')!=null?($version=Input::get('verison')):($version=(Verification::orderBy('created_at','desc')->first()->version));
 		$ver=Verification::where('version','=',$version)->orderBy('created_at','desc')->first();
 		if(!$ver)return [];
-		$ans=[];     
+		$ans=[];
 		//从数据库中取太慢了吧,使用count就行了
 		$child=$ver->childVersion;
-		$middleware=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id);	
+		$middleware=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id);
 		$num=$middleware->first();
-	    $num_ok=$middleware->where('Traceability','like','%OK%')->first();
-        $num_nok=$middleware->where('Traceability','like','%NOK%')->first();
-        $num_na=$middleware->where('Traceability','like','%NA%')->first();
-		$ans[]=array('doc_name'=>$child->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?floatval($num_ok->num)/floatval($num->num):0);		
-		
-        foreach($ver->parentVersions as $parent){
-        //	var_dump($parent->document->name);return;
-        $middleware=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id)->where('parent_v_id','=',$parent->id);
-	    $num=$middleware->first();
-	    $num_ok=$middleware->where('Completeness','like','%OK%')->first();
-        $num_nok=$middleware->where('Completeness','like','%NOK%')->first();
-        $num_na=$middleware->where('Completeness','like','%NA%')->first();
-		$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?floatval($num_ok->num)/floatval($num->num):0);
-        } 
+		$num_ok=$middleware->where('Traceability','like','%OK%')->first();
+		$num_nok=$middleware->where('Traceability','like','%NOK%')->first();
+		$num_na=$middleware->where('Traceability','like','%NA%')->first();
+		$ans[]=array('doc_name'=>$child->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
+
+		foreach($ver->parentVersions as $parent){
+			//	var_dump($parent->document->name);return;
+			$middleware=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id)->where('parent_v_id','=',$parent->id);
+			$num=$middleware->first();
+			$num_ok=$middleware->where('Completeness','like','%OK%')->first();
+			$num_nok=$middleware->where('Completeness','like','%NOK%')->first();
+			$num_na=$middleware->where('Completeness','like','%NA%')->first();
+			$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
+		}
 		return  $ans;
 			
 	}
-	
-	
+
+
 	public function store()
 	{
 		$job = Verification::create(Input::get());
@@ -111,7 +111,7 @@ class VerificationController extends BaseController{
 							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
 							:$column[]=array($key=>$value.MID_COMPOSE);
 						}//foreach
-                    // var_dump($column);
+						// var_dump($column);
 					}//if
 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
@@ -126,14 +126,14 @@ class VerificationController extends BaseController{
 					);
 					//var_dump($array);
 					ChildMatrix::create($array);
-						
+
 				}//if
 			}//foreach
 		}//foreach child_matrix
-		 
-		 
-		 
-		 
+			
+			
+			
+			
 		foreach($parent_items[0] as  $parent){
 			//var_dump($parent);return;
 			$flag=false;$column=[];
@@ -188,8 +188,8 @@ class VerificationController extends BaseController{
 		$t = Verification::find($id);
 		$t->update(Input::get());
 		foreach(Input::get('data') as $item)
-		{  
-		// $t->child_matrix->attach(json_encode($item));
+		{
+			// $t->child_matrix->attach(json_encode($item));
 		 ($matrix=ChildMatrix::find($item['id']))||($matrix=ParentMatrix::find($item['id']));
 		 $matrix->update($item);
 
@@ -261,7 +261,7 @@ class VerificationController extends BaseController{
 			fclose($fp);
 
 		}//foreach
-		 
+			
 		$zip_name='result.zip';
 		$fp_zip=fopen($zip_name,"wb");
 		if($zip->open($zip_name, ZipArchive::OVERWRITE)=== TRUE){
@@ -281,5 +281,63 @@ class VerificationController extends BaseController{
 		$this->del($path);
 		//rmdir($path);
 	}
+
+	public function export(){
+		//导出所有的report啊我去	
+		$EOF="\r\n";
+		$vefs = Project::find(Input::get('project_id'))->verifications;
+		include PATH_BASE . '/PE/Classes/PHPExcel.php';
+		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
+		$objPHPExcel = new PHPExcel();
+		$objPHPExcel->setActiveSheetIndex(0);
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+		$array_config=array('C'=>10,'D'=>15,'E'=>20,'F'=>50);$num=5;
+		$column_config=array('C'=>'Version','D'=>'Author','E'=>'Date','F'=>'Description');
+		foreach($array_config as $key=>$config){
+		$objPHPExcel->getActiveSheet()->getColumnDimension($key)->setWidth($config);
+		$objPHPExcel->setActiveSheetIndex(0)->setCellValue($key.$num,$column_config[$key]);
+		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFont()->setBold(true);
+		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFont()->setName('Arial');
+		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFont()->setSize(10);
+		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THICK);
+		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFill()->getStartColor()->setARGB('0000CDCD');
+		
+		}
+		$num++;
+		foreach ($vefs as $v){
+			 $i=1;
+			 $description="Verify  according to".$EOF;
+			 $description.=$i++.')'.$v->childVersion->document->name.' '.$v->childVersion->name.$EOF;
+			 foreach($v->parentVersions as $parent){
+			 $description.=$i++.')'.$parent->document->name.' '.$parent->name.$EOF;
+			}
+			 $objPHPExcel->getActiveSheet()->getRowDimension($num)->setRowHeight(70);
+			 $objPHPExcel->getActiveSheet()->getStyle('C'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+			 $objPHPExcel->getActiveSheet()->getStyle('D'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+			 $objPHPExcel->getActiveSheet()->getStyle('E'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+			 $objPHPExcel->getActiveSheet()->getStyle('F'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);   
+			 $objPHPExcel->setActiveSheetIndex(0)
+                          ->setCellValue('C'.$num, $v->version)    
+                          ->setCellValue('D'.$num, $v->author)
+                          ->setCellValue('E'.$num, $v->create_at)//有问题
+			              ->setCellValue('F'.$num, $description); 
+			 $num++;
+        }
+        header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="report.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+
+
+	}
+
+
 
 }
