@@ -291,18 +291,24 @@ class VerificationController extends BaseController{
 		$objPHPExcel = new PHPExcel();
 		$objPHPExcel->setActiveSheetIndex(0);
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-		$array_config=array('C'=>10,'D'=>15,'E'=>20,'F'=>50);$num=5;
-		$column_config=array('C'=>'Version','D'=>'Author','E'=>'Date','F'=>'Description');
-		foreach($array_config as $key=>$config){
-		$objPHPExcel->getActiveSheet()->getColumnDimension($key)->setWidth($config);
-		$objPHPExcel->setActiveSheetIndex(0)->setCellValue($key.$num,$column_config[$key]);
-		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFont()->setBold(true);
-		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFont()->setName('Arial');
-		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFont()->setSize(10);
-		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THICK);
-		$objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-        $objPHPExcel->getActiveSheet()->getStyle($key.$num)->getFill()->getStartColor()->setARGB('0000CDCD');
-		
+		$num=5;
+		$array_config=array('C'=>10,'D'=>15,'E'=>20,'F'=>50);
+		//表头配置信息
+		$column_config=array(
+		array('Col'=>'C','Width'=>10,'text'=>'Version','font'=>array('Bold'=>true,'Name'=>'Arial','size'=>10),'Borders'=>PHPExcel_Style_Border::BORDER_THICK,'Fill'=>array('Type'=>PHPExcel_Style_Fill::FILL_SOLID,'Color'=>'0000CDCD')),
+		array('Col'=>'D','Width'=>15,'text'=>'Author','font'=>array('Bold'=>true,'Name'=>'Arial','size'=>10),'Borders'=>PHPExcel_Style_Border::BORDER_THICK,'Fill'=>array('Type'=>PHPExcel_Style_Fill::FILL_SOLID,'Color'=>'0000CDCD')),
+		array('Col'=>'E','Width'=>20,'text'=>'Date','font'=>array('Bold'=>true,'Name'=>'Arial','size'=>10),'Borders'=>PHPExcel_Style_Border::BORDER_THICK,'Fill'=>array('Type'=>PHPExcel_Style_Fill::FILL_SOLID,'Color'=>'0000CDCD')),
+		array('Col'=>'F','Width'=>50,'text'=>'Description','font'=>array('Bold'=>true,'Name'=>'Arial','size'=>10),'Borders'=>PHPExcel_Style_Border::BORDER_THICK,'Fill'=>array('Type'=>PHPExcel_Style_Fill::FILL_SOLID,'Color'=>'0000CDCD'))
+		);
+		foreach($column_config as $val){
+		$objPHPExcel->getActiveSheet()->getColumnDimension($val['Col'])->setWidth($val['Width']);
+		$objPHPExcel->setActiveSheetIndex(0)->setCellValue($val['Col'].$num,$val['text']);
+		$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setBold($val['font']['Bold']);
+		$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setName($val['font']['Name']);
+		$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setSize($val['font']['size']);
+		$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getBorders()->getAllBorders()->setBorderStyle($val['Borders']);
+		$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFill()->setFillType($val['Fill']['Type']);
+        $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFill()->getStartColor()->setARGB($val['Fill']['Color']);
 		}
 		$num++;
 		foreach ($vefs as $v){
@@ -313,15 +319,13 @@ class VerificationController extends BaseController{
 			 $description.=$i++.')'.$parent->document->name.' '.$parent->name.$EOF;
 			}
 			 $objPHPExcel->getActiveSheet()->getRowDimension($num)->setRowHeight(70);
-			 $objPHPExcel->getActiveSheet()->getStyle('C'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-			 $objPHPExcel->getActiveSheet()->getStyle('D'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-			 $objPHPExcel->getActiveSheet()->getStyle('E'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-			 $objPHPExcel->getActiveSheet()->getStyle('F'.$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);   
-			 $objPHPExcel->setActiveSheetIndex(0)
-                          ->setCellValue('C'.$num, $v->version)    
-                          ->setCellValue('D'.$num, $v->author)
-                          ->setCellValue('E'.$num, $v->create_at)//有问题
-			              ->setCellValue('F'.$num, $description); 
+			 $data=array($v->version,$v->author,$v->create_at,$description);
+			 $num1=0;
+			 foreach($column_config as $val){
+			  $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+			  $objPHPExcel->setActiveSheetIndex(0)
+                          ->setCellValue($val['Col'].$num,$data[$num1++]);
+			 } 
 			 $num++;
         }
         header('Content-Type: application/vnd.ms-excel');
