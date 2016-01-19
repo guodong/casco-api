@@ -45,10 +45,11 @@ class VerificationController extends BaseController{
 		return $vefs;
 	}
 
-	public function summary(){
+	public function summary($version=null){
 
-		//尼玛根据某个verison来哦,version是唯一的罢
-		Input::get('version')!=null?($version=Input::get('verison')):($version=(Verification::orderBy('created_at','desc')->first()->version));
+		if(Input::get('version')){$version=Input::get('verison');}
+		else if($version){$version=$version;}
+		else{$version=(Verification::orderBy('created_at','desc')->first()->version);}
 		$ver=Verification::where('version','=',$version)->orderBy('created_at','desc')->first();
 		if(!$ver)return [];
 		$ans=[];
@@ -59,22 +60,73 @@ class VerificationController extends BaseController{
 		$num_ok=$middleware->where('Traceability','like','%OK%')->first();
 		$num_nok=$middleware->where('Traceability','like','%NOK%')->first();
 		$num_na=$middleware->where('Traceability','like','%NA%')->first();
-		$ans[]=array('doc_name'=>$child->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
-
-		foreach($ver->parentVersions as $parent){
-			//	var_dump($parent->document->name);return;
+		$ans[]=array('doc_name'=>$child->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>0,'not_complete'=>0,'wrong_coverage'=>0,'logic_error'=>0,'other'=>0);
+        foreach($ver->parentVersions as $parent){
 			$middleware=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id)->where('parent_v_id','=',$parent->id);
 			$num=$middleware->first();
 			$num_ok=$middleware->where('Completeness','like','%OK%')->first();
 			$num_nok=$middleware->where('Completeness','like','%NOK%')->first();
 			$num_na=$middleware->where('Completeness','like','%NA%')->first();
-			$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
+			//$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
+		$middleware=ParentMatrix::where('verification_id','=',$ver->id);
+        $defect_num=$middleware->count();
+        $not_complete=$middleware->where('Defect Type','like','%Not complete%')->count();
+		$wrong_coverage=$middleware->where('Defect Type','like','%Wrong coverage%')->count();
+		$logic_error=$middleware->where('Defect Type','like','%logic or description mistake%')->count();
+        $other=$middleware->where('Defect Type','like','%Other%')->count();
+		$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>$defect_num,'not_complete'=>$not_complete,'wrong_coverage'=>$wrong_coverage,'logic_error'=>$logic_error,'other'=>$logic_error);
 		}
 		return  $ans;
-			
+		
 	}
 
+    
+	public function summary_export(){
 
+		
+	include PATH_BASE . '/PE/Classes/PHPExcel.php';
+	include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
+	$objPHPExcel = new PHPExcel();
+	$objPHPExcel->setActiveSheetIndex(0);
+	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+	if(Input::get('version')){$version=Input::get('verison');}
+	else{$version=(Verification::orderBy('created_at','desc')->first()->name);}	
+	$array=$this->summary($version);
+	//定个坐标，很重要呀
+	$circle=array('col'=>3,'row'=>4);
+	//$array_config=array('col'=>'B','text'='','font'=>array('Bold'=>true,'Name'=>'Arial','size'=>10),'Borders'=>PHPExcel_Style_Border::BORDER_THICK),
+    $i=1;
+	//我查二维数组
+    foreach($array as $name=>$item){
+    	$j=0;
+    	foreach($item as $key=>$value){
+    if($i==1){
+	
+    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($circle['col'],$circle['row']+$j,$key);
+	//$objPHPExcel->setActiveSheetIndex(0)->setCellValue($circle['col'].($circle['row']+$j+1),$key);
+    }
+	$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(($circle['col']+$i),$circle['row']+$j,$value);
+    //$objPHPExcel->setActiveSheetIndex(0)->setCellValue((chr(ord($circle['col'])+$i).$circle['row']+$j),$value);
+    if($j==5){$j+=3;}
+	$j++;
+    }//for
+    $i++;
+	}//for
+		
+	  	header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="summary.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+
+	}
+	
+	
 	public function store()
 	{
 		$job = Verification::create(Input::get());
@@ -187,6 +239,7 @@ class VerificationController extends BaseController{
 	{
 		$t = Verification::find($id);
 		$t->update(Input::get());
+		if(!Input::get('data'))return $t;
 		foreach(Input::get('data') as $item)
 		{
 			// $t->child_matrix->attach(json_encode($item));
@@ -319,12 +372,15 @@ class VerificationController extends BaseController{
 			 $description.=$i++.')'.$parent->document->name.' '.$parent->name.$EOF;
 			}
 			 $objPHPExcel->getActiveSheet()->getRowDimension($num)->setRowHeight(70);
-			 $data=array($v->version,$v->author,$v->create_at,$description);
+			 $data=array($v->version,$v->author,(string)$v->created_at,$description);
 			 $num1=0;
 			 foreach($column_config as $val){
 			  $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 			  $objPHPExcel->setActiveSheetIndex(0)
                           ->setCellValue($val['Col'].$num,$data[$num1++]);
+			  $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setName($val['font']['Name']);
+			  $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setSize($val['font']['size']);
+	 
 			 } 
 			 $num++;
         }
