@@ -46,10 +46,11 @@ class VerificationController extends BaseController{
 	}
 
 	public function summary($version=null){
-
+        define('c_prefix','_traceup');
+        define('p_prefix','_completeness');
 		if(Input::get('version')){$version=Input::get('verison');}
 		else if($version){$version=$version;}
-		else{$version=(Verification::orderBy('created_at','desc')->first()->version);}
+		else{$version=(string)(Verification::orderBy('created_at','desc')->first()->version);}
 		$ver=Verification::where('version','=',$version)->orderBy('created_at','desc')->first();
 		if(!$ver)return [];
 		$ans=[];
@@ -60,7 +61,7 @@ class VerificationController extends BaseController{
 		$num_ok=$middleware->where('Traceability','like','%OK%')->first();
 		$num_nok=$middleware->where('Traceability','like','%NOK%')->first();
 		$num_na=$middleware->where('Traceability','like','%NA%')->first();
-		$ans[]=array('doc_name'=>$child->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>0,'not_complete'=>0,'wrong_coverage'=>0,'logic_error'=>0,'other'=>0);
+		$ans[]=array('doc_name'=>$child->document->name.c_prefix,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>0,'not_complete'=>0,'wrong_coverage'=>0,'logic_error'=>0,'other'=>0);
         foreach($ver->parentVersions as $parent){
 			$middleware=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id)->where('parent_v_id','=',$parent->id);
 			$num=$middleware->first();
@@ -74,7 +75,7 @@ class VerificationController extends BaseController{
 		$wrong_coverage=$middleware->where('Defect Type','like','%Wrong coverage%')->count();
 		$logic_error=$middleware->where('Defect Type','like','%logic or description mistake%')->count();
         $other=$middleware->where('Defect Type','like','%Other%')->count();
-		$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>$defect_num,'not_complete'=>$not_complete,'wrong_coverage'=>$wrong_coverage,'logic_error'=>$logic_error,'other'=>$logic_error);
+		$ans[]=array('doc_name'=>$parent->document->name.p_prefix,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>$defect_num,'not_complete'=>$not_complete,'wrong_coverage'=>$wrong_coverage,'logic_error'=>$logic_error,'other'=>$logic_error);
 		}
 		return  $ans;
 		
@@ -83,36 +84,52 @@ class VerificationController extends BaseController{
     
 	public function summary_export(){
 
-		
 	include PATH_BASE . '/PE/Classes/PHPExcel.php';
 	include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 	$objPHPExcel = new PHPExcel();
 	$objPHPExcel->setActiveSheetIndex(0);
 	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 	if(Input::get('version')){$version=Input::get('verison');}
-	else{$version=(Verification::orderBy('created_at','desc')->first()->name);}	
+	else{$version=(string)(Verification::orderBy('created_at','desc')->first()->version);}	
 	$array=$this->summary($version);
+	//var_dump($array);exit();
 	//定个坐标，很重要呀
-	$circle=array('col'=>3,'row'=>4);
-	//$array_config=array('col'=>'B','text'='','font'=>array('Bold'=>true,'Name'=>'Arial','size'=>10),'Borders'=>PHPExcel_Style_Border::BORDER_THICK),
-    $i=1;
+	$circle=array('col'=>'C','row'=>4);
+	$config=array('','nb of req','nb req OK','nb req NOK','nb req NA','Percent of completeness'
+	,'','','','Total number of NOK items','The number of NOK items( Not Complete)','The number of NOK items 
+	(Wrong Coverage)','The number of NOK items (Logic or Description Mistake)','Other');
+	
+	foreach($config as $key=>$val){
+	//$key=$key+1;
+	$objPHPExcel->setActiveSheetIndex(0)->setCellValue($circle['col'].($circle['row']+$key),$val);
+	$objPHPExcel->getActiveSheet()->getColumnDimension($circle['col'])->setWidth(30);
+    $objPHPExcel->getActiveSheet()->getStyle($circle['col'].($circle['row']+$key))->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+	$objPHPExcel->getActiveSheet()->getStyle($circle['col'].($circle['row']+$key))->getFont()->setName('Arial');
+	$objPHPExcel->getActiveSheet()->getStyle($circle['col'].($circle['row']+$key))->getFont()->setSize(10);
+    }
+	$i=1;
 	//我查二维数组
     foreach($array as $name=>$item){
     	$j=0;
-    	foreach($item as $key=>$value){
-    if($i==1){
+     $objPHPExcel->getActiveSheet()->getColumnDimension(chr(ord($circle['col'])+$i))->setWidth(25);
 	
-    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($circle['col'],$circle['row']+$j,$key);
-	//$objPHPExcel->setActiveSheetIndex(0)->setCellValue($circle['col'].($circle['row']+$j+1),$key);
-    }
-	$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(($circle['col']+$i),$circle['row']+$j,$value);
-    //$objPHPExcel->setActiveSheetIndex(0)->setCellValue((chr(ord($circle['col'])+$i).$circle['row']+$j),$value);
+    foreach($item as $key=>$value){
+    $objPHPExcel->getActiveSheet()->getStyle(chr(ord($circle['col'])+$i).($circle['row']+$j))->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+	$objPHPExcel->getActiveSheet()->getStyle(chr(ord($circle['col'])+$i).($circle['row']+$j))->getFont()->setName('Arial');
+	$objPHPExcel->getActiveSheet()->getStyle(chr(ord($circle['col'])+$i).($circle['row']+$j))->getFont()->setSize(10);
+  	$objPHPExcel->setActiveSheetIndex(0)->setCellValue(chr(ord($circle['col'])+$i).($circle['row']+$j),$value);
     if($j==5){$j+=3;}
-	$j++;
+	$j++;//rows
     }//for
-    $i++;
+    $i++;//cols
 	}//for
-		
+	//设置左侧version栏
+	$cell=chr(ord($circle['col'])-1).$circle['row'];
+	$range=chr(ord($circle['col'])-1).$circle['row'].':'.chr(ord($circle['col'])-1).($circle['row']+$j-1);
+	$objPHPExcel->getActiveSheet()->mergeCells($range);
+	$objPHPExcel->getActiveSheet()->getStyle($range)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+	$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,$version);
+	$objPHPExcel->getActiveSheet()->getStyle($range)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 	  	header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="summary.xls"');
 		header('Cache-Control: max-age=0');
@@ -380,7 +397,7 @@ class VerificationController extends BaseController{
                           ->setCellValue($val['Col'].$num,$data[$num1++]);
 			  $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setName($val['font']['Name']);
 			  $objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setSize($val['font']['size']);
-	 
+	         
 			 } 
 			 $num++;
         }
