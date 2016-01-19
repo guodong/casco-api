@@ -55,7 +55,7 @@ class VerificationController extends BaseController{
 		//从数据库中取太慢了吧
 		$child=$ver->childVersion;
 		$middleware=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id);	
-		$num=$middleware->first();
+		$num=$middleware->first(); 
 	    $num_ok=$middleware->where('Traceability','like','%OK%')->first();
         $num_nok=$middleware->where('Traceability','like','%NOK%')->first();
         $num_na=$middleware->where('Traceability','like','%NA%')->first();
