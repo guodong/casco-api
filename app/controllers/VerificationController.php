@@ -34,24 +34,28 @@ class VerificationController extends BaseController{
 
 	public function index()
 	{
-		$vefs = Project::find(Input::get('project_id'))->verifications;
+		//$vefs = Project::find(Input::get('project_id'))->verifications;
+		if(!Input::get('child_id'))return [];
+		$vefs=Verification::where('project_id','=',Input::get('project_id'))->orderBy('created_at','desc')->get();$ans=[];	
 		foreach ($vefs as $v){
-			$v->childVersion->document;
+			//var_dump($v);exit;
+			if($v->childVersion->document->id==Input::get('child_id')){
 			foreach($v->parentVersions as $parent){
 				$parent->document;
 			}
-
+			 $ans[]=$v;	
+			}//if
 		}
-		return $vefs;
+			
+		return $ans;
 	}
 
-	public function summary($version=null){
+	public function summary(){
         define('c_prefix','_traceup');
         define('p_prefix','_completeness');
-		if(Input::get('version')){$version=Input::get('verison');}
-		else if($version){$version=$version;}
-		else{$version=(string)(Verification::orderBy('created_at','desc')->first()->version);}
-		$ver=Verification::where('version','=',$version)->orderBy('created_at','desc')->first();
+		if(Input::get('v_id')){$v_id=Input::get('v_id');}
+		if(!$v_id)return [];
+		$ver=Verification::where('id','=',$v_id)->orderBy('created_at','desc')->first();
 		if(!$ver)return [];
 		$ans=[];
 		//从数据库中取太慢了吧,使用count就行了
@@ -88,10 +92,10 @@ class VerificationController extends BaseController{
 	include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 	$objPHPExcel = new PHPExcel();
 	$objPHPExcel->setActiveSheetIndex(0);
-	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-	if(Input::get('version')){$version=Input::get('verison');}
-	else{$version=(string)(Verification::orderBy('created_at','desc')->first()->version);}	
-	$array=$this->summary($version);
+	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);	
+	$array=$this->summary();//闭包获取
+	$version=(string)Verification::where('id','=',Input::get('v_id'))->first()->version;
+	
 	//var_dump($array);exit();
 	//定个坐标，很重要呀
 	$circle=array('col'=>'C','row'=>4);
@@ -147,7 +151,7 @@ class VerificationController extends BaseController{
 	public function store()
 	{
 		$job = Verification::create(Input::get());
-		$job->status = 0;
+		$job->status = 1;
 		$job->author=Input::get('account')?Input::get('account'):null;
 		foreach (Input::get('parent_versions') as $v){
 			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
@@ -157,6 +161,7 @@ class VerificationController extends BaseController{
 		$parent_vids=[];
 		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
 		$parent_items=$job->childVersion->parent_item($parent_vids);
+		$parents=(!empty(array_filter($parent_items)))?$parent_items[0]:[];
 		switch($job->childVersion->document->type){
 			case 'tc':
 				$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
@@ -168,7 +173,7 @@ class VerificationController extends BaseController{
 		}
 		$comment='';$column=[];$child_text='';$parent_text='';
 		foreach($array_child as $child){
-			foreach($parent_items[0] as  $parent){//for循环结束就是空行记录的了
+			foreach($parents as  $parent){//for循环结束就是空行记录的了
 				$column=[];
 				$parent_column=json_decode('{'.$parent['column'].'}',true);
 				$child_column=json_decode('{'.$child['column'].'}',true);
@@ -177,6 +182,7 @@ class VerificationController extends BaseController{
 					if($child_column&&$parent_column){
 						foreach($parent_column as $key=>$value){
 							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+							if($key=='description'||$key=='test case description'){continue;}
 							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
 							:$column[]=array($key=>$value.MID_COMPOSE);
 						}//foreach
@@ -203,7 +209,7 @@ class VerificationController extends BaseController{
 			
 			
 			
-		foreach($parent_items[0] as  $parent){
+		foreach($parents as  $parent){
 			//var_dump($parent);return;
 			$flag=false;$column=[];
 			$parent_column=json_decode('{'.$parent['column'].'}',true);
@@ -214,6 +220,7 @@ class VerificationController extends BaseController{
 					$flag=true;
 					foreach($parent_column as $key=>$value){
 						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+						if($key=='description'||$key=='test case description'){continue;}
 						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
 						:$column[]=array($key=>$value.MID_COMPOSE);
 					}//foreach
@@ -355,7 +362,7 @@ class VerificationController extends BaseController{
 	public function export(){
 		//导出所有的report啊我去	
 		$EOF="\r\n";
-		$vefs = Project::find(Input::get('project_id'))->verifications;
+		$vefs =Verification::where('project_id','=',Input::get('project_id'))->where('child_id','=',Input::get('child_id'))->get();
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new PHPExcel();
