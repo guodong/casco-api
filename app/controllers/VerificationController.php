@@ -242,6 +242,8 @@ class VerificationController extends BaseController
 			// $t->child_matrix->attach(json_encode($item));
 		 ($matrix=ChildMatrix::find($item['id']))||($matrix=ParentMatrix::find($item['id']));
 		 $matrix->update($item);
+		}
+	}//continous
 
     public function index()
     {
