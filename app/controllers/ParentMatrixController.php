@@ -12,10 +12,11 @@ class ParentMatrixController extends BaseController {
  		$items=ParentMatrix::where('verification_id','=',$id)->orderBy('Parent Requirement Tag','asc')->get()->toArray();
  	}
    $columModle=array();
-   foreach(json_decode($items[0]['column'],true) as $key=>$value){
+   $argu=$items?json_decode($items[0]['column'],true):[];
+   foreach($argu as $key=>$value){
    	array_push($columModle,array('dataIndex'=>$key,'header'=>$key,'width'=>140));
    }
-    $data=[];
+   $data=[];
    foreach($items as $item){
    	$column=json_decode($item['column'],true);
    	$column=array_merge((array)$item,$column);

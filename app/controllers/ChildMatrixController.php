@@ -12,7 +12,8 @@ class ChildMatrixController extends BaseController {
  		$items=ChildMatrix::where('verification_id','=',$id)->orderBy('Child Requirement Tag','asc')->get()->toArray();
  	}
    $columModle=array();
-   foreach(json_decode($items[0]['column'],true) as $key=>$value){
+   $argu=$items?json_decode($items[0]['column'],true):[];
+   foreach($argu as $key=>$value){
    	array_push($columModle,array('dataIndex'=>$key,'header'=>$key,'width'=>140));
    }
    

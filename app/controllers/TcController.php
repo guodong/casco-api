@@ -30,8 +30,6 @@ class TcController extends Controller{
 	    $final=array();
 	    if(Input::get('act')=="stat"){
 	     foreach($tcs as $tc){
-           // $tc->steps;
-            //$tc->sources()
             $arr = json_decode('{'.$tc->column.'}',true);
 	           if($arr&&array_key_exists('test method',$arr))
 	           {
