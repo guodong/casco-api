@@ -5,257 +5,134 @@ use Illuminate\Support\Facades\Session;
 class VerificationController extends BaseController
 {
 
-// 	public function index()
-// 	{
-// 		//$vefs = Project::find(Input::get('project_id'))->verifications;
-// 		if(!Input::get('child_id'))return [];
-// 		$vefs=Verification::where('project_id','=',Input::get('project_id'))->orderBy('created_at','desc')->get();$ans=[];	
-// 		foreach ($vefs as $v){
-// 			//var_dump($v);exit;
-// 			if($v->childVersion->document->id==Input::get('child_id')){
-// 			foreach($v->parentVersions as $parent){
-// 				$parent->document;
-// 			}
-// 			 $ans[]=$v;	
-// 			}//if
-// 		}
+	public function index()
+	{
+		//$vefs = Project::find(Input::get('project_id'))->verifications;
+		if(!Input::get('child_id'))return [];
+		$vefs=Verification::where('project_id','=',Input::get('project_id'))->orderBy('created_at','desc')->get();$ans=[];	
+		foreach ($vefs as $v){
+			//var_dump($v);exit;
+			if($v->childVersion->document->id==Input::get('child_id')){
+			foreach($v->parentVersions as $parent){
+				$parent->document;
+			}
+			 $ans[]=$v;	
+			}//if
+		}
 			
-// 		return $ans;
-// 	}
+		return $ans;
+	}
 
-// 	public function summary(){
-//         define('c_prefix','_traceup');
-//         define('p_prefix','_completeness');
-// 		if(Input::get('v_id')){$v_id=Input::get('v_id');}
-// 		if(!$v_id)return [];
-// 		$ver=Verification::where('id','=',$v_id)->orderBy('created_at','desc')->first();
-// 		if(!$ver)return [];
-// 		$ans=[];
-// 		//从数据库中取太慢了吧,使用count就行了
-// 		$child=$ver->childVersion;
-// 		$middleware=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id);
-// 		$num=$middleware->first();
-// 		$num_ok=$middleware->where('Traceability','like','%OK%')->first();
-// 		$num_nok=$middleware->where('Traceability','like','%NOK%')->first();
-// 		$num_na=$middleware->where('Traceability','like','%NA%')->first();
-// 		$ans[]=array('doc_name'=>$child->document->name.c_prefix,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>0,'not_complete'=>0,'wrong_coverage'=>0,'logic_error'=>0,'other'=>0);
-//         foreach($ver->parentVersions as $parent){
-// 			$middleware=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id','=',$ver->id)->where('parent_v_id','=',$parent->id);
-// 			$num=$middleware->first();
-// 			$num_ok=$middleware->where('Completeness','like','%OK%')->first();
-// 			$num_nok=$middleware->where('Completeness','like','%NOK%')->first();
-// 			$num_na=$middleware->where('Completeness','like','%NA%')->first();
-// 			//$ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
-// 		$middleware=ParentMatrix::where('verification_id','=',$ver->id);
-//         $defect_num=$middleware->count();
-//         $not_complete=$middleware->where('Defect Type','like','%Not complete%')->count();
-// 		$wrong_coverage=$middleware->where('Defect Type','like','%Wrong coverage%')->count();
-// 		$logic_error=$middleware->where('Defect Type','like','%logic or description mistake%')->count();
-//         $other=$middleware->where('Defect Type','like','%Other%')->count();
-// 		$ans[]=array('doc_name'=>$parent->document->name.p_prefix,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0,'defect_num'=>$defect_num,'not_complete'=>$not_complete,'wrong_coverage'=>$wrong_coverage,'logic_error'=>$logic_error,'other'=>$logic_error);
-// 		}
-// 		return  $ans;
-		
-// 	}
 
-    
-// 	public function summary_export(){
-
-// 	include PATH_BASE . '/PE/Classes/PHPExcel.php';
-// 	include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
-// 	$objPHPExcel = new PHPExcel();
-// 	$objPHPExcel->setActiveSheetIndex(0);
-// 	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);	
-// 	$array=$this->summary();//闭包获取
-// 	$version=(string)Verification::where('id','=',Input::get('v_id'))->first()->version;
-	
-// 	//var_dump($array);exit();
-// 	//定个坐标，很重要呀
-// 	$circle=array('col'=>'C','row'=>4);
-// 	$config=array('','nb of req','nb req OK','nb req NOK','nb req NA','Percent of completeness'
-// 	,'','','','Total number of NOK items','The number of NOK items( Not Complete)','The number of NOK items 
-// 	(Wrong Coverage)','The number of NOK items (Logic or Description Mistake)','Other');
-	
-// 	foreach($config as $key=>$val){
-// 	//$key=$key+1;
-// 	$objPHPExcel->setActiveSheetIndex(0)->setCellValue($circle['col'].($circle['row']+$key),$val);
-// 	$objPHPExcel->getActiveSheet()->getColumnDimension($circle['col'])->setWidth(30);
-//     $objPHPExcel->getActiveSheet()->getStyle($circle['col'].($circle['row']+$key))->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
-// 	$objPHPExcel->getActiveSheet()->getStyle($circle['col'].($circle['row']+$key))->getFont()->setName('Arial');
-// 	$objPHPExcel->getActiveSheet()->getStyle($circle['col'].($circle['row']+$key))->getFont()->setSize(10);
-//     }
-// 	$i=1;
-// 	//我查二维数组
-//     foreach($array as $name=>$item){
-//     	$j=0;
-//      $objPHPExcel->getActiveSheet()->getColumnDimension(chr(ord($circle['col'])+$i))->setWidth(25);
-	
-//     foreach($item as $key=>$value){
-//     $objPHPExcel->getActiveSheet()->getStyle(chr(ord($circle['col'])+$i).($circle['row']+$j))->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
-// 	$objPHPExcel->getActiveSheet()->getStyle(chr(ord($circle['col'])+$i).($circle['row']+$j))->getFont()->setName('Arial');
-// 	$objPHPExcel->getActiveSheet()->getStyle(chr(ord($circle['col'])+$i).($circle['row']+$j))->getFont()->setSize(10);
-//   	$objPHPExcel->setActiveSheetIndex(0)->setCellValue(chr(ord($circle['col'])+$i).($circle['row']+$j),$value);
-//     if($j==5){$j+=3;}
-// 	$j++;//rows
-//     }//for
-//     $i++;//cols
-// 	}//for
-// 	//设置左侧version栏
-// 	$cell=chr(ord($circle['col'])-1).$circle['row'];
-// 	$range=chr(ord($circle['col'])-1).$circle['row'].':'.chr(ord($circle['col'])-1).($circle['row']+$j-1);
-// 	$objPHPExcel->getActiveSheet()->mergeCells($range);
-// 	$objPHPExcel->getActiveSheet()->getStyle($range)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
-// 	$objPHPExcel->setActiveSheetIndex(0)->setCellValue($cell,$version);
-// 	$objPHPExcel->getActiveSheet()->getStyle($range)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-// 	  	header('Content-Type: application/vnd.ms-excel');
-// 		header('Content-Disposition: attachment;filename="summary.xls"');
-// 		header('Cache-Control: max-age=0');
-// 		header('Cache-Control: max-age=1');
-// 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-// 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-// 		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-// 		header('Pragma: public'); // HTTP/1.0
-// 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-// 		$objWriter->save('php://output');
-
-// 	}
 	
 	
-// 	public function store()
-// 	{
-// 		$job = Verification::create(Input::get());
-// 		$job->status = 1;
-// 		$job->author=Input::get('account')?Input::get('account'):null;
-// 		foreach (Input::get('parent_versions') as $v){
-// 			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
-// 		}
-// 		$job->save();
-// 		$array_child=array();$parent_array=array();
-// 		$parent_vids=[];
-// 		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
-// 		$parent_items=$job->childVersion->parent_item($parent_vids);
-// 		$parents=(!empty(array_filter($parent_items)))?$parent_items[0]:[];
-// 		switch($job->childVersion->document->type){
-// 			case 'tc':
-// 				$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
-// 				break;
-// 			case  'rs':
-// 				$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
-// 				break;
-// 			default:
-// 		}
-// 		$comment='';$column=[];$child_text='';$parent_text='';
-// 		foreach($array_child as $child){
-// 			foreach($parents as  $parent){//for循环结束就是空行记录的了
-// 				$column=[];
-// 				$parent_column=json_decode('{'.$parent['column'].'}',true);
-// 				$child_column=json_decode('{'.$child['column'].'}',true);
-// 				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
-// 				{
-// 					if($child_column&&$parent_column){
-// 						foreach($parent_column as $key=>$value){
-// 							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
-// 							if($key=='description'||$key=='test case description'){continue;}
-// 							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
-// 							:$column[]=array($key=>$value.MID_COMPOSE);
-// 						}//foreach
-// 						// var_dump($column);
-// 					}//if
-// 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
-// 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
+	public function store()
+	{
+		$job = Verification::create(Input::get());
+		$job->status = 1;
+		$job->author=Input::get('account')?Input::get('account'):null;
+		foreach (Input::get('parent_versions') as $v){
+			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
+		}
+		$job->save();
+		$array_child=array();$parent_array=array();
+		$parent_vids=[];
+		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
+		$parent_items=$job->childVersion->parent_item($parent_vids);
+		$parents=(!empty(array_filter($parent_items)))?$parent_items[0]:[];
+		switch($job->childVersion->document->type){
+			case 'tc':
+				$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
+				break;
+			case  'rs':
+				$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
+				break;
+			default:
+		}
+		$comment='';$column=[];$child_text='';$parent_text='';
+		foreach($array_child as $child){
+			foreach($parents as  $parent){//for循环结束就是空行记录的了
+				$column=[];
+				$parent_column=json_decode('{'.$parent['column'].'}',true);
+				$child_column=json_decode('{'.$child['column'].'}',true);
+				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
+				{
+					if($child_column&&$parent_column){
+						foreach($parent_column as $key=>$value){
+							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+							if($key=='description'||$key=='test case description'){continue;}
+							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
+							:$column[]=array($key=>$value.MID_COMPOSE);
+						}//foreach
+						// var_dump($column);
+					}//if
+					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
+					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
 
 
-// 					$array=array('Child Requirement Tag'=>$child['tag'],
-//                 	             'Child Requirement Text'=>$child_text,
-//                 	             'Parent Requirement Tag'=>$parent['tag'],
-//                 	             'Parent Requirement Text'=>$parent_text,
-//                                  'column'=>json_encode($column[0]),
-//                                  'verification_id'=>$job->id
-// 					);
-// 					//var_dump($array);
-// 					ChildMatrix::create($array);
+					$array=array('Child Requirement Tag'=>$child['tag'],
+                	             'Child Requirement Text'=>$child_text,
+                	             'Parent Requirement Tag'=>$parent['tag'],
+                	             'Parent Requirement Text'=>$parent_text,
+                                 'column'=>json_encode($column[0]),
+                                 'verification_id'=>$job->id
+					);
+					//var_dump($array);
+					ChildMatrix::create($array);
 
-// 				}//if
-// 			}//foreach
-// 		}//foreach child_matrix
-			
-			
-			
-			
-// 		foreach($parents as  $parent){
-// 			//var_dump($parent);return;
-// 			$flag=false;$column=[];
-// 			$parent_column=json_decode('{'.$parent['column'].'}',true);
-// 			foreach($array_child as $child){
-// 				$child_column=json_decode('{'.$child['column'].'}',true);
-// 				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
-// 				{
-// 					$flag=true;
-// 					foreach($parent_column as $key=>$value){
-// 						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
-// 						if($key=='description'||$key=='test case description'){continue;}
-// 						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
-// 						:$column[]=array($key=>$value.MID_COMPOSE);
-// 					}//foreach
-// 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
-// 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
-// 					$array=array('Parent Requirement Tag'=>$parent['tag'],
-//                 	             'Parent Requirement Text'=>$parent_text,
-//                   				 'Child Requirement Tag'=>$child['tag'],
-//                 	             'Child Requirement Text'=>$child_text,
-//                                  'column'=>json_encode($column[0]),
-// 					             'parent_v_id'=>$parent['version_id'],
-//                                  'verification_id'=>$job->id
-// 					);
-// 					//var_dump($array);
-// 					ParentMatrix::create($array);
-// 				}//if
-// 			}//foreach
-// 			if(!$flag){
-// 				$column=[];
-// 				foreach($parent_column as $key=>$value){
-// 					$column[]=array($key=>$value.MID_COMPOSE);
-// 				}
-// 				array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
-// 				$array=array('Parent Requirement Tag'=>$parent['tag'],
-//             	             'Parent Requirement Text'=>$parent_text,
-//                              'column'=>json_encode($column[0]),
-// 				             'parent_v_id'=>$parent['version_id'],
-//                              'verification_id'=>$job->id
-// 				);
-// 				//var_dump($array);
-// 				ParentMatrix::create($array);
-// 			}
-// 		}//foreach
+				}//if
+			}//foreach
+		}//foreach child_matrix
+
+		foreach($parents as  $parent){
+			//var_dump($parent);return;
+			$flag=false;$column=[];
+			$parent_column=json_decode('{'.$parent['column'].'}',true);
+			foreach($array_child as $child){
+				$child_column=json_decode('{'.$child['column'].'}',true);
+				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
+				{
+					$flag=true;
+					foreach($parent_column as $key=>$value){
+						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+						if($key=='description'||$key=='test case description'){continue;}
+						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
+						:$column[]=array($key=>$value.MID_COMPOSE);
+					}//foreach
+					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
+					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
+					$array=array('Parent Requirement Tag'=>$parent['tag'],
+                	             'Parent Requirement Text'=>$parent_text,
+                  				 'Child Requirement Tag'=>$child['tag'],
+                	             'Child Requirement Text'=>$child_text,
+                                 'column'=>json_encode($column[0]),
+					             'parent_v_id'=>$parent['version_id'],
+                                 'verification_id'=>$job->id
+					);
+					//var_dump($array);
+					ParentMatrix::create($array);
+				}//if
+			}//foreach
+			if(!$flag){
+				$column=[];
+				foreach($parent_column as $key=>$value){
+					$column[]=array($key=>$value.MID_COMPOSE);
+				}
+				array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
+				$array=array('Parent Requirement Tag'=>$parent['tag'],
+            	             'Parent Requirement Text'=>$parent_text,
+                             'column'=>json_encode($column[0]),
+				             'parent_v_id'=>$parent['version_id'],
+                             'verification_id'=>$job->id
+				);
+				//var_dump($array);
+				ParentMatrix::create($array);
+			}
+		}//foreach
 
 
-// 		return $job;
-// 	}
-
-// 	public function update($id)
-// 	{
-// 		$t = Verification::find($id);
-// 		$t->update(Input::get());
-// 		if(!Input::get('data'))return $t;
-// 		foreach(Input::get('data') as $item)
-// 		{
-// 			// $t->child_matrix->attach(json_encode($item));
-// 		 ($matrix=ChildMatrix::find($item['id']))||($matrix=ParentMatrix::find($item['id']));
-// 		 $matrix->update($item);
-// 		}
-// 	}//continous
-
-    public function index()
-    {
-        $vefs = Project::find(Input::get('project_id'))->verifications;
-        foreach ($vefs as $v) {
-            $v->childVersion->document;
-            foreach ($v->parentVersions as $parent) {
-                $parent->document;
-            }
-        }
-        return $vefs;
-    }
+		return $job;
+	}
 
     public function summary($version = null)
     {
@@ -300,6 +177,7 @@ class VerificationController extends BaseController
                 ->where('parent_v_id', '=', $parent->id);
             $num = $middleware->first();
             $num_ok = $middleware->where('Verif_Assesst', 'like', '%OK%')->first();
+            var_dump($num_ok); exit;
             $num_nok = $middleware->where('Verif_Assesst', 'like', '%NOK%')->first();
             $num_na = $middleware->where('Verif_Assesst', 'like', '%NA%')->first();
             // $ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
@@ -439,139 +317,6 @@ class VerificationController extends BaseController
         $objWriter->save('php://output');
     }
 
-    public function store()
-    {
-        $job = Verification::create(Input::get());
-        $job->status = 0;
-        $job->author = Input::get('account') ? Input::get('account') : null;
-        foreach (Input::get('parent_versions') as $v) {
-            array_key_exists('parent_version_id', $v) ? $job->parentVersions()->attach($v['parent_version_id']) : '';
-        }
-        $job->save();
-        $array_child = array();
-        $parent_array = array();
-        $parent_vids = [];
-        foreach ($job->parentVersions as $vs) {
-            $parent_vids[] = $vs->id;
-        }
-        $parent_items = $job->childVersion->parent_item($parent_vids);
-        switch ($job->childVersion->document->type) {
-            case 'tc':
-                $array_child = Tc::where('version_id', '=', $job->child_version_id)->get()->toArray();
-                break;
-            case 'rs':
-                $array_child = Rs::where('version_id', '=', $job->child_version_id)->get()->toArray();
-                break;
-            default:
-        }
-        $comment = '';
-        $column = [];
-        $child_text = '';
-        $parent_text = '';
-        foreach ($array_child as $child) {
-            foreach ($parent_items[0] as $parent) { // for循环结束就是空行记录的了
-                $column = [];
-                $parent_column = json_decode('{' . $parent['column'] . '}', true);
-                $child_column = json_decode('{' . $child['column'] . '}', true);
-                if ($child_column && array_key_exists('source', $child_column) && in_array($parent['tag'], explode(',', $child_column['source']))) {
-                    if ($child_column && $parent_column) {
-                        foreach ($parent_column as $key => $value) {
-                            if ($key == 'contribution') {
-                                array_key_exists('safety', $child_column) ? $column[] = array(
-                                    $key,
-                                    $value . MID_COMPOSE . $child_column['safety']
-                                ) : $column[] = array(
-                                    $key,
-                                    $value . MID_COMPOSE
-                                );
-                            }
-                            array_key_exists($key, $child_column) ? $column[] = array(
-                                $key => $child_column[$key] . MID_COMPOSE . $value
-                            ) : $column[] = array(
-                                $key => $value . MID_COMPOSE
-                            );
-                        } // foreach
-                              // var_dump($column);
-                    } // if
-                    array_key_exists('description', $child_column) ? $child_text = $child_column['description'] : array_key_exists('test case description', $child_column) ? $child_text = $child_column['test case description'] : '';
-                    array_key_exists('description', $parent_column) ? $parent_text = $parent_column['description'] : '';
-                    
-                    $array = array(
-                        'Child Requirement Tag' => $child['tag'],
-                        'Child Requirement Text' => $child_text,
-                        'Parent Requirement Tag' => $parent['tag'],
-                        'Parent Requirement Text' => $parent_text,
-                        'column' => json_encode($column[0]),
-                        'verification_id' => $job->id
-                    );
-                    // var_dump($array);
-                    ChildMatrix::create($array);
-                } // if
-            } // foreach
-        } // foreach child_matrix
-        
-        foreach ($parent_items[0] as $parent) {
-            // var_dump($parent);return;
-            $flag = false;
-            $column = [];
-            $parent_column = json_decode('{' . $parent['column'] . '}', true);
-            foreach ($array_child as $child) {
-                $child_column = json_decode('{' . $child['column'] . '}', true);
-                if ($child_column && array_key_exists('source', $child_column) && in_array($parent['tag'], explode(',', $child_column['source']))) {
-                    $flag = true;
-                    foreach ($parent_column as $key => $value) {
-                        if ($key == 'contribution') {
-                            array_key_exists('safety', $child_column) ? $column[] = array(
-                                $key,
-                                $value . MID_COMPOSE . $child_column['safety']
-                            ) : $column[] = array(
-                                $key,
-                                $value . MID_COMPOSE
-                            );
-                        }
-                        array_key_exists($key, $child_column) ? $column[] = array(
-                            $key => $child_column[$key] . MID_COMPOSE . $value
-                        ) : $column[] = array(
-                            $key => $value . MID_COMPOSE
-                        );
-                    } // foreach
-                    array_key_exists('description', $child_column) ? $child_text = $child_column['description'] : array_key_exists('test case description', $child_column) ? $child_text = $child_column['test case description'] : '';
-                    array_key_exists('description', $parent_column) ? $parent_text = $parent_column['description'] : '';
-                    $array = array(
-                        'Parent Requirement Tag' => $parent['tag'],
-                        'Parent Requirement Text' => $parent_text,
-                        'Child Requirement Tag' => $child['tag'],
-                        'Child Requirement Text' => $child_text,
-                        'column' => json_encode($column[0]),
-                        'parent_v_id' => $parent['version_id'],
-                        'verification_id' => $job->id
-                    );
-                    // var_dump($array);
-                    ParentMatrix::create($array);
-                } // if
-            } // foreach
-            if (! $flag) {
-                $column = [];
-                foreach ($parent_column as $key => $value) {
-                    $column[] = array(
-                        $key => $value . MID_COMPOSE
-                    );
-                }
-                array_key_exists('description', $parent_column) ? $parent_text = $parent_column['description'] : '';
-                $array = array(
-                    'Parent Requirement Tag' => $parent['tag'],
-                    'Parent Requirement Text' => $parent_text,
-                    'column' => json_encode($column[0]),
-                    'parent_v_id' => $parent['version_id'],
-                    'verification_id' => $job->id
-                );
-                // var_dump($array);
-                ParentMatrix::create($array);
-            }
-        } // foreach
-        
-        return $job;
-    }
 
     public function update($id)
     {
