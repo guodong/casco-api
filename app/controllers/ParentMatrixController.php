@@ -8,9 +8,12 @@ class ParentMatrixController extends BaseController {
  	
  	$items=[];
  	//列名与字段一一对应起来吧
- 	if($id=Input::get('id')){
+ 	
+ 	if(($id=Input::get('id'))&&($parent_v_id=Input::get('parent_v_id'))){
+ 		$items=ParentMatrix::where('verification_id','=',$id)->where('parent_v_id','=',$parent_v_id)->orderBy('Parent Requirement Tag','asc')->get()->toArray();
+ 	}else if($id=Input::get('id')){
  		$items=ParentMatrix::where('verification_id','=',$id)->orderBy('Parent Requirement Tag','asc')->get()->toArray();
- 	}
+ 	}else {return [];}
    $columModle=array();
    $argu=$items?json_decode($items[0]['column'],true):[];
    foreach($argu as $key=>$value){
@@ -66,13 +69,20 @@ class ParentMatrixController extends BaseController {
  }
  
  public function export(){
-  
- 		$ver = Verification::find(Input::get("v_id"));
- 		//$ver=Verification::where('id','=',Input::get('v_id'))->first();
-		$parent_matrix =$ver->parentMatrix;
-		//var_dump(json_decode($child_matrix[0]->column));exit;
+         
+ 	    if(Input::get('v_id')&&Input::get('parent_v_id')){
+ 	     $parent_matrix=ParentMatrix::where('verification_id','=',Input::get('v_id'))
+ 	     ->where('parent_v_id','=',Input::get('parent_v_id'))->get();
+ 	    }else if(Input::get('v_id')){
+ 	     $ver = Verification::find(Input::get("v_id"));
+		 $parent_matrix =$ver->parentMatrix;
+ 	    }else{
+ 	     $parent_matrix=[];
+ 	    }
+ 		//var_dump($parent_matrix);exit;
+		$tmp_col=count($parent_matrix)>0?json_decode($parent_matrix[0]->column):[];
 		$column=array();
-		foreach(json_decode($parent_matrix[0]->column) as $key=>$value){
+		foreach($tmp_col as $key=>$value){
 	    $column[]=$key;
 		}
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';

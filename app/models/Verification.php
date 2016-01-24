@@ -7,7 +7,7 @@ class Verification extends BaseModel {
 	
 	public function childVersion()
 	{
-	    return $this->belongsTo('Version', 'child_version_id');
+	    return $this->belongsTo('Version','child_version_id','id');
 	}
 	
 	public function childMatrix(){
