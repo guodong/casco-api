@@ -146,7 +146,7 @@ class VerificationController extends BaseController
         $child = $ver->childVersion;
         $middleware = DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id);
         $num = $middleware->first();
-        $item_nok = $middleware->where('Verif_Assesstment', 'like', '%NOK%');
+        $item_nok = $middleware->where('Verif_Assessment', 'like', '%NOK%');
         $num_ok = $middleware->where('Verif_Assessment', 'like', '%OK%')->first();
         $num_nok = $item_nok->first();
         $num_na = $middleware->where('Verif_Assessment', 'like', '%NA%')->first();
