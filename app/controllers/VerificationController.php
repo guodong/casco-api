@@ -22,6 +22,20 @@ class VerificationController extends BaseController
 		return $ans;
 	}
 	
+	public function destroy($id){
+		$ver=Verification::find($id);
+		if(!$ver) return [];
+			$ver->childMatrix->each(function($u){
+				$u->delete();
+			});
+			$ver->parentMatrix->each(function($u){
+				$u->delete();
+			});
+		//删掉关系记录
+		DB::table('verification_parent_version')->where('verification_id','=',$id)->delete();
+		$ver->delete();
+		return $ver;
+	}
 	
 	public function store()
 	{
@@ -65,7 +79,7 @@ class VerificationController extends BaseController
 						}//foreach
 						// var_dump($column);
 					}//if
-					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
+					array_key_exists('description',$child_column)?$child_text=$child_column['description']:(array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'');
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
 					$array=array('Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
@@ -94,7 +108,8 @@ class VerificationController extends BaseController
 						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
 						:$column[]=array($key=>$value.MID_COMPOSE);
 					}//foreach
-					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
+					array_key_exists('description',$child_column)&&$child_text=$child_column['description'];
+					array_key_exists('test case description',$child_column)&&$child_text=$child_column['test case description'];
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
 					$array=array('Parent Requirement Tag'=>$parent['tag'],
                 	             'Parent Requirement Text'=>$parent_text,
@@ -427,7 +442,8 @@ class VerificationController extends BaseController
 		foreach ($vefs as $v){
 			 $i=1;
 			 $description="Verify  according to".$EOF;
-			 $description.=$i++.')'.$v->childVersion->document->name.' '.$v->childVersion->name.$EOF;
+			 $description.=$i++.')'.$v->childVersion->document->name.' '.
+			 $v->childVersion->name.$EOF;
 			 foreach($v->parentVersions as $parent){
 			 $description.=$i++.')'.$parent->document->name.' '.$parent->name.$EOF;
 			}
