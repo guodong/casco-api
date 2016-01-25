@@ -161,10 +161,11 @@ class VerificationController extends BaseController
         $child = $ver->childVersion;
         $middleware = DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id);
         $num = $middleware->first();
+        $item_nok = $middleware->where('Verif_Assesstment', 'like', '%NOK%');
         $num_ok = $middleware->where('Verif_Assessment', 'like', '%OK%')->first();
-        $num_nok = $middleware->where('Verif_Assessment', 'like', '%NOK%')->first();
+        $num_nok = $item_nok->first();
         $num_na = $middleware->where('Verif_Assessment', 'like', '%NA%')->first();
-        $num_tmp = $middleware->where('Already described in completeness','like','%YES%')->first();
+        $num_tmp = $item_nok->where('Already described in completeness','not like','%YES%')->first();
         $ans[] = array(
             'doc_name' => $child->document->name . c_prefix,
             'nb of req' => $num->num,
@@ -172,7 +173,7 @@ class VerificationController extends BaseController
             'nb req NOK' => $num_nok->num,
             'nb req NA' => $num_na->num,
             'Percent of completeness' => ($num->num != 0) ? round(($num_ok->num / $num->num) * 100) . '%' : 0,
-            'defect_num' => $num_nok->num - $num_tmp->num,
+            'defect_num' => $num_nok->num,
             'not_complete' => 'X',
             'wrong_coverage' => 'X',
             'logic_error' => 'X',
@@ -183,17 +184,17 @@ class VerificationController extends BaseController
                 ->where('verification_id', '=', $ver->id)
                 ->where('parent_v_id', '=', $parent->id);
             $num = $middleware->first();
+            $item_nok = $middleware->where('Verif_Assesst', 'like', '%NOK%');
             $num_ok = $middleware->where('Verif_Assesst', 'like', '%OK%')->first();
-            var_dump($num_ok); exit;
-            $num_nok = $middleware->where('Verif_Assesst', 'like', '%NOK%')->first();
+            $num_nok = $item_nok->first();
             $num_na = $middleware->where('Verif_Assesst', 'like', '%NA%')->first();
             // $ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
 //             $middleware = ParentMatrix::where('verification_id', '=', $ver->id);
 //             $defect_num = $middleware->where('Completeness', 'like', '%NOK%')->first();;
-            $not_complete = $middleware->where('Defect Type', 'like', '%Not complete%')->count();
-            $wrong_coverage = $middleware->where('Defect Type', 'like', '%Wrong coverage%')->count();
-            $logic_error = $middleware->where('Defect Type', 'like', '%logic or description mistake%')->count();
-            $other = $middleware->where('Defect Type', 'like', '%Other%')->count();
+            $not_complete = $item_nok->where('Defect Type', 'like', '%Not complete%')->count();
+            $wrong_coverage = $item_nok->where('Defect Type', 'like', '%Wrong coverage%')->count();
+            $logic_error = $item_nok->where('Defect Type', 'like', '%logic or description mistake%')->count();
+            $other = $item_nok->where('Defect Type', 'like', '%Other%')->count();
             $ans[] = array(
                 'doc_name' => $parent->document->name . p_prefix,
                 'nb of req' => $num->num,
