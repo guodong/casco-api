@@ -177,7 +177,6 @@ class VerificationController extends BaseController
                 ->where('parent_v_id', '=', $parent->id);
             $num = $middleware->first();
             $num_ok = $middleware->where('Verif_Assesst', 'like', '%OK%')->first();
-            var_dump($num_ok); exit;
             $num_nok = $middleware->where('Verif_Assesst', 'like', '%NOK%')->first();
             $num_na = $middleware->where('Verif_Assesst', 'like', '%NA%')->first();
             // $ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
