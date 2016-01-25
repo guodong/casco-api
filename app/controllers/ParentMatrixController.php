@@ -76,7 +76,7 @@ class ParentMatrixController extends BaseController {
 			$ver=Verification::find(Input::get("v_id"));
 		}else if(Input::get('v_id')){
 			$ver = Verification::find(Input::get("v_id"));
-		 $parent_matrix =$ver->parentMatrix;
+		    $parent_matrix =$ver->parentMatrix;
 		}else{
 			$ver=[];
 			$parent_matrix=[];
