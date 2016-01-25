@@ -29,14 +29,13 @@ class Version extends BaseModel {
 	   //$parent_vid是数组,而且与$dest是对应的我去!只用version_id就足够了吧
 	  foreach($parent_vids as $parent_vid){
 	  	//var_dump($parent_vid);
-	   
 	  	if(Tc::where('version_id', '=', $parent_vid)->get()->toArray()!=null){	
 	    array_push($parent_item,Tc::where('version_id', '=', $parent_vid)->get()->toArray());
 	  	}else{array_push($parent_item,Rs::where('version_id', '=', $parent_vid)->get()->toArray());}
 	   
 	  }//foreach
 	  //  var_dump($parent_item);
-	    return  ($parent_item);
+	    return  $parent_item;
 	   	
 	}
 	

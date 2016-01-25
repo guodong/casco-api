@@ -1,18 +1,17 @@
 <?php
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
-
 class VerificationController extends BaseController
 {
-
 	public function index()
 	{
 		//$vefs = Project::find(Input::get('project_id'))->verifications;
 		if(!Input::get('child_id'))return [];
-		$vefs=Verification::where('project_id','=',Input::get('project_id'))->orderBy('created_at','desc')->get();$ans=[];	
+		$vefs=Verification::where('project_id','=',Input::get('project_id'))->orderBy('created_at','desc')->get();
+		$ans=[];	
 		foreach ($vefs as $v){
-			//var_dump($v);exit;
-			if($v->childVersion->document->id==Input::get('child_id')){
+			//&&短路原则很有用
+			if($v->childVersion&&$v->childVersion->document->id==Input::get('child_id')){
 			foreach($v->parentVersions as $parent){
 				$parent->document;
 			}
@@ -22,8 +21,6 @@ class VerificationController extends BaseController
 			
 		return $ans;
 	}
-
-
 	
 	
 	public function store()
@@ -35,11 +32,12 @@ class VerificationController extends BaseController
 			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
 		}
 		$job->save();
-		$array_child=array();$parent_array=array();
+		$array_child=array();$parent_array=array();$parent_items=[];$parents=[];
 		$parent_vids=[];
 		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
-		$parent_items=$job->childVersion->parent_item($parent_vids);
-		$parents=(!empty(array_filter($parent_items)))?$parent_items[0]:[];
+		if($job->childVersion)
+		{$parent_items=$job->childVersion->parent_item($parent_vids);
+		$parents=(!empty(array_filter($parent_items)))?$parent_items[0]:$parents;
 		switch($job->childVersion->document->type){
 			case 'tc':
 				$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
@@ -49,6 +47,7 @@ class VerificationController extends BaseController
 				break;
 			default:
 		}
+		}//if
 		$comment='';$column=[];$child_text='';$parent_text='';
 		foreach($array_child as $child){
 			foreach($parents as  $parent){//for循环结束就是空行记录的了
@@ -68,8 +67,6 @@ class VerificationController extends BaseController
 					}//if
 					array_key_exists('description',$child_column)?$child_text=$child_column['description']:array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'';
 					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
-
-
 					$array=array('Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
                 	             'Parent Requirement Tag'=>$parent['tag'],
@@ -79,11 +76,9 @@ class VerificationController extends BaseController
 					);
 					//var_dump($array);
 					ChildMatrix::create($array);
-
 				}//if
 			}//foreach
 		}//foreach child_matrix
-
 		foreach($parents as  $parent){
 			//var_dump($parent);return;
 			$flag=false;$column=[];
@@ -129,11 +124,8 @@ class VerificationController extends BaseController
 				ParentMatrix::create($array);
 			}
 		}//foreach
-
-
 		return $job;
 	}
-
     public function summary($version = null)
     {
         define('c_prefix', '_Tra');
@@ -202,7 +194,6 @@ class VerificationController extends BaseController
         }
         return $ans;
     }
-
     public function summary_export()
     {
         include PATH_BASE . '/PE/Classes/PHPExcel.php';
@@ -315,8 +306,6 @@ class VerificationController extends BaseController
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
     }
-
-
     public function update($id)
     {
         $t = Verification::find($id);
@@ -330,13 +319,11 @@ class VerificationController extends BaseController
         }
         return $t;
     }
-
     public function rsversion()
     {
         $job = Testjob::find(Input::get('job_id'));
         $rsvs = $job->rsVersions;
     }
-
     public function addFileToZip($path, $zip)
     {
         $handler = opendir($path); // 打开当前文件夹由$path指定。
@@ -351,7 +338,6 @@ class VerificationController extends BaseController
         }
         @closedir($path);
     }
-
     public function del($path)
     {
         if (is_dir($path)) {
@@ -366,7 +352,6 @@ class VerificationController extends BaseController
             @unlink($path); // 这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
         }
     }
-
     public function export_pro()
     {
         $job = Testjob::find(Input::get("job_id"));
@@ -409,7 +394,6 @@ class VerificationController extends BaseController
         $this->del($path);
         // rmdir($path);
     }
-
 	public function export(){
 		//导出所有的report啊我去	
 		$EOF="\r\n";
