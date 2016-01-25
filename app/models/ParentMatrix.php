@@ -9,8 +9,9 @@ class ParentMatrix extends BaseModel {
 		return  $this->belongsTo('Verification');
 	}
 	
-	
-	
+	public function version(){
+		return $this->belongsTo('Version','parent_v_id','id');
+	}
 	
 }
 ?>

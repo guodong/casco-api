@@ -90,9 +90,9 @@ class ProjectController extends BaseController {
 
 		set_time_limit ( 0 );
 		$name = uniqid () . '.doc';
-		//echo $name;
-		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
-		$version->filename = $name;
+		$version->old_filename=$_FILES ["file"]["name"];//上传文件名字
+		move_uploaded_file($_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
+		$version->new_filename = $name;
 		$version->touch();
 		//先save一下方便后续更新?
 		$version->save ();
