@@ -101,8 +101,8 @@ class ParentMatrixController extends BaseController {
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		//添加title进去
 		$circle=array('col'=>'A','row'=>3);
-		$child_doc_name=$ver->childVersion->old_filename;
-		$parent_doc_name=count($parent_matrix)>0?$parent_matrix[0]->version->old_filename:'';
+		$child_doc_name=$ver->childVersion->document->name;//;old_filename;
+		$parent_doc_name=count($parent_matrix)>0?($parent_matrix[0]->version->document->name):'';//old_filename:'';
 		$objPHPExcel->setActiveSheetIndex(0)->setCellValue($circle['col'] . ($circle['row']), $child_doc_name.' COVERS '.$parent_doc_name);
 		$objPHPExcel->getActiveSheet()
 		->getColumnDimension($circle['col'])
@@ -167,7 +167,8 @@ class ParentMatrixController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $row, $this->filter($item,'No Compliance Description'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $this->filter($item,'Defect Type'));
 				
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $row, $this->filter($item,'Verif Assest justifiaction'));
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $row, $this->filter($item,'Verif Assest justifiaction
+			'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $row,$this->filter($item,'CR'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'Comment'));
 			$j=10;
