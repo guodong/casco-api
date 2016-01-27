@@ -138,7 +138,7 @@ class ParentMatrixController extends BaseController {
 		 -> setPromptTitle('设备类型')
 		 -> setFormula1('"列表项1,列表项2,列表项3"');
 		 */
-
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $this->filter($item,'Verif_Assesst'));
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_num,'Verif Assest justifiaction');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $line_num,'CR');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10,$line_num,'Comment');
@@ -166,7 +166,7 @@ class ParentMatrixController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $this->filter($item,'Completeness'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $row, $this->filter($item,'No Compliance Description'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $this->filter($item,'Defect Type'));
-				
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $this->filter($item,'Verif_Assesst'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $row, $this->filter($item,'Verif Assest justifiaction'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $row,$this->filter($item,'CR'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'Comment'));
