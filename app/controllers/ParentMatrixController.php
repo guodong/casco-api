@@ -138,11 +138,11 @@ class ParentMatrixController extends BaseController {
 		 -> setPromptTitle('设备类型')
 		 -> setFormula1('"列表项1,列表项2,列表项3"');
 		 */
-
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_num,'Verif Assest justifiaction');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $line_num,'CR');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10,$line_num,'Comment');
-		$i=10;
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_num,'Verif. Assesst');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $line_num,'Verif Assest justifiaction');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $line_num,'CR');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11,$line_num,'Comment');
+		$i=11;
 		foreach($column as $value){
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$i,$line_num,$value.COL_PREFIX);
 			//设置自定义列宽度
@@ -166,12 +166,11 @@ class ParentMatrixController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $this->filter($item,'Completeness'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $row, $this->filter($item,'No Compliance Description'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $this->filter($item,'Defect Type'));
-				
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $row, $this->filter($item,'Verif Assest justifiaction
-			'));
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $row,$this->filter($item,'CR'));
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'Comment'));
-			$j=10;
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $row, $this->filter($item,'Verif_Assesst'));
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $row, $this->filter($item,'Verif Assest justifiaction'));
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'CR'));
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11, $row,$this->filter($item,'Comment'));
+			$j=11;
 			foreach($column as $key){
 				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter(json_decode($item['column']),$key));
 			}

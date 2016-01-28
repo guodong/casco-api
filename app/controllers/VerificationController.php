@@ -159,50 +159,65 @@ class VerificationController extends BaseController
         $ans = [];
         // 从数据库中取太慢了吧,使用count就行了
         $child = $ver->childVersion;
-        $middleware = DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id);
-        $num = $middleware->first();
-        $item_nok = $middleware->where('Verif_Assessment', 'like', '%NOK%');
-        $num_ok = $middleware->where('Verif_Assessment', 'like', '%OK%')->first();
-        $num_nok = $item_nok->first();
-        $num_na = $middleware->where('Verif_Assessment', 'like', '%NA%')->first();
-        $num_tmp = $item_nok->where('Already described in completeness','not like','%YES%')->first();
+        //从结果中继续查找了吧。。。
+//         $middleware = DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id);
+//         $middleware_nok = $middleware->where('Verif_Assessment', 'like', 'NOK');    //和顺序有关？
+//         $num = $middleware->count();
+//         $num_ok = $middleware->where('Verif_Assessment', 'like', 'OK')->count();
+//         $middleware_nok = $middleware->where('Verif_Assessment', 'like', 'NOK');
+//         $num_nok = $middleware_nok->count();
+//         $num_na = $middleware->where('Verif_Assessment', 'like', 'NA')->first();
+//         $defefct_num = $middleware_nok->where('Already described in completeness','like','NO')->first();
+        $num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->count();
+        $num_ok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'OK')->count();
+        $num_nok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->count();
+        $num_na=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NA')->count();
+        $defect_num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->where('Already described in completeness','not like','YES')->count();
         $ans[] = array(
             'doc_name' => $child->document->name . c_prefix,
-            'nb of req' => $num->num,
-            'nb req OK' => $num_ok->num,
-            'nb req NOK' => $num_nok->num,
-            'nb req NA' => $num_na->num,
-            'Percent of completeness' => ($num->num != 0) ? round(($num_ok->num / $num->num) * 100) . '%' : 0,
-            'defect_num' => $num_nok->num,
+            'nb of req' => $num,
+            'nb req OK' => $num_ok,
+            'nb req NOK' => $num_nok,
+            'nb req NA' => $num_na,
+            'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100) . '%' : 0,
+            'defect_num' => $defect_num,
             'not_complete' => 'X',
             'wrong_coverage' => 'X',
             'logic_error' => 'X',
             'other' => 'X'
         );
         foreach ($ver->parentVersions as $parent) {
-            $middleware = DB::table('parent_matrix')->select(DB::raw('count(*) as num'))
-                ->where('verification_id', '=', $ver->id)
-                ->where('parent_v_id', '=', $parent->id);
-            $num = $middleware->first();
-            $item_nok = $middleware->where('Verif_Assesst', 'like', '%NOK%');
-            $num_ok = $middleware->where('Verif_Assesst', 'like', '%OK%')->first();
-            $num_nok = $item_nok->first();
-            $num_na = $middleware->where('Verif_Assesst', 'like', '%NA%')->first();
-            // $ans[]=array('doc_name'=>$parent->document->name,'nb of req'=>$num->num,'nb req OK'=>$num_ok->num,'nb req NOK'=>$num_nok->num,'nb req NA'=>$num_na->num,'Percent of completeness'=>($num->num!=0)?round(($num_ok->num/$num->num)*100).'%':0);
+//             $middleware = DB::table('parent_matrix')->select(DB::raw('count(*) as num'))
+//                 ->where('verification_id', '=', $ver->id)
+//                 ->where('parent_v_id', '=', $parent->id);
+//             $num = $middleware->count();
+//             $middleware_nok = $middleware->where('Verif_Assesst', 'like', 'NOK');
+//             $num_ok = $middleware->where('Verif_Assesst', 'like', 'OK')->count();
+//             $num_nok = $middleware_nok->count();
+//             $num_na = $middleware->where('Verif_Assesst', 'like', 'NA')->count();
 //             $middleware = ParentMatrix::where('verification_id', '=', $ver->id);
-//             $defect_num = $middleware->where('Completeness', 'like', '%NOK%')->first();;
-            $not_complete = $item_nok->where('Defect Type', 'like', '%Not complete%')->count();
-            $wrong_coverage = $item_nok->where('Defect Type', 'like', '%Wrong coverage%')->count();
-            $logic_error = $item_nok->where('Defect Type', 'like', '%logic or description mistake%')->count();
-            $other = $item_nok->where('Defect Type', 'like', '%Other%')->count();
+//             $defect_num = $middleware->where('Completeness', 'like', 'NOK')->count();;
+//             $not_complete = $middleware_nok->where('Defect Type', 'like', 'Not complete')->count();
+//             $wrong_coverage = $middleware_nok->where('Defect Type', 'like', 'Wrong coverage')->count();
+//             $logic_error = $middleware_nok->where('Defect Type', 'like', 'logic or description mistake')->count();
+//             $other = $middleware_nok->where('Defect Type', 'like', 'Other')->count();
+            $num=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->count();
+            $num_ok=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'OK')->count();
+            $num_nok=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->count();
+            $num_na=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NA')->count();
+            $not_complete=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', '%Not complete%')->count();
+            $wrong_coverage=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', '%Wrong coverage%')->count();
+            $logic_error=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', '%logic or description mistake%')->count();
+            $other=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', 'Other')->count();
+            
             $ans[] = array(
                 'doc_name' => $parent->document->name . p_prefix,
-                'nb of req' => $num->num,
-                'nb req OK' => $num_ok->num,
-                'nb req NOK' => $num_nok->num,
-                'nb req NA' => $num_na->num,
-                'Percent of completeness' => ($num->num != 0) ? round(($num_ok->num / $num->num) * 100) . '%' : 0,
-                'defect_num' => $num_nok->num,
+                'nb of req' => $num,
+                'nb req OK' => $num_ok,
+                'nb req NOK' => $num_nok,
+                'nb req NA' => $num_na,
+                'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100) . '%' : 0,
+                'defect_num' => $num_nok,
                 'not_complete' => $not_complete,
                 'wrong_coverage' => $wrong_coverage,
                 'logic_error' => $logic_error,
