@@ -3,8 +3,15 @@
 class TreeController extends Controller{
 
     public function index()
-    {
-        return Document::whereRaw("fid = 0")->get();
+    {    
+    	
+    	 $rt=Document::whereRaw("fid=0")->get();
+    	 $root=array(
+            'text'=>'/',
+            'leaf'=>false,
+            'children'=>$rt
+            );
+        return $root;
         if(isset($_GET['node'])){
             $docs = Document::where('fid', '=', $_GET['node'])->get();
         }else{
@@ -58,8 +65,14 @@ class TreeController extends Controller{
                     'versions' => $d->versions
              );
          }
-         $r = array('children'=>$rt);
-         return json_encode($r);
+         $r = array(
+            'text'=>'/',
+            'name'=>'/',
+            'id'=>0,
+            'leaf'=>false,
+            'children'=>$rt
+             );
+         return  array('children'=>$r);
     	}else{
 
          	//假设认为文档project_id是可以信任的那么,行吧就写着里面的了
@@ -157,19 +170,9 @@ class TreeController extends Controller{
             'type'=>'project',
             'children'=>$rt
             );
-         	
-         		
-         		
-         		
          	}//foreach $projects
          	return json_encode($root);
-         	
-         
-        
     	}//else  	
-         	
-         	
-       
     }
     
     public function show($foder_id)
@@ -189,7 +192,12 @@ class TreeController extends Controller{
         $r = array('children'=>$rt);
         return json_encode($r);
     }
-    
+    public function store(){
+        //treenode的修改方式
+    	$document = new Document(Input::get());
+        $document->save();
+        return $document;	
+    }
     public function treemod()
     {
         $src = Document::find($_GET['src']);

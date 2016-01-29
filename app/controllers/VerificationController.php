@@ -200,7 +200,7 @@ class VerificationController extends BaseController
 //             $not_complete = $middleware_nok->where('Defect Type', 'like', 'Not complete')->count();
 //             $wrong_coverage = $middleware_nok->where('Defect Type', 'like', 'Wrong coverage')->count();
 //             $logic_error = $middleware_nok->where('Defect Type', 'like', 'logic or description mistake')->count();
-//             $other = $middleware_nok->where('Defect Type', 'like', 'Other')->count();
+//            可以使用闭包,孩子
             $num=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->count();
             $num_ok=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'OK')->count();
             $num_nok=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->count();

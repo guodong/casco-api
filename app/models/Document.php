@@ -37,7 +37,10 @@ class Document extends BaseModel {
 	{
 	    return $this->belongsToMany('Document', 'relation', 'src', 'dest');
 	}
-	
+	public function subs(){
+		
+		return $this->hasMany('Document','fid','id');;
+	}
 	public function versions()
 	{
 	    return $this->hasMany('Version');

@@ -109,7 +109,12 @@ class DocumentController extends Controller
     }
 
     public function update($id)
-    {}
+    {  
+    	$document =Document::find($id);
+        $document->update(Input::get());
+        $document->save();
+        return $document;
+    }
 
     public function destroy($id)
     {
@@ -146,18 +151,22 @@ class DocumentController extends Controller
 
        
        foreach($document->versions  as  $vs){
+         foreach($vs->tcs as $tcs){
+              $tcs->delete();
+         }
+        foreach($vs->rss as $rss){
+              $rss->delete();
+         }
            Version::destroy($vs->id);//删除versions
 
        }
-	    foreach($document->tcs as $tcs){
-                    $tcs->delete();}
-		foreach($document->version->rss as $rss){
-                    $rss->delete();}
-		//删除对应的关系表
 		$r = Relation::where('src', '=', $id);
 		$r->delete();
 		$r = Relation::where('dest', '=', $id);
 		$r->delete();
+		foreach($document->subs  as $subs){
+			$subs->delete();//子文件的删除
+		}
 		$document->destroy($id);
   
 		return $document;
