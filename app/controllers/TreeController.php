@@ -69,6 +69,7 @@ class TreeController extends Controller{
             'text'=>'/',
             'name'=>'/',
             'id'=>0,
+            'type'=>'folder',
             'leaf'=>false,
             'children'=>$rt
              );

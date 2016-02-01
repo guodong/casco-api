@@ -51,7 +51,7 @@ class VerificationController extends BaseController
 		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
 		if($job->childVersion)
 		{$parent_items=$job->childVersion->parent_item($parent_vids);
-		$parents=(!empty(array_filter($parent_items)))?$parent_items[0]:$parents;
+		$parents=(count($parent_items)>0)?$parent_items[0]:$parents;
 		switch($job->childVersion->document->type){
 			case 'tc':
 				$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
@@ -66,13 +66,13 @@ class VerificationController extends BaseController
 		foreach($array_child as $child){
 			foreach($parents as  $parent){//for循环结束就是空行记录的了
 				$column=[];
-				$parent_column=json_decode('{'.$parent['column'].'}',true);
+				$parent_column=json_decode('{'.$parent['column'].'}',true)?json_decode('{'.$parent['column'].'}',true):[];
 				$child_column=json_decode('{'.$child['column'].'}',true);
 				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
 				{
 					if($child_column&&$parent_column){
 						foreach($parent_column as $key=>$value){
-							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);}
 							if($key=='description'||$key=='test case description'){continue;}
 							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
 							:$column[]=array($key=>$value.MID_COMPOSE);
@@ -85,7 +85,7 @@ class VerificationController extends BaseController
                 	             'Child Requirement Text'=>$child_text,
                 	             'Parent Requirement Tag'=>$parent['tag'],
                 	             'Parent Requirement Text'=>$parent_text,
-                                 'column'=>json_encode($column[0]),
+                                 'column'=>(count($column)>0)?json_encode($column[0]):null,
                                  'verification_id'=>$job->id
 					);
 					//var_dump($array);
@@ -103,7 +103,7 @@ class VerificationController extends BaseController
 				{
 					$flag=true;
 					foreach($parent_column as $key=>$value){
-						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key,$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key,$value.MID_COMPOSE);}
+						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);}
 						if($key=='description'||$key=='test case description'){continue;}
 						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
 						:$column[]=array($key=>$value.MID_COMPOSE);
@@ -115,7 +115,7 @@ class VerificationController extends BaseController
                 	             'Parent Requirement Text'=>$parent_text,
                   				 'Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
-                                 'column'=>json_encode($column[0]),
+                                 'column'=>(count($column)>0)?json_encode($column[0]):null,
 					             'parent_v_id'=>$parent['version_id'],
                                  'verification_id'=>$job->id
 					);
@@ -131,7 +131,7 @@ class VerificationController extends BaseController
 				array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
 				$array=array('Parent Requirement Tag'=>$parent['tag'],
             	             'Parent Requirement Text'=>$parent_text,
-                             'column'=>json_encode($column[0]),
+                             'column'=>(count($column)>0)?json_encode($column[0]):null,
 				             'parent_v_id'=>$parent['version_id'],
                              'verification_id'=>$job->id
 				);

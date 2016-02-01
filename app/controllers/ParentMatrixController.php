@@ -22,7 +22,7 @@ class ParentMatrixController extends BaseController {
 		$data=[];
 		foreach($items as $item){
 			$column=json_decode($item['column'],true);
-			$column=array_merge((array)$item,$column);
+			$column=array_merge((array)$item,$column?$column:[]);
 			array_push($data,$column);
 		}
 		return  array('columModle'=>$columModle,'data'=>$data);

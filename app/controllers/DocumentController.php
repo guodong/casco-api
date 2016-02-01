@@ -122,7 +122,7 @@ class DocumentController extends Controller
        //delete project->graph
 
        $project=$document->project;
-       $graph=json_decode($project->graph);
+       $graph=json_decode($project?$project->graph:null);
        $data=[];
        if($graph){
          foreach($graph->cells  as $nodes)
