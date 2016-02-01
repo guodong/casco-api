@@ -429,7 +429,13 @@ class VerificationController extends BaseController
 	public function export(){
 		//导出所有的report啊我去	
 		$EOF="\r\n";
-		$vefs =Verification::where('project_id','=',Input::get('project_id'))->where('child_id','=',Input::get('child_id'))->get();
+		//child_id并没有记录
+		$vefs=Verification::where('project_id','=',Input::get('project_id'))
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                      ->from('version')
+                      ->whereRaw('version.id = verification.child_version_id and version.document_id="'.Input::get('child_id').'"');
+            })->get();
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new PHPExcel();
