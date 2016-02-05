@@ -90,9 +90,9 @@ class ProjectController extends BaseController {
 
 		set_time_limit ( 0 );
 		$name = uniqid () . '.doc';
-		$version->old_filename=$_FILES ["file"]["name"];//上传文件名字
-		move_uploaded_file($_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
-		$version->new_filename = $name;
+		//echo $name;
+		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
+		$version->filename = $name;
 		$version->touch();
 		//先save一下方便后续更新?
 		$version->save ();
@@ -117,8 +117,9 @@ class ProjectController extends BaseController {
 			$result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			// echo  "{success:true,info:'kaka!'}";
 			*/          $type = Input::get ( "type" );
-			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+                           $doc_url='http://192.100.212.31:8080/files/'.$name;
+			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
 			$result2 = file_get_contents($u);
 
 			$add = 0;
@@ -342,10 +343,10 @@ class ProjectController extends BaseController {
 	//要不要做个显示报表啊更直观一些.
 	$result='<table border=”1″ cellspacing=”0″ cellpadding=”2″>
 	<tr><td colspan="2"  align=center>旧版本'.$old_version->name.';新版本'.$version->name.'</td></tr>
-	<tr><td><font size="3" color="#00FF00">增添'.count($adds).'条</font></td><td>'.isset($adds)?implode(',',$adds):null.'</td></tr>
-	<tr><td><font size="3" color="blue">修改'.count($updates)."条</font></td><td>".isset($updates)?implode(',',$updates):null.'</td></tr>
-	<tr><td><font size="3" color="red">删除'.count($delete)."条</font></td><td>".isset($delete)?implode(',',$delete):null.'</td></tr>
-	<tr><td><font size="3" color="#FF8C00">未变'.count($nochange)."条</font></td><td>".isset($nochange)?implode(',',$nochange):null.'
+	<tr><td><font size="3" color="#00FF00">增添'.count($adds).'条</font></td><td>'.(string)implode(',',$adds).'</td></tr>
+	<tr><td><font size="3" color="blue">修改'.count($updates)."条</font></td><td>".(string)implode(',',$updates).'</td></tr>
+	<tr><td><font size="3" color="red">删除'.count($delete)."条</font></td><td>".(string)implode(',',$delete).'</td></tr>
+	<tr><td><font size="3" color="#FF8C00">未变'.count($nochange)."条</font></td><td>".(string)implode(',',$nochange).'
 	</td></tr></table>';
 	$version->result=$result;
 	$version->save();

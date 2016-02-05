@@ -16,13 +16,19 @@ class ParentMatrixController extends BaseController {
 		}else {return [];}
 		$columModle=array();
 		$argu=$items?json_decode($items[0]['column'],true):[];
-		foreach($argu as $key=>$value){
-			array_push($columModle,array('dataIndex'=>$key,'header'=>$key,'width'=>140));
+		foreach((array)$argu as $key=>$value){
+			$val_key=key((array)$value);
+			array_push($columModle,array('dataIndex'=>$val_key,'header'=>$val_key,'width'=>140));
 		}
 		$data=[];
 		foreach($items as $item){
-			$column=json_decode($item['column'],true);
-			$column=array_merge((array)$item,$column?$column:[]);
+			$column=(array)json_decode($item['column'],true);
+			$inner=[];
+			foreach($column as  $val){
+                            $inner=array_merge($inner,$val);
+                     	}
+			//var_dump($inner);
+			$column=array_merge((array)$item,(array)$inner);
 			array_push($data,$column);
 		}
 		return  array('columModle'=>$columModle,'data'=>$data);
@@ -81,11 +87,12 @@ class ParentMatrixController extends BaseController {
 			$ver=[];
 			$parent_matrix=[];
 		}
-		//var_dump($parent_matrix);exit;
-		$tmp_col=count($parent_matrix)>0?json_decode($parent_matrix[0]->column):[];
+		
+		$tmp_col=count($parent_matrix)>0?json_decode($parent_matrix[0]->column,true):[];
 		$column=array();
 		foreach($tmp_col as $key=>$value){
-			$column[]=$key;
+			$val_key=key(($value));
+			(!in_array($val_key,$column))&&$column[]=$val_key;
 		}
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
@@ -103,6 +110,7 @@ class ParentMatrixController extends BaseController {
 		$circle=array('col'=>'A','row'=>3);
 		$child_doc_name=$ver->childVersion->document->name;//;old_filename;
 		$parent_doc_name=count($parent_matrix)>0?($parent_matrix[0]->version->document->name):'';//old_filename:'';
+		
 		$objPHPExcel->setActiveSheetIndex(0)->setCellValue($circle['col'] . ($circle['row']), $child_doc_name.' COVERS '.$parent_doc_name);
 		$objPHPExcel->getActiveSheet()
 		->getColumnDimension($circle['col'])
@@ -170,15 +178,22 @@ class ParentMatrixController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $row, $this->filter($item,'Verif Assest justifiaction'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'CR'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11, $row,$this->filter($item,'Comment'));
-			$j=11;
+			$j=11; $data=[];
 			foreach($column as $key){
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter(json_decode($item['column']),$key));
+				//var_dump(json_decode($item['column']));
+				
+				foreach((array)json_decode($item['column'])  as $value){
+				$data=array_merge($data,(array)$value);
+				}	
+				//var_dump($data);		 
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($data,$key));
 			}
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setSize(10);
 			$row++;
 		}
+
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="parent_matrix.xls"');
 		header('Cache-Control: max-age=0');

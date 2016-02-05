@@ -13,17 +13,21 @@ class ChildMatrixController extends BaseController {
  	}
    $columModle=array();
    $argu=$items?json_decode($items[0]['column'],true):[];
-   foreach($argu as $key=>$value){
-   	array_push($columModle,array('dataIndex'=>$key,'header'=>$key,'width'=>140));
-   }
-   
-    $data=[];
-    foreach($items as $item){
-   	$column=json_decode($item['column'],true);
-   	$column=array_merge((array)$item,$column?$column:[]);
-   	array_push($data,$column);
-   	
-   }
+   foreach((array)$argu as $key=>$value){
+			$val_key=key((array)$value);
+			array_push($columModle,array('dataIndex'=>$val_key,'header'=>$val_key,'width'=>140));
+}
+		$data=[];
+		foreach($items as $item){
+			$column=(array)json_decode($item['column'],true);
+			$inner=[];
+			foreach($column as  $val){
+                            $inner=array_merge($inner,$val);
+                     	}
+			//var_dump($inner);
+			$column=array_merge((array)$item,(array)$inner);
+			array_push($data,$column);
+		}
     
    return  array('columModle'=>$columModle,'data'=>$data);
  }
@@ -77,7 +81,8 @@ class ChildMatrixController extends BaseController {
 		//var_dump(json_decode($child_matrix[0]->column));exit;
 		$column=array();
 		foreach(json_decode($child_matrix[0]->column) as $key=>$value){
-	    $column[]=$key;
+	         $val_key=key(($value));
+		(!in_array($val_key,$column))&&$column[]=$val_key;
 		}
 		$user = User::find(Session::get('uid'));
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
@@ -133,9 +138,15 @@ class ChildMatrixController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $row, $this->filter($item,'Verif. opinion justification'));
 		    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9, $row,$this->filter($item,'CR'));
 		    $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'Comment'));
-			$j=10;
+			$j=10; $data=[];
 			foreach($column as $key){
-	    	$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter(json_decode($item['column']),$key));
+				//var_dump(json_decode($item['column']));
+				
+				foreach((array)json_decode($item['column'])  as $value){
+				$data=array_merge($data,(array)$value);
+				}	
+				//var_dump($data);		 
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($data,$key));
 			}
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');
