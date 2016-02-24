@@ -15,10 +15,9 @@ class Version extends BaseModel {
 	    return $this->hasMany('Rs')->orderBy('tag');
 	}
 	
-	public function tc_child_header(){
-		
-		
-		
+	public function document()
+	{
+	    return $this->belongsTo('Document');
 	}
 	
 	public function parent_item($parent_vids){
@@ -72,8 +71,5 @@ class Version extends BaseModel {
 		
 	}
 	
-	public function document()
-	{
-	    return $this->belongsTo('Document');
-	}
+	
 }

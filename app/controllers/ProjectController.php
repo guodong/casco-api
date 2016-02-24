@@ -83,11 +83,8 @@ class ProjectController extends BaseController {
 
 		$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 
-		// var_dump($old_array->toArray());
-		//var_dump($this->objtoarr(($new_array)));
-		//最后记得删除所有的表哦
-
-
+		//不显示出来的列名,白名单的处理也应该在后端处理
+		$black_list=array('execution step','expected output','test steps');
 		set_time_limit ( 0 );
 		$name = uniqid () . '.doc';
 		//echo $name;
@@ -96,38 +93,28 @@ class ProjectController extends BaseController {
 		$version->touch();
 		//先save一下方便后续更新?
 		$version->save ();
-
 		$url_path = public_path () . '/files/' . $name;
 		//存贮列名到version里面的headers
 		$column = Input::get ("column");
-		$version->headers=strtolower($column);//此时column还没有过滤
+		$cols=explode(',',$column);$no_col=[];
+		foreach($cols as $col){!in_array($col,$black_list)&&array_push($no_col,$col);}
+		$version->headers=strtolower(implode(',',$no_col));//此时column还没有过滤
 		//$version->save();
 
-
-
 		try{
-
-
 			/*	$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
 			//$result2 = $soap->test( array ('url'=>'123' ) );
-
-
-
-
 			$result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
-			// echo  "{success:true,info:'kaka!'}";
-			*/          $type = Input::get ( "type" );
-			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-                           $doc_url='http://192.100.212.31:8080/files/'.$name;
-			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			*/
+			$type = Input::get ( "type" );
+			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+            //$doc_url='http://192.100.212.31:8080/files/'.$name;
+			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
 			$result2 = file_get_contents($u);
 
 			$add = 0;
 			$modify = 0;
 			$wait_save = array ();
-
-			//$data = $this->objtoarr ( $result2 ); //返回tc文档的具体信息
-			//echo (json_decode($result2));
 
 			if (! json_decode($result2)) {
 				$version->result="读取文档失败，远程服务器返回结果:".$result2;
@@ -135,7 +122,6 @@ class ProjectController extends BaseController {
 
 				return $result2;
 				}
-				//var_dump(($resolveResult));
 				$resolveResult =$this->objtoarr(json_decode($result2));
 
 				if (Input::get ( 'type' ) == 'tc') {
@@ -158,7 +144,6 @@ class ProjectController extends BaseController {
 				$num->column = substr ( $num->column, 0, - 1 );
 				$num->save ();
 				if ($wait_save) {
-
 				$num->steps()->delete();
 
 				}
@@ -166,8 +151,7 @@ class ProjectController extends BaseController {
 				var_dump ( $value );
 				$in = array ();
 				$in ["tc_id"] = $num->id;
-				$in = array_merge ( $in, $value );
-
+				$in = array_merge ( $in, (array)$value );
 				$step = TcStep::create ( $in );
 
 				}
@@ -194,25 +178,13 @@ class ProjectController extends BaseController {
 				$tc->column = substr ( $tc->column, 0, - 1 );
 				$tc->version_id = $version->id ;
 				$tc->save ();
-				//再存储tc_steps
-
-
-				// var_dump($wait_save);
 				foreach ( $wait_save as $value ) {
-					//TcStep::where ( "tc_id", "=", $tc->id )->drop ();
-					//$value依然是一个数组
-					//	 var_dump(array(json_decode($value)));
-					// var_dump(json_decode($value,true));
-					var_dump ( $value );
 					$in = array ();
-
 					$in ["tc_id"] = $tc->id;
-					$in = array_merge ( $in, $value );
+					$in = array_merge ( $in, (array)$value );
 					//	var_dump($in);
 					$step = TcStep::create ( $in );
 					//$step->save(); //这一句有问题么
-
-
 				}
 
 				$add ++;

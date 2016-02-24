@@ -47,10 +47,15 @@ Route::get('childmatrix/export', 'ChildMatrixController@export');
 Route::get('parentmatrix/export', 'ParentMatrixController@export');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
-Route::get('verification/summary','VerificationController@summary');
-Route::get('verification/summary_export','VerificationController@summary_export');
-Route::get('verification/export','VerificationController@export');
-Route::resource('verification', 'VerificationController');
+Route::group(array('prefix' => 'verification'), function()
+{
+Route::get('summary','VerificationController@summary');
+Route::get('summary_export','VerificationController@summary_export');
+Route::get('export','VerificationController@export');
+Route::get('export_all_sheets', 'VerificationController@export_all_sheets');
+Route::resource('/', 'VerificationController');
+}
+);
 Route::get('session', 'UserController@session');
 Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');

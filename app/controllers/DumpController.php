@@ -26,6 +26,7 @@ class DumpController extends Controller
             foreach($item->sources() as $rs){
                 $d = new stdClass();
                 $d->name = $rs;
+                
                 $d->isparent = true;
                 $data->parents[] = $d;
             };
