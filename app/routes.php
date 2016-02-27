@@ -28,6 +28,7 @@ Route::resource('tree', 'TreeController');
 Route::get('treeitem/root', 'TreeController@root');//mine
 Route::resource('treeitem', 'TreeItemController');
 Route::get('treemod', 'TreeController@treemod');
+Route::get('docfile_pre', 'ProjectController@docfile_pre');
 Route::post('docfile', 'ProjectController@docfile');
 Route::resource('vatstr', 'VatstrController');
 Route::resource('user', 'UserController');

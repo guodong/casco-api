@@ -2,7 +2,8 @@
 use Illuminate\Support\Facades\Input;
 
 class ProjectController extends BaseController {
-
+    
+	
 	// 项目创建
 	public function store() {
 		$project = new Project ( Input::get () );
@@ -66,15 +67,35 @@ class ProjectController extends BaseController {
 		}
 		return $ret;
 	}
-
+	public function docfile_pre() {
+		
+		$signal=Signal::first()->task;
+		//var_dump($signal);
+		return $signal;
+		
+	}
+	
+	public function p(){
+		
+		if(Signal::first()->task>0)Signal::decrement('task');
+		
+		
+	}
+	
+	public function v(){
+		
+		
+		while(Signal::first()->task>1)sleep(60);//休眠
+		Signal::increment('task');//注意顺序很重要
+		
+	}
+	
 	public function docfile() {
-
-
-
+		
+        
 		if (Input::get ( 'isNew' ) == 1){
 			$old_version=Version::where('document_id','=',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
-
 		}
 		else{
 			$version = Version::find ( Input::get ( 'version_id' ) );
@@ -87,7 +108,6 @@ class ProjectController extends BaseController {
 		$black_list=array('execution step','expected output','test steps');
 		set_time_limit ( 0 );
 		$name = uniqid () . '.doc';
-		//echo $name;
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
 		$version->filename = $name;
 		$version->touch();
@@ -110,8 +130,8 @@ class ProjectController extends BaseController {
 			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
             //$doc_url='http://192.100.212.31:8080/files/'.$name;
 			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			$this->v();
 			$result2 = file_get_contents($u);
-
 			$add = 0;
 			$modify = 0;
 			$wait_save = array ();
@@ -317,21 +337,21 @@ class ProjectController extends BaseController {
 	<tr><td colspan="2"  align=center>旧版本'.$old_version->name.';新版本'.$version->name.'</td></tr>
 	<tr><td><font size="3" color="#00FF00">增添'.count($adds).'条</font></td><td>'.(string)implode(',',$adds).'</td></tr>
 	<tr><td><font size="3" color="blue">修改'.count($updates)."条</font></td><td>".(string)implode(',',$updates).'</td></tr>
-	<tr><td><font size="3" color="red">删除'.count($delete)."条</font></td><td>".(string)implode(',',$delete).'</td></tr>
+	<tr><td><font size="3" color="red">保留(删除)'.count($delete)."条</font></td><td>".(string)implode(',',$delete).'</td></tr>
 	<tr><td><font size="3" color="#FF8C00">未变'.count($nochange)."条</font></td><td>".(string)implode(',',$nochange).'
 	</td></tr></table>';
 	$version->result=$result;
 	$version->save();
+	$this->p();
 	return  array('success'=>true,"msg"=>$result);
 
-
 	}catch ( SoapFault $e ) {
-
+	$this->p();
 	$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage () ));
 	$version->save();
 	return array ('success' => false, 'msg' => $e->getMessage () );
 	} catch ( Exception $e ) {
-
+	$this->p();
 	if($version){
 	$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage ()));
 
