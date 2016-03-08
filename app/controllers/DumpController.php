@@ -24,14 +24,14 @@ class DumpController extends Controller
             $data->parents = array();
             foreach($item->sources() as $rs){
                 $d = new stdClass();
-                $d->isexist=Rs::find($rs->id)?1:0;
+//                 $d->isexist=Rs::find($rs->id)?1:0;
                 $d->name = $rs;
                 $d->isparent = true;
                 $data->parents[] = $d;
             };
             foreach($item->tcs() as $tc){
                 $d = new stdClass(); 
-                $d->isexist=1;        
+//                 $d->isexist=1;        
                 $d->name = $tc['tag'];
                 $d->isparent = false;
                 $data->children[] = $d;
@@ -39,7 +39,7 @@ class DumpController extends Controller
             foreach($item->rss() as $rs){
                 $d = new stdClass();
                 $d->name = $rs['tag'];
-                $d->isexist=1;  
+//                 $d->isexist=1;  
                 $d->isparent = false;
                 $data->children[] = $d;
             };

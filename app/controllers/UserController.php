@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
 class UserController extends BaseController {
@@ -49,10 +48,12 @@ class UserController extends BaseController {
 	    
 	    return $user->toJson();
 	}
+	
 	public function is_md5($password) {
-                // echo 'ans is '.preg_match("/^[a-z0-9]{32}$/",$password);
+        // echo 'ans is '.preg_match("/^[a-z0-9]{32}$/",$password);
 		return preg_match("/^[a-z0-9]{32}$/", $password);
         }
+        
 	// PUT /user/$id
 	public function update($id)
 	{
@@ -115,46 +116,26 @@ class UserController extends BaseController {
             return $user;
              
         }
-	public function login()
-	{   
-		
-		
+        
+	public function login(){   
 		$user=User::whereRaw('account = ?',array(Input::get('account')))->first();
-		
 		if($user){
 			if($user->islock){
-				
 				return $this->outputError('your account has been locked!');
 			}else{
-				
 				if($user->password==md5(Input::get('password'))){
 					 $user->role;
 					 Session::put('uid', $user->id);
 	                 return $this->output($user);
 				}else{
-					
-					
 					return $this->outputError('your password error!');
-					
 				}
-				
-				
-				
-				
-				
 			}
-			
-			
-			
-				
-			
 		}else{
-			
 			return $this->outputError('account error!');
 		}
-		
-		
 	}
+	
 	public function logout(){
          
         if(Session::has('uid')){
