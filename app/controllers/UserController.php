@@ -146,6 +146,7 @@ class UserController extends BaseController {
            return $this->output('you are not login');
         }
         }//logout
+        
 	public function session()
 	{
 	    if (Session::has('uid')){
