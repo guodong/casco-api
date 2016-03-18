@@ -33,7 +33,7 @@ class Version extends BaseModel {
 	  	}else{array_push($parent_item,Rs::where('version_id', '=', $parent_vid)->get()->toArray());}
 	   
 	  }//foreach
-	  //  var_dump($parent_item);
+	   //var_dump($parent_item);
 	    return  $parent_item;
 	   	
 	}

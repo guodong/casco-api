@@ -48,15 +48,17 @@ Route::get('childmatrix/export', 'ChildMatrixController@export');
 Route::get('parentmatrix/export', 'ParentMatrixController@export');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
+
 Route::group(array('prefix' => 'verification'), function()
 {
 Route::get('summary','VerificationController@summary');
 Route::get('summary_export','VerificationController@summary_export');
 Route::get('export','VerificationController@export');
 Route::get('export_all_sheets', 'VerificationController@export_all_sheets');
-Route::resource('/', 'VerificationController');
 }
 );
+//这个要放出来不然找不到的
+Route::resource('verification', 'VerificationController');
 Route::get('session', 'UserController@session');
 Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');

@@ -21,7 +21,13 @@ class VerificationController extends ExportController
 			
 		return $ans;
 	}
-
+    public function  show($id){
+    	$vefs=[];
+		$vefs=Verification::find($id);
+		return $vefs;
+    	
+    	
+    }
 	public function destroy($id){
 		$ver=Verification::find($id);
 		if(!$ver) return [];
@@ -49,97 +55,124 @@ class VerificationController extends ExportController
 		$parent_vids=[];
 		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
 		if($job->childVersion)
-		{$parent_items=$job->childVersion->parent_item($parent_vids);
-		$parents=(count($parent_items)>0)?$parent_items[0]:[];
-		switch($job->childVersion->document->type){
-			case 'tc':
-				$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
-				break;
-			case  'rs':
-				$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
-				break;
-			default:
-		}
+		{
+			//返回是二维数组的结构
+			$parent_items=$job->childVersion->parent_item($parent_vids);
+		 // $parents=(count($parent_items)>0)?$parent_items:[];
+			//var_dump($parents);exit;
+		 switch($job->childVersion->document->type){
+		 	case 'tc':
+		 		$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
+		 		break;
+		 	case  'rs':
+		 		$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
+		 		break;
+		 	default:
+		 }
 		}//if
 		$comment='';$column=[];$child_text='';$parent_text='';
 		foreach($array_child as $child){
-			foreach($parents as  $parent){//for循环结束就是空行记录的了
-				$column=[];
-				$parent_column=json_decode('{'.$parent['column'].'}',true);
-				$child_column=json_decode('{'.$child['column'].'}',true);
-				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
-				{
-					if($child_column&&$parent_column){
-						foreach($parent_column as $key=>$value){
-							if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);continue;}
-							if($key=='description'||$key=='test case description'){continue;}
-							array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
-							:$column[]=array($key=>$value.MID_COMPOSE);
-						}//foreach
-						// var_dump($column);
-					}//if
-					array_key_exists('description',(array)$child_column)?$child_text=$child_column['description']:(array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'');
-					array_key_exists('description',(array)$parent_column)?$parent_text=$parent_column['description']:'';
-					$array=array('Child Requirement Tag'=>$child['tag'],
+			foreach($parent_items  as  $parents){//有可能多个父类
+				foreach($parents as  $parent){//for循环结束就是空行记录的了
+					$column=[];
+					$parent_column=json_decode('{'.$parent['column'].'}',true);
+					$child_column=json_decode('{'.$child['column'].'}',true);
+					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
+					{
+							foreach($parent_column as $key=>$value){
+								switch($key){
+									case  'contribution':	
+										array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);
+										break;
+									case  'description':
+										$parent_text=$parent_column['description'];
+										break;
+									case  'test case description':
+										break;
+									default:
+										array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
+										:$column[]=array($key=>$value.MID_COMPOSE);
+								}
+									
+							}//foreach
+						array_key_exists('description',(array)$child_column)?$child_text=$child_column['description']:(array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'');
+						$array=array('Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
                 	             'Parent Requirement Tag'=>$parent['tag'],
                 	             'Parent Requirement Text'=>$parent_text,
                                  'column'=>(count($column)>0)?json_encode($column):null,
                                  'verification_id'=>$job->id
-					);
-					//var_dump($array);
-					ChildMatrix::create($array);
-				}//if
-			}//foreach
+						);
+						//var_dump($array);
+						ChildMatrix::create($array);
+					}//if
+				}//foreach
+			}//foreach parent_items
 		}//foreach child_matrix
-		foreach($parents as  $parent){
-			//var_dump($parent);return;
-			$flag=false;$column=[];
-			$parent_column=json_decode('{'.$parent['column'].'}',true)?json_decode('{'.$parent['column'].'}',true):[];
-			foreach($array_child as $child){
-				$child_column=json_decode('{'.$child['column'].'}',true);
-				if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
-				{
-					$flag=true;
-					foreach($parent_column as $key=>$value){
-						if($key=='contribution'){array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);continue;}
-						if($key=='description'||$key=='test case description'){continue;}
-						array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
-						:$column[]=array($key=>$value.MID_COMPOSE);
-					}//foreach
-					array_key_exists('description',(array)$child_column)&&$child_text=$child_column['description'];
-					array_key_exists('test case description',(array)$child_column)&&$child_text=$child_column['test case description'];
-					array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
-					$array=array('Parent Requirement Tag'=>$parent['tag'],
+		//可能有多个父类因此要加层循环结构
+		foreach($parent_items  as  $parents){
+			foreach($parents as  $parent){
+				//var_dump($parent);return;
+				$flag=false;$column=[];
+				$parent_column=json_decode('{'.$parent['column'].'}',true)?json_decode('{'.$parent['column'].'}',true):[];
+				foreach($array_child as $child){
+					$child_column=json_decode('{'.$child['column'].'}',true);
+					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
+					{
+						$flag=true;
+							foreach($parent_column as $key=>$value){
+								switch($key){
+									case  'contribution':	
+										array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);
+										break;
+									case  'description':
+										$parent_text=$parent_column['description'];
+										break;
+									case  'test case description':
+										break;
+									default:
+										array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
+										:$column[]=array($key=>$value.MID_COMPOSE);
+								}			
+							}//foreach		 
+						array_key_exists('description',(array)$child_column)&&$child_text=$child_column['description'];
+						array_key_exists('test case description',(array)$child_column)&&$child_text=$child_column['test case description'];
+						$array=array('Parent Requirement Tag'=>$parent['tag'],
                 	             'Parent Requirement Text'=>$parent_text,
                   				 'Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
                                  'column'=>(count($column)>0)?json_encode($column):null,
 					             'parent_v_id'=>$parent['version_id'],
                                  'verification_id'=>$job->id
-					);
-					//var_dump($array);
-					ParentMatrix::create($array);
-				}//if
-			}//foreach
-			if(!$flag){
-				$column=[];
-				//var_dump($parent_column);
-				foreach($parent_column as $key=>$value){
-					if($key=='description'||$key=='test case description'){continue;}
-					$column[]=array($key=>$value.MID_COMPOSE);
-				}
-				array_key_exists('description',$parent_column)?$parent_text=$parent_column['description']:'';
-				$array=array('Parent Requirement Tag'=>$parent['tag'],
+						);
+						//var_dump($array);
+						ParentMatrix::create($array);
+					}//if
+				}//foreach
+				if(!$flag){
+					$column=[];
+					foreach($parent_column as $key=>$value){
+						switch($key){
+							case 'description':
+								$parent_text=$parent_column['description'];
+								break;
+							case 'test case description':
+								break;
+							default:
+							$column[]=array($key=>$value.MID_COMPOSE);
+						}	
+					}
+					$array=array('Parent Requirement Tag'=>$parent['tag'],
             	             'Parent Requirement Text'=>$parent_text,
                              'column'=>(count($column)>0)?json_encode($column):null,
 				             'parent_v_id'=>$parent['version_id'],
                              'verification_id'=>$job->id
-				);
-				//var_dump($array);
-				ParentMatrix::create($array);
-			}
-		}//foreach
+					);
+					//var_dump($array);
+					ParentMatrix::create($array);
+				}
+			}//foreach
+		}//foreach parent_items
 		$job->save();//失败了就不save了
 		return $job;
 	}
@@ -228,7 +261,7 @@ class VerificationController extends ExportController
             }
             return $ans;
 	}
-	 
+
 	public function update($id)
 	{
 		$t = Verification::find($id);
@@ -319,7 +352,7 @@ class VerificationController extends ExportController
 	}
 	public function summary_export()
 	{
-		
+
 		$objPHPExcel=parent::summary_exp(Input::get('v_id'),0);
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="summary.xls"');
@@ -354,7 +387,7 @@ class VerificationController extends ExportController
 
 
 	public function export_all_sheets(){
-		 
+			
 		$objPHPExcel=parent::export_all_sheet(Input::get('project_id'),Input::get('child_id'),Input::get('v_id'));
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="verification_report.xls"');
@@ -367,9 +400,9 @@ class VerificationController extends ExportController
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
-		 
-		 
-		 
+			
+			
+			
 
 	}
 

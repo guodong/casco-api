@@ -14,6 +14,11 @@ class Testjob extends BaseModel {
 	    return $this->belongsTo('Version', 'tc_version_id');
 	}
 	
+	public function rsRelations()
+	{
+		return $this->hasMany('TestjobRs','id','testjob_id');
+	}
+	
 	public function rsVersions()
 	{
 	    return $this->belongsToMany('Version', 'testjob_rs_version', 'testjob_id', 'rs_version_id');

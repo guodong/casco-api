@@ -12,16 +12,35 @@ class TestjobController extends BaseController{
 	public function index()
 	{
 		$jobs = Project::find(Input::get('project_id'))->testjobs;
+		//var_dump($jobs);
 		foreach ($jobs as $v){
+			//var_dump($v->toArray());
+			if($v==''||$v==[]||$v==null)continue;
 			$v->build;
-			$v->tcVersion->document;
-			foreach ($v->rsVersions as $vv){
+			$v->tcVersion?$v->tcVersion->document:null;
+			$rsVersions=$v->rsVersions?$v->rsVersions:null;
+			foreach ($rsVersions as $vv){
 				$vv->document;
 			}
 		}
 		return $jobs;
 	}
-
+	public function destroy($id){
+		
+		
+		$job=Testjob::find($id);
+		foreach($job->results  as $result){
+			foreach($result->steps as  $steps){
+				$steps->delete();
+			}
+			$result->delete();
+		}
+		foreach($job->rsRelations as $rels){
+			$rels->delete();
+		}
+		$job->destroy($id);
+		return $job;
+	}
 	public function store()
 	{
 		$job = Testjob::create(Input::get());
@@ -175,17 +194,15 @@ class TestjobController extends BaseController{
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
 			$cod = $row;
 			$step_count = 0;
-			 
+			$num=1;
 			foreach ($tc->steps as $step){
-
+				
 				$id=json_decode($step->toJson())->id;
 				$stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
-				 
 				if(!$stepResult)continue;
-				// echo ($stepResult->step_id);
 				$r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
 				if ($stepResult->comment){
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$step->num . ' ' . $r . ': ' . $stepResult->comment);
+					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, "#".intval($num++). ' ' . $r . ': ' . $stepResult->comment);
 					$step_count++;
 				}
 			}
