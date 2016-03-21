@@ -6,8 +6,9 @@ class Document extends BaseModel {
 	protected $fillable = array('name', 'project_id', 'type', 'fid','graph', 'regex', 'filename');
 
 	public function latest_version()
-	{
-	    $vss = $this->versions()->orderBy('updated_at', 'desc')->first();
+	{	
+		//最新视为最后一次导入而不是修改!
+	    $vss = $this->versions()->orderBy('created_at', 'desc')->first();
 	    if ($vss){
 	        return $vss;
 	    }
@@ -30,7 +31,7 @@ class Document extends BaseModel {
 	
 	public function srcs()
 	{
-	    return $this->belongsToMany('Document', 'relation', 'dest', 'src')->groupby('src');
+	    return $this->belongsToMany('Document', 'relation', 'dest', 'src');
 	}
 	
 	public function dests()

@@ -5,12 +5,12 @@ class VersionController extends BaseController {
 
 	public function index()
 	{
-		if(!Input::get('document_id')){$versions=Version::orderBy('updated_at','desc')->first();}
-		else if(!Input::get('newest')) {$versions = Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->get();
+		if(!Input::get('document_id')){$versions=Version::orderBy('created_at','desc')->first();}
+		else if(!Input::get('newest')) {$versions = Version::where('document_id', '=', Input::get('document_id'))->orderBy('created_at', 'desc')->get();
 		foreach($versions as $vers){
 			$vers->document;
 		}
-		}else {$versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
+		}else {$versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('created_at', 'desc')->first();
 		//$versions->document;
 		}
 		return $versions;

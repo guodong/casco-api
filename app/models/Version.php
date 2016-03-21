@@ -9,17 +9,18 @@ class Version extends BaseModel {
 	{
 	    return $this->hasMany('Tc')->orderBy('tag');
 	}
-	
 	public function rss()
 	{
 	    return $this->hasMany('Rs')->orderBy('tag');
 	}
-	
+	public function items(){
+		
+		return array_merge($this->tcs(),$this->rss());
+	}
 	public function document()
 	{
 	    return $this->belongsTo('Document');
 	}
-	
 	public function parent_item($parent_vids){
 		
 	  $type=$this->document->type;

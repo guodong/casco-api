@@ -2,8 +2,6 @@
 use Illuminate\Support\Facades\Input;
 
 class ProjectController extends BaseController {
-    
-	
 	// 项目创建
 	public function store() {
 		$project = new Project ( Input::get () );
