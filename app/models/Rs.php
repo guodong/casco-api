@@ -114,12 +114,10 @@ class Rs extends BaseModel {
 
 	public function sources()
 	{
-		//不仅仅是source的关系吧?
-		$arr = json_decode('{'.$this->column.'}');
+		//.var_dump($this->column);exit;
+		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}');
 		if(!$arr)return [];//var_dump( property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[]);
 		return property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[];
-		return $this->belongsToMany('Tag', 'tc_source', 'tc_id', 'source_id');
-		//  return $this->belongsToMany('Tag', 'rs_source', 'rs_id', 'source_id');
 	}
 	public function isNewest(){
 

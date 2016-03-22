@@ -30,17 +30,17 @@ class DumpController extends Controller
 					$data->name = $item->tag;
 					$data->children = array();
 					$data->parents = array();
-					/*foreach($item->sources() as $rs){
-						$d = new stdClass();
-						$d->name = $rs;
-						$d->isparent = true;
-						$data->parents[] = $d;
-					};*/
 					foreach($item->dests() as $tc){
 						$d = new stdClass();
 						$d->name = $tc->tag;
 						$d->isparent = true;
 						$data->parents[] = $d;
+					};
+					foreach($item->sources() as $rs){
+						$d = new stdClass();
+						$d->name = $rs;
+						$d->isparent = true;
+						!in_array($d,$data->parents)?($data->parents[] = $d):null;
 					};
 					foreach($item->srcs() as $rs){
 						$d = new stdClass();
@@ -82,6 +82,12 @@ class DumpController extends Controller
 						$d->name = $tc->tag;
 						$d->isparent = true;
 						$data->parents[] = $d;
+					};
+					foreach($item->sources() as $rs){
+						$d = new stdClass();
+						$d->name = $rs;
+						$d->isparent = true;
+						!in_array($d,$data->parents)?($data->parents[]=$d):null;
 					};
 					foreach($item->srcs() as $rs){
 						$d = new stdClass();

@@ -11,7 +11,7 @@ class Tc extends BaseModel {
 
 	public function sources()
 	{
-		$arr = json_decode('{'.$this->column.'}');
+		$arr = is_object($this->column)?$this->column:json_decode('{'.($this->column).'}');
 		//var_dump($arr);
 		if(!$arr)return [];
 		return property_exists($arr,'source')?explode(',',str_replace(array("\r\n", "\r", "\n"," "), "", $arr->source)):[];
