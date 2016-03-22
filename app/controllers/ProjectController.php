@@ -409,12 +409,18 @@ class ProjectController extends BaseController {
 	if (! empty ( $data ['graph'] )) {
 	$graph = json_decode ( $data ['graph'] );
 	foreach ( $graph->cells as $node ) {
+	if ($node->type != 'basic.Rect')
+	continue;
+	$src = Document::find($node->id);
+	$src->dests()->detach();
+	}//foreach
+	foreach ($graph->cells as $node) {
 	if ($node->type != 'fsa.Arrow')
 	continue;
-	$src = Document::find ( $node->source->id );
-	$dst = Document::find ( $node->target->id );
-	$src->dests ()->attach ( $dst );
-	}
+	$src = Document::find($node->source->id);
+	$dst = Document::find($node->target->id );
+	$src->dests()->attach($dst);
+	}//foreach
 	}
 	$project->update ( $data );
 	if (Input::get ( 'participants' )) {

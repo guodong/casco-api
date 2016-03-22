@@ -34,8 +34,7 @@ class TreeVatController extends Controller
 	private $tags = [];
 	private function getTags_down($item)
 	{
-		if(!$item)return;
-		//if(!$item||!$item->verison||!$item->version->document){echo 'error';var_dump($item);echo 'shit';var_dump($item->verison);return;}
+		//if(!$item||!$item->verison||!$item->version->document){echo 'error';var_dump($item);echo 'shit';var_dump($item->version);return;}
 		$sss=$item->srcs();
 		foreach ($sss as $v){
 			if ($v&&!in_array($v->toArray(), $this->tags)){
@@ -195,12 +194,12 @@ class TreeVatController extends Controller
 				default:
 					$items = array();
 			}
-			var_dump($this->tags);
-			foreach ($items as $v) {
+			//var_dump($this->tags);
+			foreach($items as $v) {
 				$rt[] = array(
                     'name' => $v->tag,
                     'leaf' => true,
-                    'id' => 'item-' . $v->id,
+                    'id' => $v->id,
                     'item_id' => $v->id,
                     'type' => $docs->type
 				);

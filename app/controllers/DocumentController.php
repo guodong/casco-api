@@ -120,7 +120,6 @@ class DocumentController extends Controller
     {
       $document=Document::find($id);
        //delete project->graph
-
        $project=$document->project;
        $graph=json_decode($project?$project->graph:null);
        $data=[];
@@ -130,12 +129,10 @@ class DocumentController extends Controller
           if($nodes->type=='basic.Rect'&&$nodes->id==$id)
           {
              continue;
-         
           }elseif($nodes->type=='fsa.Arrow'&&($nodes->source->id==$id||$nodes->target->id==$id)){
                  continue;
            }else{
            $data[]=$nodes;
-           
          }
       
          }//foreach

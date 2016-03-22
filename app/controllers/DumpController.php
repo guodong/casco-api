@@ -10,14 +10,12 @@ class DumpController extends Controller
 			($item=Rs::where('tag','=',Input::get('tag'))->orderBy('created_at','desc')->first())||
 			($item=Tc::where('tag','=',Input::get('tag'))->orderBy('created_at','desc')->first());
 			//var_dump($item);
-			//判断$item是否为属于最新的一个版本的内容!
 			if (!$item){
 				return Response::json(array(
-                'name' => '数据库中不存在此tag!',
+                'name' => '文档最新版本不存在此tag!',
                 'children' => array(),
                 'parents' => array()
-			));}else if($item->version&&$item->version->document&&$item->version->document->
-			latest_version()->id!=$item->version->id){
+			));}else if($item->version->document->latest_version()->id!=$item->version->id){
 				return Response::json(array(
                 'name' => '当前tag不属于最新版本的内容!',
                 'children' => array(),
@@ -27,26 +25,26 @@ class DumpController extends Controller
 				//var_dump($item);
 				$document = ($item&&$item->version)?$item->version->document:null;
 				$data = new stdClass();
-				if ($document->type == 'rs') {
+				if ($document->type =='rs') {
 					$item = Rs::find($item->id);
 					$data->name = $item->tag;
 					$data->children = array();
 					$data->parents = array();
-					foreach($item->sources() as $rs){
+					/*foreach($item->sources() as $rs){
 						$d = new stdClass();
 						$d->name = $rs;
 						$d->isparent = true;
 						$data->parents[] = $d;
-					};
-					foreach($item->tcs() as $tc){
+					};*/
+					foreach($item->dests() as $tc){
 						$d = new stdClass();
-						$d->name = $tc['tag'];
-						$d->isparent = false;
-						$data->children[] = $d;
+						$d->name = $tc->tag;
+						$d->isparent = true;
+						$data->parents[] = $d;
 					};
-					foreach($item->rss() as $rs){
+					foreach($item->srcs() as $rs){
 						$d = new stdClass();
-						$d->name = $rs['tag'];
+						$d->name = $rs->tag;
 						$d->isparent = false;
 						$data->children[] = $d;
 					};
@@ -73,11 +71,23 @@ class DumpController extends Controller
 					$data->name = $item->tag;
 					$data->children = array();
 					$data->parents = array();
-					foreach($item->sources() as $rs){
+					/*foreach($item->sources() as $rs){
 						$d = new stdClass();
 						$d->name = $rs;
 						$d->isparent = true;
 						$data->parents[] = $d;
+					};*/
+					foreach($item->dests() as $tc){
+						$d = new stdClass();
+						$d->name = $tc->tag;
+						$d->isparent = true;
+						$data->parents[] = $d;
+					};
+					foreach($item->srcs() as $rs){
+						$d = new stdClass();
+						$d->name = $rs->tag;
+						$d->isparent = false;
+						$data->children[] = $d;
 					};
 				}
 				return Response::json($data);

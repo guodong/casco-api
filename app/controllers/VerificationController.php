@@ -79,7 +79,7 @@ class VerificationController extends ExportController
 					$child_column=json_decode('{'.$child['column'].'}',true);
 					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
 					{
-							foreach($parent_column as $key=>$value){
+							foreach((array)$parent_column as $key=>$value){
 								switch($key){
 									case  'contribution':	
 										array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);
@@ -120,7 +120,7 @@ class VerificationController extends ExportController
 					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
 					{
 						$flag=true;
-							foreach($parent_column as $key=>$value){
+							foreach((array)$parent_column as $key=>$value){
 								switch($key){
 									case  'contribution':	
 										array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);
@@ -141,6 +141,7 @@ class VerificationController extends ExportController
                 	             'Parent Requirement Text'=>$parent_text,
                   				 'Child Requirement Tag'=>$child['tag'],
                 	             'Child Requirement Text'=>$child_text,
+								 'justification'=>array_key_exists('vat_json',$parent)?$parent['vat_json']:null,
                                  'column'=>(count($column)>0)?json_encode($column):null,
 					             'parent_v_id'=>$parent['version_id'],
                                  'verification_id'=>$job->id
@@ -164,6 +165,7 @@ class VerificationController extends ExportController
 					}
 					$array=array('Parent Requirement Tag'=>$parent['tag'],
             	             'Parent Requirement Text'=>$parent_text,
+							 'justification'=>array_key_exists('vat_json',$parent)?$parent['vat_json']:null,
                              'column'=>(count($column)>0)?json_encode($column):null,
 				             'parent_v_id'=>$parent['version_id'],
                              'verification_id'=>$job->id
