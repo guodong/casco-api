@@ -88,6 +88,7 @@ class VerificationController extends ExportController
 										$parent_text=$parent_column['description'];
 										break;
 									case  'test case description':
+										$parent_text=$parent_column[$key];
 										break;
 									default:
 										array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
@@ -114,12 +115,12 @@ class VerificationController extends ExportController
 			foreach($parents as  $parent){
 				//var_dump($parent);return;
 				$flag=false;$column=[];
-				$parent_column=json_decode('{'.$parent['column'].'}',true)?json_decode('{'.$parent['column'].'}',true):[];
+				$parent_column=json_decode('{'.$parent['column'].'}',true);
 				foreach($array_child as $child){
 					$child_column=json_decode('{'.$child['column'].'}',true);
 					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
 					{
-						$flag=true;
+							$flag=true;
 							foreach((array)$parent_column as $key=>$value){
 								switch($key){
 									case  'contribution':	
@@ -129,6 +130,7 @@ class VerificationController extends ExportController
 										$parent_text=$parent_column['description'];
 										break;
 									case  'test case description':
+										$parent_text=$parent_column[$key];
 										break;
 									default:
 										array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
@@ -152,12 +154,13 @@ class VerificationController extends ExportController
 				}//foreach
 				if(!$flag){
 					$column=[];
-					foreach($parent_column as $key=>$value){
+					foreach((array)$parent_column as $key=>$value){
 						switch($key){
 							case 'description':
 								$parent_text=$parent_column['description'];
 								break;
 							case 'test case description':
+								$parent_text=$parent_column[$key];
 								break;
 							default:
 							$column[]=array($key=>$value.MID_COMPOSE);

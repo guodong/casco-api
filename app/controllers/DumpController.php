@@ -12,12 +12,12 @@ class DumpController extends Controller
 			//var_dump($item);
 			if (!$item){
 				return Response::json(array(
-                'name' => '文档最新版本不存在此tag!',
+                'name' => '文档中不存在此tag!',
                 'children' => array(),
                 'parents' => array()
 			));}else if($item->version->document->latest_version()->id!=$item->version->id){
 				return Response::json(array(
-                'name' => '当前tag不属于最新版本的内容!',
+                'name' => '当前tag不属于最新版本!',
                 'children' => array(),
                 'parents' => array()
 					));
@@ -40,7 +40,11 @@ class DumpController extends Controller
 						$d = new stdClass();
 						$d->name = $rs;
 						$d->isparent = true;
-						!in_array($d,$data->parents)?($data->parents[] = $d):null;
+						if(!in_array($d,$data->parents)){
+							$d->name=$rs.':不符合';
+							$d->_children=true;
+							$data->parents[] = $d;
+						}
 					};
 					foreach($item->srcs() as $rs){
 						$d = new stdClass();
@@ -83,15 +87,20 @@ class DumpController extends Controller
 						$d->isparent = true;
 						$data->parents[] = $d;
 					};
+					var_dump($data->parents);
 					foreach($item->sources() as $rs){
 						$d = new stdClass();
-						$d->name = $rs;
+						$d->name = $tc->tag;
 						$d->isparent = true;
-						!in_array($d,$data->parents)?($data->parents[]=$d):null;
+						if(!in_array($d,$data->parents)){
+							$d->name=$rs.':不符合';
+							$d->_children=true;
+							$data->parents[] = $d;
+						}
 					};
 					foreach($item->srcs() as $rs){
 						$d = new stdClass();
-						$d->name = $rs->tag;
+						$d->name = $tc->tag;
 						$d->isparent = false;
 						$data->children[] = $d;
 					};

@@ -44,6 +44,6 @@ class Document extends BaseModel {
 	}
 	public function versions()
 	{
-	    return $this->hasMany('Version');
+	    return $this->hasMany('Version')->orderBy('created_at','desc');
 	}
 }
