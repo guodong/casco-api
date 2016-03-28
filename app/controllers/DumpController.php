@@ -87,7 +87,7 @@ class DumpController extends Controller
 						$d->isparent = true;
 						$data->parents[] = $d;
 					};
-					var_dump($data->parents);
+					//var_dump($data->parents);
 					foreach($item->sources() as $rs){
 						$d = new stdClass();
 						$d->name = $tc->tag;

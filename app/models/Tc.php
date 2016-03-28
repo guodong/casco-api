@@ -14,17 +14,16 @@ class Tc extends BaseModel {
 		//.var_dump($this->column);exit;
 		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}');
 		if(!$arr)return [];
-	    property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):[];
-	    return $matches[0];
+		property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):($matches[0]=null);
+		return $matches[0];
 	}
-public function dests()
+	public function dests()
 	{
 		$tcs = [];
 		$srcs = $this->version->document->dests;
 		$this->column=json_decode('{'.$this->column.'}');
 		if(!$this->column||!property_exists($this->column,'source'))return [];
 		preg_match_all('/\[.*?\]/i',$this->column->source,$matches);
-		//var_dump($matches);
 		foreach($srcs as $src){
 			switch($src->type){
 				case 'tc':
@@ -74,8 +73,8 @@ public function dests()
 		return $this->hasMany('Result');
 	}
 	public function version()
-	{   
+	{
 		return $this->belongsTo('Version');
 	}
-	
+
 }

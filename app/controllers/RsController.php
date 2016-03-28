@@ -32,9 +32,6 @@ class RsController extends Controller{
 	    $data=array();
 	    
 	    foreach ($rss as $v){
-	    
-	    
-
 	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);//票漂亮哦
 	    if(!$base)continue;
 	    if (!json_decode($v->vat_json)){
@@ -42,9 +39,6 @@ class RsController extends Controller{
 	            $v->save();
 	        }
 	    $obj=array();
-	    //前端压力太大，非常不合理
-	   // $obj['rss']=$v->rss();
-	   // $obj['tcs']=$v->tcs();
 	    $obj['vat']=json_decode($v->vat_json);
 	    $obj=array_merge($base,$obj);
 	    

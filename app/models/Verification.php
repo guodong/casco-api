@@ -17,7 +17,6 @@ class Verification extends BaseModel {
 		
 		
 	}
-
 	public function parentMatrix(){
 		
 		

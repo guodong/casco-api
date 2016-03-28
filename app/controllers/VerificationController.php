@@ -45,8 +45,12 @@ class VerificationController extends ExportController
 
 	public function store()
 	{
+		//增加事务处理
+		DB::beginTransaction();
+		try{
 		$job = Verification::create(Input::get());
 		$job->status = 1;
+		//Throw new Exception('test here!');
 		$job->author=Input::get('account')?Input::get('account'):null;
 		foreach (Input::get('parent_versions') as $v){
 			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
@@ -77,7 +81,8 @@ class VerificationController extends ExportController
 					$column=[];
 					$parent_column=json_decode('{'.$parent['column'].'}',true);
 					$child_column=json_decode('{'.$child['column'].'}',true);
-					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
+					($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
+					if(in_array($parent['tag'],$matches[0]))
 					{
 							foreach((array)$parent_column as $key=>$value){
 								switch($key){
@@ -114,11 +119,13 @@ class VerificationController extends ExportController
 		foreach($parent_items  as  $parents){
 			foreach($parents as  $parent){
 				//var_dump($parent);return;
-				$flag=false;$column=[];
+				$flag=false;
 				$parent_column=json_decode('{'.$parent['column'].'}',true);
 				foreach($array_child as $child){
-					$child_column=json_decode('{'.$child['column'].'}',true);
-					if($child_column&&array_key_exists('source',$child_column)&&in_array($parent['tag'],explode(',',$child_column['source'])))
+					//$column[]的位置很重要
+					$column=[];$child_column=json_decode('{'.$child['column'].'}',true);
+					($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
+					if(in_array($parent['tag'],$matches[0]))
 					{
 							$flag=true;
 							foreach((array)$parent_column as $key=>$value){
@@ -179,7 +186,12 @@ class VerificationController extends ExportController
 			}//foreach
 		}//foreach parent_items
 		$job->save();//失败了就不save了
-		return $job;
+		DB::commit();
+		}catch(Exception $e){
+			DB::rollback();
+			return   array('success'=>false,'data'=>($e));
+		}
+		return  array('success'=>true,'data'=>$job);
 	}
 	public function summary($version = null)
 	{
