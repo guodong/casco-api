@@ -127,7 +127,7 @@ class Rs extends BaseModel {
 		return $this->Version()->id==$this->Version()->document->latest_version()->id;
 	}
 	public function version()
-	{  // echo $this->belongsTo('Version')->toSql();
+	{ 
 		return $this->belongsTo('Version');
 	}
 

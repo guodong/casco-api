@@ -16,23 +16,30 @@ class RsController extends Controller{
 	    }
 	    $rss = $rsv->rss;
 	    if(Input::get('act')=="stat"){
+	    $result=[];
 	    foreach ($rss as $v){
 	        if (!json_decode($v->vat_json)){
 	            $v->vat_json = '[]';
 	            $v->save();
 	        }
-	        $v->vat = json_decode($v->vat_json);
-	        $v->rss = $v->rss();
-	        $v->tcs = $v->tcs();
+	        $res['id']=$v->id;
+	        $res['tag']=$v->tag;
+	        $res['vat']=json_decode($v->vat_json);
+	        $res['rss']=$v->rss();
+	        $res['tcs']=$v->tcs();
+	       	$result[]=$res;
 
 	    }
-         return  $rss;
+	     return  $result;
+     
 	    }
 
 	    $data=array();
 	    
 	    foreach ($rss as $v){
-	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);//票漂亮哦
+	    //$v->column=preg_replace("/([\r\n])[\s]*/", "", $v->column);
+		/*if(preg_match('/202/',$v->tag,$matach)){var_dump(json_decode('{"dataIndex":"tag","header":"tag","width":140}'));var_dump(json_decode('{'.$v->column.'}',true));}*/
+	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);
 	    if(!$base)continue;
 	    if (!json_decode($v->vat_json)){
 	            $v->vat_json = '[]';
