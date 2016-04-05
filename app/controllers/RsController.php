@@ -35,10 +35,8 @@ class RsController extends Controller{
 	    }
 
 	    $data=array();
-	    
 	    foreach ($rss as $v){
-	    //$v->column=preg_replace("/([\r\n])[\s]*/", "", $v->column);
-		/*if(preg_match('/202/',$v->tag,$matach)){var_dump(json_decode('{"dataIndex":"tag","header":"tag","width":140}'));var_dump(json_decode('{'.$v->column.'}',true));}*/
+		$v->column=preg_replace("/([\r\n\t])+/", "", $v->column);//过滤掉一种奇葩编码
 	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);
 	    if(!$base)continue;
 	    if (!json_decode($v->vat_json)){
@@ -48,9 +46,7 @@ class RsController extends Controller{
 	    $obj=array();
 	    $obj['vat']=json_decode($v->vat_json);
 	    $obj=array_merge($base,$obj);
-	    
 	    $data[]=$obj;
-	    
         }
 	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
 	   $version = Version::find ( Input::get ( 'version_id' ) );
