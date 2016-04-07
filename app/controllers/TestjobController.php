@@ -168,70 +168,83 @@ class TestjobController extends BaseController{
 		$objPHPExcel = new PHPExcel();
 		$objPHPExcel->setActiveSheetIndex(0);
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth('20');
-		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('20');
-		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('20');
+		//设置列宽
+		$config_arr = array("A"=>25,"B"=>35,"C"=>15,"D"=>20,"E"=>20,"F"=>15,"G"=>15,"H"=>15,"I"=>30);
+		foreach ($config_arr as $col=>$config){
+		    $objPHPExcel->getActiveSheet()->getColumnDimension($col)->setWidth($config);
+		}
+		$objPHPExcel->getActiveSheet()->getStyle('B')->getAlignment()->setWrapText(true);//自动换行
+		$objPHPExcel->getActiveSheet()->getStyle('I')->getAlignment()->setWrapText(true);//自动换行
+		
+		//设置Test job表头
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, 2, 'Name');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, 2, 'Build');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, 2, 'TC');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, 2, 'TC Version');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, 2, 'RS:Version');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, 2, 'Status');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 2, 'Created at');
+		//设置表头格式
+		$objPHPExcel->getActiveSheet()->getStyle('A2'.":".'G2')->getFont()->setName('Arial');
+		$objPHPExcel->getActiveSheet()->getStyle('A2'.":".'G2')->getFont()->setSize(15);
+		$objPHPExcel->getActiveSheet()->getStyle('A2'.":".'G2')->getFont()->setBold(true);
+		//输出Test job信息
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, 3, $job->name);
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, 3, $job->build->name);
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, 3, $job->tc_version->document->name);
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, 3, $job->tc_version->name);
+		  //处理TC与RS的一对多情况
+		  $rs_info = '';
+		  foreach($job->rs_versions as $i){
+		      $rs_info .= $i->document->name.":".$i->name."; ";
+		  }
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, 3, $rs_info);
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, 3, $job->status == '0' ? 'testing':'submited');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 3, substr($job->created_at, 0, 1)=='0'?'':$job->created_at);
 
-
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, 1, 'Tc tag');
-
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, 1, 'Description');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, 1, 'Tester');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, 1, 'Begin at');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, 1, 'End at');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, 1, 'Result');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 1, 'Comment');
-		$row = 2;
+		//设置表头项
+        $line_origin = 5;
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $line_origin, '测试用例编号');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $line_origin, '测试用例描述');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_origin, '通过/失败');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_origin, '开始时间');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_origin, '结束时间');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_origin, '测试人');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_origin, '校核人');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_origin, '平台版本');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_origin, '备注');
+		//设置过滤
+		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_origin.":".'I'.$line_origin);
+		//设置表头格式
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'I'.$line_origin)->getFont()->setName('Arial');
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'I'.$line_origin)->getFont()->setSize(15);
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'I'.$line_origin)->getFont()->setBold(true);
+		
+		//数据填充
+		$startrow = $line_origin + 1;
 		foreach ($results as $v){
 			$tc = $v->tc;
-			$startrow = $row;
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $tc->tag);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $startrow, $tc->tag);
 			$item=json_decode('{'.$tc->column.'}',true);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, array_key_exists('description',$item)?$item['description']:$item['test case description']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $user->realname);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $row, substr($v->begin_at, 0, 1)=='0'?'':$v->begin_at);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
-			$cod = $row;
-			$step_count = 0;
-			$num=1;
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $startrow, array_key_exists('description',$item)?$item['description']:$item['test case description']);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $startrow, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $startrow, substr($v->begin_at, 0, 1)=='0'?'':$v->begin_at);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $startrow, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $startrow, $user->realname);
+			//解析comment
+			$restult_comment = '';
+			$index = 1;
 			foreach ($tc->steps as $step){
-				
 				$id=json_decode($step->toJson())->id;
 				$stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
-				if(!$stepResult)continue;
+				if(!$stepResult) continue;
 				$r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
 				if ($stepResult->comment){
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, "#".intval($num++). ' ' . $r . ': ' . $stepResult->comment);
-					$step_count++;
+				    $restult_comment .= "Step".intval($index++).' '.$r.': '.$stepResult->comment."\n";
 				}
 			}
-			/*
-			 $stepResult = ResultStep::where('result_id', $v->id)->get();
-			 foreach($stepResult as $value){
-			 $r = $value->result == 0?'untested':($value->result == 1?'passed':'failed');
-			 if($value->comment){
-
-			 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$->num . ' ' . $r . ': ' . $value->comment);
-			 $step_count++;
-
-			 }
-			 }
-			 */
-
-
-			if ($step_count>1){
-				$row += $step_count-1;
-			}
-			$endrow = $row;
-
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(0, $startrow, 0, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(1, $startrow, 1, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(2, $startrow, 2, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(3, $startrow, 3, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(4, $startrow, 4, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(5, $startrow, 5, $endrow);
-			$row++;
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $startrow, $restult_comment);
+			$startrow++;
 		}
 	  
 		header('Content-Type: application/vnd.ms-excel');
