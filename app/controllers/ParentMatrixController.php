@@ -25,7 +25,8 @@ class ParentMatrixController extends ExportController {
 			$column=(array)json_decode($item['column'],true);
 			$inner=[];
 			foreach($column as  $val){
-                            $inner=array_merge($inner,$val);
+                            $inner=array_merge($inner
+                            	,$val);
                      	}
 			//var_dump($inner);
 			$column=array_merge((array)$item,(array)$inner);

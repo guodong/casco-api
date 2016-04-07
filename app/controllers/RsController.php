@@ -16,23 +16,28 @@ class RsController extends Controller{
 	    }
 	    $rss = $rsv->rss;
 	    if(Input::get('act')=="stat"){
+	    $result=[];
 	    foreach ($rss as $v){
 	        if (!json_decode($v->vat_json)){
 	            $v->vat_json = '[]';
 	            $v->save();
 	        }
-	        $v->vat = json_decode($v->vat_json);
-	        $v->rss = $v->rss();
-	        $v->tcs = $v->tcs();
+	        $res['id']=$v->id;
+	        $res['tag']=$v->tag;
+	        $res['vat']=json_decode($v->vat_json);
+	        $res['rss']=$v->rss();
+	        $res['tcs']=$v->tcs();
+	       	$result[]=$res;
 
 	    }
-         return  $rss;
+	     return  $result;
+     
 	    }
 
 	    $data=array();
-	    
 	    foreach ($rss as $v){
-	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);//票漂亮哦
+		$v->column=preg_replace("/([\r\n\t])+/", "", $v->column);//过滤掉一种奇葩编码
+	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);
 	    if(!$base)continue;
 	    if (!json_decode($v->vat_json)){
 	            $v->vat_json = '[]';
@@ -41,9 +46,7 @@ class RsController extends Controller{
 	    $obj=array();
 	    $obj['vat']=json_decode($v->vat_json);
 	    $obj=array_merge($base,$obj);
-	    
 	    $data[]=$obj;
-	    
         }
 	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
 	   $version = Version::find ( Input::get ( 'version_id' ) );

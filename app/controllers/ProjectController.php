@@ -90,7 +90,6 @@ class ProjectController extends BaseController {
 	
 	public function docfile() {
 		
-        
 		if (Input::get ( 'isNew' ) == 1){
 			$old_version=Version::where('document_id','=',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
@@ -99,7 +98,6 @@ class ProjectController extends BaseController {
 			$version = Version::find ( Input::get ( 'version_id' ) );
 			$old_version=$version;
 		}
-
 		$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 
 		//不显示出来的列名,白名单的处理也应该在后端处理
@@ -299,12 +297,7 @@ class ProjectController extends BaseController {
 			}
 			continue;
 		}
-
-
 	}
-
-
-
 	$old_tag=$this->array_column(($old_array),'tag');
 	$new_tag=$this->array_column(($new_array),'tag');
 	//   var_dump($old_tag); var_dump($new_tag);
@@ -343,7 +336,7 @@ class ProjectController extends BaseController {
 	$this->p();
 	return  array('success'=>true,"msg"=>$result);
 
-	}catch ( SoapFault $e ) {
+	}catch (SoapFault $e ) {
 	$this->p();
 	$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage () ));
 	$version->save();
@@ -352,8 +345,8 @@ class ProjectController extends BaseController {
 	$this->p();
 	if($version){
 	$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage ()));
-
 	$version->save();
+	
 	}
 	return array ('success' => false, 'msg' => $e->getMessage () );
 	}

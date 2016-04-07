@@ -8,8 +8,7 @@ header('Access-Control-Allow-Origin: '.$origin);
 header('Access-Control-Allow-Methods: GET,PUT,DELETE,POST,OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type,X-Requested-With');
 
-ini_set('max_execution_time', 300);
-
+ ini_set('max_execution_time','0'); 
 /**
  * Laravel - A PHP Framework For Web Artisans
  *
