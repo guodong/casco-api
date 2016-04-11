@@ -29,10 +29,9 @@ class ParentMatrixController extends ExportController {
 			$item->parent_type=='rs'?$parent=Rs::find($item->parent_id):$parent=Tc::find($item->parent_id);
 			$child_column=$child?(array)json_decode('{'.$child->column.'}',true):[];
 			$da['justification']=$parent->vat_json;
-			//$da['Parent Requirement Tag']=$parent->tag;
 			array_key_exists('description',(array)$child_column)?
 			$da['Child Requirement Text']=$child_column['description']:
-			array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null;
+			(array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null);
 			foreach($column=(array)json_decode('{'.$parent->column.'}',true) as $key=>$val){
 				switch($key){
 					case 'description':

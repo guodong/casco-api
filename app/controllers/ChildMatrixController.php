@@ -34,7 +34,7 @@ class ChildMatrixController extends ExportController {
 			$child_column=(array)json_decode('{'.$child->column.'}',true);
 			array_key_exists('description',(array)$child_column)?
 			$da['Child Requirement Text']=$child_column['description']:
-			array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null;
+			(array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null);
 			$column=$parent?$parent->column:null;
 			foreach($column=(array)json_decode('{'.$column.'}',true) as $key=>$val){
 				switch($key){
