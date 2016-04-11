@@ -21,13 +21,13 @@ class VerificationController extends ExportController
 			
 		return $ans;
 	}
-    public function  show($id){
-    	$vefs=[];
+	public function  show($id){
+		$vefs=[];
 		$vefs=Verification::find($id);
 		return $vefs;
-    	
-    	
-    }
+		 
+		 
+	}
 	public function destroy($id){
 		$ver=Verification::find($id);
 		if(!$ver) return [];
@@ -48,145 +48,100 @@ class VerificationController extends ExportController
 		//增加事务处理
 		DB::beginTransaction();
 		try{
-		$job = Verification::create(Input::get());
-		$job->status = 1;
-		//Throw new Exception('test here!');
-		$job->author=Input::get('account')?Input::get('account'):null;
-		foreach (Input::get('parent_versions') as $v){
-			array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
-		}
-		$array_child=array();$parent_array=array();$parent_items=[];$parents=[];
-		$parent_vids=[];
-		foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;}
-		if($job->childVersion)
-		{
-			//返回是二维数组的结构
-			$parent_items=$job->childVersion->parent_item($parent_vids);
-		 // $parents=(count($parent_items)>0)?$parent_items:[];
-			//var_dump($parents);exit;
-		 switch($job->childVersion->document->type){
-		 	case 'tc':
-		 		$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
-		 		break;
-		 	case  'rs':
-		 		$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
-		 		break;
-		 	default:
-		 }
-		}//if
-		$comment='';$column=[];$child_text='';$parent_text='';
-		foreach($array_child as $child){
-			foreach($parent_items  as  $parents){//有可能多个父类
-				foreach($parents as  $parent){//for循环结束就是空行记录的了
-					$column=[];
-					$parent_column=json_decode('{'.$parent['column'].'}',true);
-					$child_column=json_decode('{'.$child['column'].'}',true);
-					($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
-					if(in_array($parent['tag'],$matches[0]))
-					{
-							foreach((array)$parent_column as $key=>$value){
-								switch($key){
-									case  'contribution':	
-										array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);
-										break;
-									case  'description':
-										$parent_text=$parent_column['description'];
-										break;
-									case  'test case description':
-										$parent_text=$parent_column[$key];
-										break;
-									default:
-										array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
-										:$column[]=array($key=>$value.MID_COMPOSE);
-								}
-									
-							}//foreach
-						array_key_exists('description',(array)$child_column)?$child_text=$child_column['description']:(array_key_exists('test case description',$child_column)?$child_text=$child_column['test case description']:'');
-						$array=array('Child Requirement Tag'=>$child['tag'],
-                	             'Child Requirement Text'=>$child_text,
-                	             'Parent Requirement Tag'=>$parent['tag'],
-                	             'Parent Requirement Text'=>$parent_text,
-                                 'column'=>(count($column)>0)?json_encode($column):null,
+			$job = Verification::create(Input::get());
+			$job->status = 1;
+			$job->author=Input::get('account')?Input::get('account'):null;
+			foreach (Input::get('parent_versions') as $v){
+				array_key_exists('parent_version_id',$v)?$job->parentVersions()->attach($v['parent_version_id']):'';
+			}
+			$array_child=array();$parent_array=array();$parent_items=[];$parents=[];
+			$parent_vids=[];
+			foreach($job->parentVersions as $vs){$parent_vids[]=$vs->id;$parent_types[]=$vs->document->type;}
+			if($job->childVersion)
+			{
+				//返回是二维数组的结构
+				$parent_items=$job->childVersion->parent_item($parent_vids);
+				// $parents=(count($parent_items)>0)?$parent_items:[];
+				switch($job->childVersion->document->type){
+					case 'tc':
+						$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
+						break;
+					case  'rs':
+						$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
+						break;
+					default:
+				}
+			}//if
+			$comment='';$column=[];$child_text='';$parent_text='';
+			foreach($array_child as $child){
+				foreach($parent_items  as  $key=>$parents){//有可能多个父类
+					foreach($parents as  $parent){//for循环结束就是空行记录的了
+						$column=[];
+						$parent_column=json_decode('{'.$parent['column'].'}',true);
+						$child_column=json_decode('{'.$child['column'].'}',true);
+						($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
+						if(in_array($parent['tag'],$matches[0]))
+						{
+							$array=array(
+								 'child_id'=>$child['id'],
+								 'Child Requirement Tag'=>$child['tag'],
+								 'child_type'=>$job->childVersion->document->type,
+                	             'parent_id'=>$parent['id'],
+								 'Parent Requirement Tag'=>$parent['tag'],
+                               	 'parent_type'=>Version::find($parent['version_id'])->document->type,
                                  'verification_id'=>$job->id
-						);
-						//var_dump($array);
-						ChildMatrix::create($array);
-					}//if
-				}//foreach
-			}//foreach parent_items
-		}//foreach child_matrix
-		//可能有多个父类因此要加层循环结构
-		foreach($parent_items  as  $parents){
-			foreach($parents as  $parent){
-				//var_dump($parent);return;
-				$flag=false;
-				$parent_column=json_decode('{'.$parent['column'].'}',true);
-				foreach($array_child as $child){
-					//$column[]的位置很重要
-					$column=[];$child_column=json_decode('{'.$child['column'].'}',true);
-					($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
-					if(in_array($parent['tag'],$matches[0]))
-					{
+							);
+							ChildMatrix::create($array);
+						}//if
+					}//foreach
+				}//foreach parent_items
+			}//foreach child_matrix
+			//可能有多个父类因此要加层循环结构
+			foreach($parent_items  as  $key=>$parents){
+				foreach($parents as  $parent){
+					//var_dump($parent);return;
+					$flag=false;
+					$parent_column=json_decode('{'.$parent['column'].'}',true);
+					foreach($array_child as $child){
+						//$column[]的位置很重要
+						$column=[];$child_column=json_decode('{'.$child['column'].'}',true);
+						($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
+						if(in_array($parent['tag'],$matches[0]))
+						{
 							$flag=true;
-							foreach((array)$parent_column as $key=>$value){
-								switch($key){
-									case  'contribution':	
-										array_key_exists('safety',$child_column)?$column[]=array($key=>$value.MID_COMPOSE.$child_column['safety']):$column[]=array($key=>$value.MID_COMPOSE);
-										break;
-									case  'description':
-										$parent_text=$parent_column['description'];
-										break;
-									case  'test case description':
-										$parent_text=$parent_column[$key];
-										break;
-									default:
-										array_key_exists($key,$child_column)?$column[]=array($key=>$child_column[$key].MID_COMPOSE.$value)
-										:$column[]=array($key=>$value.MID_COMPOSE);
-								}			
-							}//foreach		 
-						array_key_exists('description',(array)$child_column)&&$child_text=$child_column['description'];
-						array_key_exists('test case description',(array)$child_column)&&$child_text=$child_column['test case description'];
-						$array=array('Parent Requirement Tag'=>$parent['tag'],
-                	             'Parent Requirement Text'=>$parent_text,
-                  				 'Child Requirement Tag'=>$child['tag'],
-                	             'Child Requirement Text'=>$child_text,
-								 'justification'=>array_key_exists('vat_json',$parent)?$parent['vat_json']:null,
-                                 'column'=>(count($column)>0)?json_encode($column):null,
+							$array=array(
+							 	 'parent_id'=>$parent['id'],
+								 'Parent Requirement Tag'=>$parent['tag'],
+                	   			 'parent_type'=>Version::find($parent['version_id'])->document->type,
+                  				 'child_type'=>$job->childVersion->document->type,
+								 'Child Requirement Tag'=>$child['tag'],
+                	             'child_id'=>$child['id'],
+					             'parent_v_id'=>$parent['version_id'],
+                                 'verification_id'=>$job->id
+							);
+							//var_dump($array);
+							ParentMatrix::create($array);
+						}//if
+					}//foreach
+					if(!$flag){
+						$column=[];
+						$array=array(
+								 'parent_id'=>$parent['id'],
+								 'Parent Requirement Tag'=>$parent['tag'],
+                	   			 'parent_type'=>Version::find($parent['version_id'])->document->type,
+                  				 'child_type'=>null,
+								 'Child Requirement Tag'=>null,
+                	             'child_id'=>null,
 					             'parent_v_id'=>$parent['version_id'],
                                  'verification_id'=>$job->id
 						);
 						//var_dump($array);
 						ParentMatrix::create($array);
-					}//if
-				}//foreach
-				if(!$flag){
-					$column=[];
-					foreach((array)$parent_column as $key=>$value){
-						switch($key){
-							case 'description':
-								$parent_text=$parent_column['description'];
-								break;
-							case 'test case description':
-								$parent_text=$parent_column[$key];
-								break;
-							default:
-							$column[]=array($key=>$value.MID_COMPOSE);
-						}	
 					}
-					$array=array('Parent Requirement Tag'=>$parent['tag'],
-            	             'Parent Requirement Text'=>$parent_text,
-							 'justification'=>array_key_exists('vat_json',$parent)?$parent['vat_json']:null,
-                             'column'=>(count($column)>0)?json_encode($column):null,
-				             'parent_v_id'=>$parent['version_id'],
-                             'verification_id'=>$job->id
-					);
-					//var_dump($array);
-					ParentMatrix::create($array);
-				}
-			}//foreach
-		}//foreach parent_items
-		$job->save();//失败了就不save了
-		DB::commit();
+				}//foreach
+			}//foreach parent_items
+			$job->save();//失败了就不save了
+			DB::commit();
 		}catch(Exception $e){
 			DB::rollback();
 			return   array('success'=>false,'data'=>($e));

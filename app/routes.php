@@ -48,7 +48,6 @@ Route::get('childmatrix/export', 'ChildMatrixController@export');
 Route::get('parentmatrix/export', 'ParentMatrixController@export');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
-
 Route::group(array('prefix' => 'verification'), function()
 {
 Route::get('summary','VerificationController@summary');

@@ -405,7 +405,7 @@ class ProjectController extends BaseController {
 	if ($node->type != 'basic.Rect')
 	continue;
 	$src = Document::find($node->id);
-	$src->dests()->detach();
+	if($src)$src->dests()->detach();
 	}//foreach
 	foreach ($graph->cells as $node) {
 	if ($node->type != 'fsa.Arrow')

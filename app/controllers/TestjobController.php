@@ -133,10 +133,7 @@ class TestjobController extends BaseController{
 			$fp=fopen($robot,"wb");
 			fwrite($fp,$tc->robot);
 			fclose($fp);
-			 
 		}//foreach
-		
-	   
 		$zip_name='result.zip';
 		$fp_zip=fopen($zip_name,"wb");
 		if($zip->open($zip_name, ZipArchive::OVERWRITE)=== TRUE){
@@ -162,7 +159,6 @@ class TestjobController extends BaseController{
 		$job = Testjob::find(Input::get("job_id"));
 		$results = $job->results;
 		$user = User::find(Session::get('uid'));
-	  
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 		$objPHPExcel = new PHPExcel();
@@ -171,10 +167,7 @@ class TestjobController extends BaseController{
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth('20');
 		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth('20');
 		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth('20');
-
-
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, 1, 'Tc tag');
-
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, 1, 'Description');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, 1, 'Tester');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, 1, 'Begin at');
@@ -196,10 +189,10 @@ class TestjobController extends BaseController{
 			$step_count = 0;
 			$num=1;
 			foreach ($tc->steps as $step){
-				
 				$id=json_decode($step->toJson())->id;
 				$stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
 				if(!$stepResult)continue;
+				//var_dump($stepResult->comment);
 				$r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
 				if ($stepResult->comment){
 					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, "#".intval($num++). ' ' . $r . ': ' . $stepResult->comment);
@@ -224,7 +217,6 @@ class TestjobController extends BaseController{
 				$row += $step_count-1;
 			}
 			$endrow = $row;
-
 			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(0, $startrow, 0, $endrow);
 			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(1, $startrow, 1, $endrow);
 			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(2, $startrow, 2, $endrow);

@@ -17,6 +17,91 @@ class ExportController extends BaseController {
 		unset($this->objPHPExcel);
 	}
 
+	public function childmatrix($id){
+
+		$items=[];
+		//列名与字段一一对应起来吧
+		if(!$id)return [];
+		$items=ChildMatrix::where('verification_id','=',$id)->orderBy('Child Requirement Tag','asc')->get();
+		//列名用version的吧
+		$data=[];
+		foreach($items as $item){
+			$da=[];
+			foreach($item->toArray()  as  $k=>$v){
+				$da[$k]=$v;
+			}
+			$item->child_type=='rs'?$child=Rs::find($item->child_id):$child=Tc::find($item->child_id);
+			$item->parent_type=='rs'?$parent=Rs::find($item->parent_id):$parent=Tc::find($item->parent_id);
+			$child_column=(array)json_decode('{'.$child->column.'}',true);
+			//$da['Child Requirement Tag']=$child->tag;
+			//$da['Parent Requirement Tag']=$parent->tag;
+			array_key_exists('description',(array)$child_column)?
+			$da['Child Requirement Text']=$child_column['description']:
+			$da['justification']=$parent->vat_json;
+			array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null;
+			$column=$parent?$parent->column:null;
+			foreach($column=(array)json_decode('{'.$column.'}',true) as $key=>$val){
+				switch($key){
+					case 'description':
+						$da['Parent Requirement Text']=$column[$key];
+						break;
+					case 'test case description':
+						$da['Parent Requirement Text']=$column[$key];
+						break;
+					case 'contribution':
+						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
+						break;
+					default:
+						array_key_exists($key,$child_column)?$da[$key]=$child_column[$key].MID_COMPOSE.$val
+						:$da[$key]=$val.MID_COMPOSE;
+				}//switch
+			}//foreach
+			$data[]=$da;
+		}//foreach
+
+		return  $data;
+
+
+	}
+	public function parentmatrix($id,$parent_v_id){
+		
+		if(!$id||!$parent_v_id)return [];
+		else
+		$items=ParentMatrix::where('verification_id','=',$id)->where('parent_v_id','=',$parent_v_id)->orderBy('Parent Requirement Tag','asc')->get();
+		//列名用version的吧
+		foreach($items as $item){
+			$da=[];
+			foreach($item->toArray()  as  $k=>$v){
+				$da[$k]=$v;
+			}
+			$child=($item->child_type=='rs')?Rs::find($item->child_id):Tc::find($item->child_id);
+			$parent=($item->parent_type=='rs')?Rs::find($item->parent_id):Tc::find($item->parent_id);
+			$child_column=$child?(array)json_decode('{'.$child->column.'}',true):[];
+			$da['justification']=$parent->vat_json;
+			array_key_exists('description',(array)$child_column)?
+			$da['Child Requirement Text']=$child_column['description']:
+			array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null;
+			foreach($column=(array)json_decode('{'.$parent->column.'}',true) as $key=>$val){
+				switch($key){
+					case 'description':
+						$da['Parent Requirement Text']=$column[$key];
+						break;
+					case 'test case description':
+						$da['Parent Requirement Text']=$column[$key];
+						break;
+					case 'contribution':
+						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
+						break;
+					default:
+						array_key_exists($key,$child_column)?$da[$key]=$child_column[$key].MID_COMPOSE.$val
+						:$da[$key]=$val.MID_COMPOSE;
+				}//switch
+			}//foreach
+			$data[]=$da;
+		}//foreach
+
+		return  $data;
+	}
 	public function  filter($array,$key){
 
 		if(is_array($array)){
@@ -191,13 +276,16 @@ class ExportController extends BaseController {
 
 		$objPHPExcel=$this->objPHPExcel;
 		$ver = Verification::find($v_id);
-		//$ver=Verification::where('id','=',Input::get('v_id'))->first();
 		$child_matrix =$ver->childMatrix;
-
+		$items=$this->childmatrix($v_id);
 		$column=array();
-		foreach(json_decode($child_matrix[0]->column) as $key=>$value){
-			$val_key=key(($value));
-			(!in_array($val_key,$column))&&$column[]=$val_key;
+		foreach($ver->parentVersions as $key=>$value){
+			//怎样来做
+			$array=explode(',',$value->headers);
+			foreach($array as $val){
+				if($val=='description'||$val=='test case description')continue;
+				!in_array($val,$column)?array_push($column,$val):null;
+			}
 		}
 		$user = User::find(Session::get('uid'));
 		$objPHPExcel->getProperties()
@@ -237,8 +325,8 @@ class ExportController extends BaseController {
 		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
 
 		$row = 1+$line_num;
-		foreach ($child_matrix as $item){
-			$item=json_decode($item,true);
+		foreach ($items as $item){
+			//$item=json_decode($item,true);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $this->filter($item,'Child Requirement Tag'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $this->filter($item,'Child Requirement Text'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $this->filter($item,'Parent Requirement Tag'));
@@ -252,11 +340,8 @@ class ExportController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'Comment'));
 			$j=10; $data=[];
 			foreach($column as $key){
-				foreach((array)json_decode($item['column'])  as $value){
-					$data=array_merge($data,(array)$value);
-				}
 				//var_dump($data);
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($data,$key));
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($item,$key));
 			}
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');
@@ -271,21 +356,16 @@ class ExportController extends BaseController {
 
 		$objPHPExcel=$this->objPHPExcel;
 		if($v_id&&$parent_v_id){
-			$parent_matrix=ParentMatrix::where('verification_id','=',$v_id)
-			->where('parent_v_id','=',$parent_v_id)->get();
+			$items=$this->parentmatrix($v_id,$parent_v_id);
 			$ver=Verification::find($v_id);
-		}else if($v_id){
-			$ver = Verification::find($v_id);
-			$parent_matrix =$ver->parentMatrix;
 		}else{
-			$ver=[];
-			$parent_matrix=[];
+			return [];
 		}
-		$tmp_col=count($parent_matrix)>0?json_decode($parent_matrix[0]->column,true):[];
-		$column=array();
-		foreach($tmp_col as $key=>$value){
-			$val_key=key(($value));
-			(!in_array($val_key,$column))&&$column[]=$val_key;
+		$value=Version::find($parent_v_id);
+		$array=explode(',',$value->headers);
+		foreach($array as $val){
+			if($val=='description'||$val=='test case description')continue;
+			!in_array($val,$array)&&array_push($array,$val);
 		}
 		$objPHPExcel->getProperties()
 		->setTitle('New_Casco_Parent Matrix')
@@ -298,7 +378,7 @@ class ExportController extends BaseController {
 		//添加title进去
 		$circle=array('col'=>'A','row'=>3);
 		$child_doc_name=$ver->childVersion->document->name;//;old_filename;
-		$parent_doc_name=count($parent_matrix)>0?($parent_matrix[0]->version->document->name):'';//old_filename:'';
+		$parent_doc_name=$value->document->name;//old_filename:'';
 
 		$objPHPExcel->setActiveSheetIndex($active_sheet)->setCellValue($circle['col'] . ($circle['row']), $child_doc_name.' COVERS '.$parent_doc_name);
 		$objPHPExcel->getActiveSheet()
@@ -340,7 +420,7 @@ class ExportController extends BaseController {
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $line_num,'CR');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11,$line_num,'Comment');
 		$i=11;
-		foreach($column as $value){
+		foreach($array as $value){
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$i,$line_num,$value.COL_PREFIX);
 			//设置自定义列宽度
 			$objPHPExcel->getActiveSheet()->getColumnDimension(chr($i+ord('A')))->setWidth(20);
@@ -353,8 +433,7 @@ class ExportController extends BaseController {
 		//设置过滤
 		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
 		$row = 1+$line_num;
-		foreach ($parent_matrix as $item){
-			$item=json_decode($item,true);
+		foreach ($items as $item){
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $this->filter($item,'Parent Requirement Tag'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $this->filter($item,'Parent Requirement Text'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $this->filter($item,'Child Requirement Tag'));
@@ -368,14 +447,8 @@ class ExportController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'CR'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(11, $row,$this->filter($item,'Comment'));
 			$j=11; $data=[];
-			foreach($column as $key){
-				//var_dump(json_decode($item['column']));
-
-				foreach((array)json_decode($item['column'])  as $value){
-					$data=array_merge($data,(array)$value);
-				}
-				//var_dump($data);
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($data,$key));
+			foreach($array as $key){
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($item,$key));
 			}
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');
@@ -398,8 +471,8 @@ class ExportController extends BaseController {
 		foreach($vefs->parentVersions as $parent_vers){
 			$this->export_parents($v_id,$parent_vers->id,$i++);
 		}
-		
-		
+
+
 		return  $this->objPHPExcel;
 
 	}

@@ -5,28 +5,55 @@ use Illuminate\Support\Facades\Input;
 class ChildMatrixController extends ExportController {
 
 	public function index(){
-
 		$items=[];
 		//列名与字段一一对应起来吧
 		if($id=Input::get('id')){
-			$items=ChildMatrix::where('verification_id','=',$id)->orderBy('Child Requirement Tag','asc')->get()->toArray();
+			$items=ChildMatrix::where('verification_id','=',$id)->orderBy('Child Requirement Tag','asc')->get();
+		}else{
+			return [];
 		}
-		$columModle=array();
-		$argu=$items?json_decode($items[0]['column'],true):[];
-		foreach((array)$argu as $key=>$value){
-			$val_key=key((array)$value);
-			array_push($columModle,array('dataIndex'=>$val_key,'header'=>$val_key,'width'=>140));
+		//列名用version的吧
+		$columModle=[];
+		foreach(Verification::find($id)->parentVersions as $key=>$value){
+			//怎样来做
+			$array=explode(',',$value->headers);
+			foreach($array as $val){
+				if($val=='description'||$val=='test case description')continue;
+				$tmp=array('dataIndex'=>$val,'header'=>$val,'width'=>140);
+				!in_array($tmp,$columModle)?array_push($columModle,$tmp):null;
+			}
 		}
 		$data=[];
 		foreach($items as $item){
-			$column=(array)json_decode($item['column'],true);
-			$inner=[];
-			foreach($column as  $val){
-				$inner=array_merge($inner,$val);
+			$da=[];
+			foreach($item->toArray()  as  $k=>$v){
+				$da[$k]=$v;
 			}
-			$column=array_merge((array)$item,(array)$inner);
-			array_push($data,$column);
-		}
+			$item->child_type=='rs'?$child=Rs::find($item->child_id):$child=Tc::find($item->child_id);
+			$item->parent_type=='rs'?$parent=Rs::find($item->parent_id):$parent=Tc::find($item->parent_id);
+			$child_column=(array)json_decode('{'.$child->column.'}',true);
+			array_key_exists('description',(array)$child_column)?
+			$da['Child Requirement Text']=$child_column['description']:
+			array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null;
+			$column=$parent?$parent->column:null;
+			foreach($column=(array)json_decode('{'.$column.'}',true) as $key=>$val){
+				switch($key){
+					case 'description':
+						$da['Parent Requirement Text']=$column[$key];
+						break;
+					case 'test case description':
+						$da['Parent Requirement Text']=$column[$key];
+						break;
+					case 'contribution':
+						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
+						break;
+					default:
+						array_key_exists($key,$child_column)?$da[$key]=$child_column[$key].MID_COMPOSE.$val
+						:$da[$key]=$val.MID_COMPOSE;
+				}//switch
+			}//foreach
+			$data[]=$da;
+		}//foreach
 
 		return  array('columModle'=>$columModle,'data'=>$data);
 	}
@@ -83,15 +110,9 @@ class ChildMatrixController extends ExportController {
 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
 		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
 		header('Pragma: public'); // HTTP/1.0
-		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);	
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
-
-
-
-
-
-
 	}
 
 
