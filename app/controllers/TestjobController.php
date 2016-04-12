@@ -233,47 +233,15 @@ class TestjobController extends BaseController{
 			foreach ($tc->steps as $step){
 				$id=json_decode($step->toJson())->id;
 				$stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
-<<<<<<< HEAD
-				if(!$stepResult)continue;
-				//var_dump($stepResult->comment);
-=======
+
 				if(!$stepResult) continue;
->>>>>>> 7f8dffc7a6652af8d267e131fc8b0547090a428f
 				$r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
 				if ($stepResult->comment){
 				    $restult_comment .= "Step".intval($index++).' '.$r.': '.$stepResult->comment."\n";
 				}
 			}
-<<<<<<< HEAD
-			/*
-			 $stepResult = ResultStep::where('result_id', $v->id)->get();
-			 foreach($stepResult as $value){
-			 $r = $value->result == 0?'untested':($value->result == 1?'passed':'failed');
-			 if($value->comment){
-
-			 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $cod++, '#'.$->num . ' ' . $r . ': ' . $value->comment);
-			 $step_count++;
-
-			 }
-			 }
-			 */
-
-
-			if ($step_count>1){
-				$row += $step_count-1;
-			}
-			$endrow = $row;
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(0, $startrow, 0, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(1, $startrow, 1, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(2, $startrow, 2, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(3, $startrow, 3, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(4, $startrow, 4, $endrow);
-			$objPHPExcel->getActiveSheet()->mergeCellsByColumnAndRow(5, $startrow, 5, $endrow);
-			$row++;
-=======
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $startrow, $restult_comment);
 			$startrow++;
->>>>>>> 7f8dffc7a6652af8d267e131fc8b0547090a428f
 		}
 	  
 		header('Content-Type: application/vnd.ms-excel');
