@@ -389,8 +389,18 @@ class ProjectController extends BaseController {
 		if(!$id||$id=='null')
 		{$p=Project::orderBy('updated_at','desc')->first();}
 		else{$p = Project::find ( $id );}
-
-		// $p->graph = json_decode($p->graph);
+		$graph=json_decode($p->graph);
+		foreach($graph->cells as $key=>$node){
+		if ($node->type == 'basic.Rect'){
+			$doc=Document::find($node->id);
+			//var_dump($graph->cells[$key]->attrs->text->text='123');
+			if($doc){
+				$graph->cells[$key]->attrs->text->text=$doc->name;
+				$p->graph=json_encode($graph);
+				$p->save();
+			}
+		}
+		}
 		if($p)$p->documents;
 		return $p;
 	}

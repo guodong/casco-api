@@ -75,7 +75,7 @@ class ExportController extends BaseController {
 			$parent=($item->parent_type=='rs')?Rs::find($item->parent_id):Tc::find($item->parent_id);
 			$child_column=$child?(array)json_decode('{'.$child->column.'}',true):[];
 			$da['justification']=[];(!$parent)?$vat_json=[]:$vat_json=json_decode($parent->vat_json);
-			foreach($vat_json as $val){
+			foreach((array)$vat_json as $val){
 			array_push($da['justification'],$val->tag.':'.(property_exists($val,'comment')?$val->comment:''));
 			}
 			array_key_exists('description',(array)$child_column)?
