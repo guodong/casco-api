@@ -44,7 +44,7 @@ class ParentMatrixController extends ExportController {
 						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
 						break;
 					default:
-						array_key_exists($key,$child_column)?$da[$key]=$child_column[$key].MID_COMPOSE.$val
+						array_key_exists($key,$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column[$key]
 						:$da[$key]=$val.MID_COMPOSE;
 				}//switch
 			}//foreach
