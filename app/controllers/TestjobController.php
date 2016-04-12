@@ -233,14 +233,15 @@ class TestjobController extends BaseController{
 			foreach ($tc->steps as $step){
 				$id=json_decode($step->toJson())->id;
 				$stepResult = ResultStep::where('result_id', $v->id)->where('step_id',$id)->first();
+				
 				if(!$stepResult) continue;
 				$r = $stepResult->result == 0?'untested':($stepResult->result == 1?'passed':'failed');
 				if ($stepResult->comment){
 				    $restult_comment .= "Step".intval($index++).' '.$r.': '.$stepResult->comment."\n";
 				}
 			}
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $startrow, $restult_comment);
 
-		 	$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $startrow, $restult_comment);
 			$startrow++;
 		}
 	  
