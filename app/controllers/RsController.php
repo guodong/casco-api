@@ -10,11 +10,11 @@ class RsController extends Controller{
 
 	public function  striplashes($item){
 
-	$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
-	$item=str_replace('\'',"'",$item);
-	return  $item;
+		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
+		$item=str_replace('\'',"'",$item);
+		return  $item;
 	}
-public function array_column($input,$column_key,$index_key=''){
+	public function array_column($input,$column_key,$index_key=''){
 
 		if(!is_array($input)) return;
 		$results=array();
@@ -55,93 +55,88 @@ public function array_column($input,$column_key,$index_key=''){
 
 	public function index()
 	{
-	    $rsv = Input::get('document_id')?Document::find(Input::get('document_id'))->latest_version():(Input::get('version_id')?Version::find(Input::get('version_id')):'');
-	    if (!$rsv){
-	        return '[]';
-	    }
-	    $rss = $rsv->rss;
-	    if(Input::get('act')=="stat"){
-	    $result=[];
-	    foreach ($rss as $v){
-	        if (!json_decode($v->vat_json)){
-	            $v->vat_json = '[]';
-	            $v->save();
-	        }
-	        $res['id']=$v->id;
-	        $res['tag']=$v->tag;
-	        $res['vat']=json_decode($v->vat_json);
-	        $res['rss']=$v->rss();
-	        $res['tcs']=$v->tcs();
-	       	$result[]=$res;
+		$rsv = Input::get('document_id')?Document::find(Input::get('document_id'))->latest_version():(Input::get('version_id')?Version::find(Input::get('version_id')):'');
+		if (!$rsv){
+			return '[]';
+		}
+		$rss = $rsv->rss;
+		if(Input::get('act')=="stat"){
+			$result=[];
+			foreach ($rss as $v){
+				if (!json_decode($v->vat_json)){
+					$v->vat_json = '[]';
+					$v->save();
+				}
+				$res['id']=$v->id;
+				$res['tag']=$v->tag;
+				$res['vat']=json_decode($v->vat_json);
+				$res['rss']=$v->rss();
+				$res['tcs']=$v->tcs();
+				$result[]=$res;
 
-	    }
-	     return  $result;
-     
-	    }
+			}
+			return  $result;
 
-	    $data=array();
-	    foreach ($rss as $v){
-	     $v->column=$this->striplashes($v->column);
-	    //if(preg_match('/0051/',$v->tag)){var_dump($v->column);exit;}   
-	    $base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);
-	    if(!$base)continue;
-	    if (!json_decode($v->vat_json)){
-	            $v->vat_json = '[]';
-	            $v->save();
-	        }
-	    $obj=array();
-	    $obj['vat']=json_decode($v->vat_json);
-	    $obj=array_merge($base,$obj);
-	    $data[]=$obj;
-        }
-	  //还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
-	   $version = Version::find (Input::get('version_id'));
-	   $column=explode(",",$version->headers);
-	   $columModle=array();
-	   $fieldsNames=array();
-	   $columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
-	    $fieldsNames[]=array('name'=>'tag');
-	   foreach($column as $item){
-	   
-	    $columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
-	    $fieldsNames[]=array('name'=>$item);
-	   
-	   }
-	 //  var_dump(count($this->array_column($rss->toArray(),'tag')));
-	  // var_dump(count($this->array_column($data,'tag')));
-	  // return array_diff($this->array_column($rss->toArray(),'tag'),$this->array_column($data,'tag'));
-	   return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
-	  // return  json_encode(array('columModle'=>$columModle));
-	   
-	   	    
+		}
+
+		$data=array();
+		foreach ($rss as $v){
+			$v->column=$this->striplashes($v->column);
+			//if(preg_match('/0051/',$v->tag)){var_dump($v->column);exit;}
+			$base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);
+			if(!$base)continue;
+			if (!json_decode($v->vat_json)){
+				$v->vat_json = '[]';
+				$v->save();
+			}
+			$obj=array();
+			$obj['vat']=json_decode($v->vat_json);
+			$obj=array_merge($base,$obj);
+			$data[]=$obj;
+		}
+		//还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
+		$version = Version::find (Input::get('version_id'));
+		$column=explode(",",$version->headers);
+		$columModle=array();
+		$fieldsNames=array();
+		$columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
+		$fieldsNames[]=array('name'=>'tag');
+		foreach($column as $item){
+			$columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
+			$fieldsNames[]=array('name'=>$item);
+		}
+	 	return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
+		// return  json_encode(array('columModle'=>$columModle));
+
+	 	
+	 	
 	  
-	    
-	    
-	    
-	    
-	    
-	    
-	    
-	     
+	  
+	  
+	  
+	  
+	  
+	  
+
 	}
 	public function store($id){
-		
-		
-		
-		
+
+
+
+
 	}
-	
-	
-	
-	
+
+
+
+
 	//走的是put头
 	public function update($id)
 	{
-	    $data = Input::get();
-	    $m = Rs::find($id);
-	    $m->column=$data['column'];
-	    $m->tag=$data['tag'];
-	    $m->vat_json = json_encode($data['vat']);
-	    $m->save();
+		$data = Input::get();
+		$m = Rs::find($id);
+		$m->column=$data['column'];
+		$m->tag=$data['tag'];
+		$m->vat_json = json_encode($data['vat']);
+		$m->save();
 	}
 }

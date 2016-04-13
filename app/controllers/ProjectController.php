@@ -107,7 +107,6 @@ class ProjectController extends BaseController {
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
 		$version->filename = $name;
 		$version->touch();
-		//先save一下方便后续更新?
 		$version->save ();
 		$url_path = public_path () . '/files/' . $name;
 		//存贮列名到version里面的headers
@@ -132,7 +131,8 @@ class ProjectController extends BaseController {
 			$modify = 0;
 			$wait_save = array ();
 
-			if (! json_decode($result2)) {
+			if (!json_decode($result2)){
+				$this->p();//carefully
 				$version->result="读取文档失败，远程服务器返回结果:".$result2;
 				$version->save();
 
@@ -323,7 +323,7 @@ class ProjectController extends BaseController {
 			}
 			*/
 			//要不要做个显示报表啊更直观一些.
-			$result='<table border=”1″ cellspacing=”0″ cellpadding=”2″>
+	$result='<table border=”1″ cellspacing=”0″ cellpadding=”2″>
 	<tr><td colspan="2"  align=center>旧版本'.$old_version->name.';新版本'.$version->name.'</td></tr>
 	<tr><td><font size="3" color="#00FF00">增添'.count($adds).'条</font></td><td>'.(string)implode(',',$adds).'</td></tr>
 	<tr><td><font size="3" color="blue">修改'.count($updates)."条</font></td><td>".(string)implode(',',$updates).'</td></tr>
