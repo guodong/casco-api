@@ -101,7 +101,7 @@ class ProjectController extends BaseController {
 		$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 
 		//不显示出来的列名,白名单的处理也应该在后端处理
-		$black_list=array('execution step','expected output','test steps');
+	
 		set_time_limit ( 0 );
 		$name = uniqid () . '.doc';
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
@@ -112,7 +112,7 @@ class ProjectController extends BaseController {
 		//存贮列名到version里面的headers
 		$column = Input::get ("column");
 		$cols=explode(',',$column);$no_col=[];
-		foreach($cols as $col){!in_array($col,$black_list)&&array_push($no_col,$col);}
+		foreach($cols as $col){array_push($no_col,$col);}
 		$version->headers=strtolower(implode(',',$no_col));//此时column还没有过滤
 		//$version->save();
 

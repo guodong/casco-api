@@ -73,7 +73,7 @@ class TcController extends Controller{
 		$column=explode(",",$version->headers);
 		$columModle=array();
 		$fieldsNames=array();
-		$black_list=array('execution step','expected output','test steps');
+		$black_list=array('input','execution step','expected output','test steps');
 		$columModle[]=array('dataIndex'=>'tag','header'=>'tag','width'=> 140);
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
