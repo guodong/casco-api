@@ -132,11 +132,11 @@ class ProjectController extends BaseController {
 			$wait_save = array ();
 
 			if (!json_decode($result2)){
-				$this->p();//carefully
+				//$this->p();//carefully
+				throw new Exception();
 				$version->result="读取文档失败，远程服务器返回结果:".$result2;
-				$version->save();
-
-				return $result2;
+				$version->save($result2);
+				return array ('success' => false, 'msg' =>$version->result);
 			}
 			$resolveResult =$this->objtoarr(json_decode($result2));
 
