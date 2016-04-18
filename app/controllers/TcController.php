@@ -77,6 +77,7 @@ class TcController extends Controller{
 		$columModle[]=array('dataIndex'=>'tag','header'=>'tag','width'=> 140);
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
+
 			if(in_array($item,$black_list))continue;
 			$columModle[]=array('dataIndex'=>$item,'header'=>$item,'width'=> 140);
 			$fieldsNames[]=array('name'=>$item);
