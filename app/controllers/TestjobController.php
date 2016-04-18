@@ -12,10 +12,8 @@ class TestjobController extends BaseController{
 	public function index()
 	{
 		$jobs = Project::find(Input::get('project_id'))->testjobs;
-		//var_dump($jobs);
 		foreach ($jobs as $v){
-			//var_dump($v->toArray());
-			if($v==''||$v==[]||$v==null)continue;
+			if(!$v)continue;
 			$v->build;
 			$v->tcVersion?$v->tcVersion->document:null;
 			$rsVersions=$v->rsVersions?$v->rsVersions:null;
@@ -69,11 +67,19 @@ class TestjobController extends BaseController{
 		$t->update(Input::get());
 		return $t;
 	}
+	
+	public function import_tmp()
+	{	
+		if(!Input::get('name')||!Input::get('project_id'))
+			return  array('success'=>false,'data'=>'发送数据错误!');
+		$data=Input::get();
+		$name = uniqid () . '.xls';
+		$name=public_path () . '/exceltpls/' . $name;
+		move_uploaded_file ( $_FILES ["exceltpl"] ["tmp_name"], $name);
+		$data->path= $name;
+	    $tmp=TestjobTmp::create($data);
+		return  array('success'=>true,data=>$tmp);
 
-	public function rsversion()
-	{
-		$job = Testjob::find(Input::get('job_id'));
-		$rsvs = $job->rsVersions;
 	}
 
 	public function addFileToZip($path,$zip){
@@ -123,7 +129,6 @@ class TestjobController extends BaseController{
 			$path="./case";
 // 			chmod($path,0777);
 			if(!file_exists($path)){mkdir($path);}
-			// $handler=opendir($path); //打开当前文件夹由$path指定。
 			$filename=$path."/".trim($tc->tag,"[]");
 			!file_exists($filename)?mkdir($filename):null;
 			$fp=fopen($filename.'/checklog.py',"wb");

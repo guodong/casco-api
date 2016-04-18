@@ -41,13 +41,17 @@ Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
 Route::resource('version', 'VersionController');
 Route::get('projectuser','ProjectUserController@index');
-Route::get('testjob/export', 'TestjobController@export');
-Route::get('testjob/export_pro', 'TestjobController@export_pro');
-Route::resource('testjob', 'TestjobController');
 Route::get('childmatrix/export', 'ChildMatrixController@export');
 Route::get('parentmatrix/export', 'ParentMatrixController@export');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
+Route::group(array('prefix' => 'testjob'), function()
+{
+Route::get('export','TestjobController@export');
+Route::get('export_pro','TestjobController@export_pro');
+Route::post('import_tmp','TestjobController@import_tmp');
+});
+Route::resource('testjob', 'TestjobController');
 Route::group(array('prefix' => 'verification'), function()
 {
 Route::get('summary','VerificationController@summary');

@@ -9,6 +9,12 @@ class Project extends BaseModel {
 	    return $this->hasMany("Document");
 	}
 	
+	public function testjobtmps()
+	{
+	    return $this->hasMany("TestjobTmp");
+	}
+	
+	
 	public function vatstrs()
 	{
 	    return $this->hasMany("Vatstr");

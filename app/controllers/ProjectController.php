@@ -390,7 +390,8 @@ class ProjectController extends BaseController {
 		{$p=Project::orderBy('updated_at','desc')->first();}
 		else{$p = Project::find ( $id );}
 		$graph=json_decode($p->graph);
-		foreach($graph->cells as $key=>$node){
+		$cells=$graph?$graph->cells:[];
+		foreach($cells as $key=>$node){
 		if ($node->type == 'basic.Rect'){
 			$doc=Document::find($node->id);
 			//var_dump($graph->cells[$key]->attrs->text->text='123');
