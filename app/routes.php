@@ -49,9 +49,11 @@ Route::group(array('prefix' => 'testjob'), function()
 {
 Route::get('export','TestjobController@export');
 Route::get('export_pro','TestjobController@export_pro');
+Route::get('get_tmp','TestjobController@get_tmp');
 Route::post('import_tmp','TestjobController@import_tmp');
 });
 Route::resource('testjob', 'TestjobController');
+Route::resource('testjobtmp', 'TestjobTmpController');
 Route::group(array('prefix' => 'verification'), function()
 {
 Route::get('summary','VerificationController@summary');

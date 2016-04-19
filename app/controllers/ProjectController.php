@@ -386,9 +386,9 @@ class ProjectController extends BaseController {
 
 	public function show($id) {
 
-		if(!$id||$id=='null')
-		{$p=Project::orderBy('updated_at','desc')->first();}
-		else{$p = Project::find ( $id );}
+		if(!$id||$id=='null'){$p=Project::orderBy('updated_at','desc')->first();}
+		else{$p=Project::find ( $id );}
+		if(!$p)return [];
 		$graph=json_decode($p->graph);
 		$cells=$graph?$graph->cells:[];
 		foreach($cells as $key=>$node){
