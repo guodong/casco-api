@@ -174,9 +174,18 @@ class TestjobController extends BaseController{
 		$user = User::find(Session::get('uid'));
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
-		$objReader = PHPExcel_IOFactory::createReader('Excel5');
+		if( $tmp->type =='xlsx' )
+		{
+		    $objReader = new PHPExcel_Reader_Excel2007();
+		}
+		else
+		{
+		    $objReader = new PHPExcel_Reader_Excel5();
+		}
+// 		$objReader = PHPExcel_IOFactory::createReader('Excel5');
 		$objPHPExcel = $objReader->load($tmp->path);
 		$objPHPExcel->setActiveSheetIndex(0);
+		
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		//设置列宽
 		$config_arr = array("A"=>25,"B"=>35,"C"=>15,"D"=>20,"E"=>20,"F"=>15,"G"=>15,"H"=>15,"I"=>30);
@@ -185,36 +194,36 @@ class TestjobController extends BaseController{
 		}
 		$objPHPExcel->getActiveSheet()->getStyle('B')->getAlignment()->setWrapText(true);//自动换行
 		$objPHPExcel->getActiveSheet()->getStyle('I')->getAlignment()->setWrapText(true);//自动换行
-		$start_col=10;
-		//设置Test job表头
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $start_col, 'Name');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $start_col, 'Build');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $start_col, 'TC');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $start_col, 'TC Version');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $start_col, 'RS:Version');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $start_col, 'Status');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $start_col, 'Created at');
-		//设置表头格式
-		$objPHPExcel->getActiveSheet()->getStyle("A$start_col".":"."G$start_col")->getFont()->setName('Arial');
-		$objPHPExcel->getActiveSheet()->getStyle("A$start_col".":"."G$start_col")->getFont()->setSize(15);
-		$objPHPExcel->getActiveSheet()->getStyle("A$start_col".":"."G$start_col")->getFont()->setBold(true);
-		//输出Test job信息
-		$start_col++;
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $start_col, $job->name);
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $start_col, $job->build->name);
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $start_col, $job->tc_version->document->name);
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $start_col, $job->tc_version->name);
-		  //处理TC与RS的一对多情况
-		  $rs_info = '';
-		  foreach($job->rs_versions as $i){
-		      $rs_info .= $i->document->name.":".$i->name."; ";
-		  }
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $start_col, $rs_info);
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $start_col, $job->status == '0' ? 'testing':'submited');
+		$start_col=4;
+// 		//设置Test job表头
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $start_col, 'Name');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $start_col, 'Build');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $start_col, 'TC');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $start_col, 'TC Version');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $start_col, 'RS:Version');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $start_col, 'Status');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $start_col, 'Created at');
+// 		//设置表头格式
+// 		$objPHPExcel->getActiveSheet()->getStyle("A$start_col".":"."G$start_col")->getFont()->setName('Arial');
+// 		$objPHPExcel->getActiveSheet()->getStyle("A$start_col".":"."G$start_col")->getFont()->setSize(15);
+// 		$objPHPExcel->getActiveSheet()->getStyle("A$start_col".":"."G$start_col")->getFont()->setBold(true);
+// 		//输出Test job信息
+// 		$start_col++;
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $start_col, $job->name);
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $start_col, $job->build->name);
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $start_col, $job->tc_version->document->name);
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $start_col, $job->tc_version->name);
+// 		  //处理TC与RS的一对多情况
+// 		  $rs_info = '';
+// 		  foreach($job->rs_versions as $i){
+// 		      $rs_info .= $i->document->name.":".$i->name."; ";
+// 		  }
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $start_col, $rs_info);
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $start_col, $job->status == '0' ? 'testing':'submited');
 // 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 3, substr($job->created_at, 0, 1)=='0'?'':$job->created_at);
 
 		//设置表头项
-        $line_origin =$start_col+ 5;
+        $line_origin =$start_col++;
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $line_origin, '测试用例编号');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $line_origin, '测试用例描述');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_origin, '通过/失败');
