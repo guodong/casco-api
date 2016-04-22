@@ -185,15 +185,16 @@ class TestjobController extends BaseController{
 // 		$objReader = PHPExcel_IOFactory::createReader('Excel5');
 		$objPHPExcel = $objReader->load($tmp->path);
 		$objPHPExcel->setActiveSheetIndex(0);
+		$highestRow = $objPHPExcel->setActiveSheetIndex(0)->getHighestRow();
 		
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		//设置列宽
-		$config_arr = array("A"=>25,"B"=>35,"C"=>15,"D"=>20,"E"=>20,"F"=>15,"G"=>15,"H"=>15,"I"=>30);
-		foreach ($config_arr as $col=>$config){
-		    $objPHPExcel->getActiveSheet()->getColumnDimension($col)->setWidth($config);
-		}
+// 		$config_arr = array("A"=>25,"B"=>35,"C"=>15,"D"=>20,"E"=>15,"F"=>15,"G"=>15,"H"=>15,"I"=>30);
+// 		foreach ($config_arr as $col=>$config){
+// 		    $objPHPExcel->getActiveSheet()->getColumnDimension($col)->setWidth($config);
+// 		}
 		$objPHPExcel->getActiveSheet()->getStyle('B')->getAlignment()->setWrapText(true);//自动换行
-		$objPHPExcel->getActiveSheet()->getStyle('I')->getAlignment()->setWrapText(true);//自动换行
+		$objPHPExcel->getActiveSheet()->getStyle('H')->getAlignment()->setWrapText(true);//自动换行
 		$start_col=4;
 // 		//设置Test job表头
 // 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $start_col, 'Name');
@@ -223,22 +224,22 @@ class TestjobController extends BaseController{
 // 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, 3, substr($job->created_at, 0, 1)=='0'?'':$job->created_at);
 
 		//设置表头项
-        $line_origin =$start_col++;
+        $line_origin =$start_col+1;
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $line_origin, '测试用例编号');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $line_origin, '测试用例描述');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_origin, '通过/失败');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_origin, '开始时间');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_origin, '结束时间');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_origin, '测试人');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_origin, '校核人');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_origin, '平台版本');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_origin, '备注');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_origin, '执行时间');
+// 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_origin, '结束时间');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_origin, '测试人');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_origin, '校核人');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_origin, '平台版本');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_origin, '备注');
 		//设置过滤
-		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_origin.":".'I'.$line_origin);
+		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_origin.":".'H'.$line_origin);
 		//设置表头格式
-		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'I'.$line_origin)->getFont()->setName('Arial');
-		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'I'.$line_origin)->getFont()->setSize(15);
-		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'I'.$line_origin)->getFont()->setBold(true);
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'H'.$line_origin)->getFont()->setName('Arial');
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'H'.$line_origin)->getFont()->setSize(15);
+		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_origin.":".'H'.$line_origin)->getFont()->setBold(true);
 		
 		//数据填充
 		$startrow = $line_origin + 1;
@@ -249,8 +250,8 @@ class TestjobController extends BaseController{
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $startrow, array_key_exists('description',$item)?$item['description']:$item['test case description']);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $startrow, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $startrow, substr($v->begin_at, 0, 1)=='0'?'':$v->begin_at);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $startrow, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $startrow, $user->realname);
+// 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $startrow, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $startrow, $user->realname);
 			//解析comment
 			$restult_comment = '';
 			$index = 1;
@@ -264,10 +265,13 @@ class TestjobController extends BaseController{
 				    $restult_comment .= "Step".intval($index++).' '.$r.': '.$stepResult->comment."\n";
 				}
 			}
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $startrow, $restult_comment);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $startrow, $restult_comment);
 
 			$startrow++;
 		}
+		
+		if($startrow < $highestRow)
+		    $objPHPExcel->getActiveSheet()->removeRow($startrow,$highestRow);
 	  
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="output.xls"');
