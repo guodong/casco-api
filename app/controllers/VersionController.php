@@ -6,13 +6,14 @@ class VersionController extends BaseController {
 	public function index()
 	{
 		if(Input::get('newest')){$versions=Version::orderBy('created_at','desc')->first();$versions&&$versions->document;}
-		else if(Input::get('new_update')){$versions = Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->get();
+		else if(Input::get('new_update')&&Input::get('document_id')){
+		$versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
+		$versions&&$versions->document;
+		}else if(Input::get('document_id')){
+		$versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->get();
 		foreach($versions as $vers){
 			$vers->document;
 		}
-		}else if(Input::get('document_id')){
-		$versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('created_at', 'desc')->first();
-		$versions&&$versions->document;
 		}
 		
 		
