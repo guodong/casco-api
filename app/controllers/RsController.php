@@ -10,7 +10,7 @@ class RsController extends Controller{
 
 	public function  striplashes($item){
 
-		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
+		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
 		$item=str_replace('\'',"'",$item);
 		return  $item;
 	}

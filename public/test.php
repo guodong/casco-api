@@ -1,7 +1,10 @@
 <?php
 
+    $print = "very";    
+    
+    echo "1<br />";
 
-$str='"key":"1232\'13"';
+    print 'This string \\will $print exactly as it\'s \n declared\\';
+    
 
-var_dump(json_decode('{'.$str.'}'));
 ?>
