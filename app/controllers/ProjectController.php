@@ -92,7 +92,7 @@ class ProjectController extends BaseController {
 
 		if (Input::get ( 'isNew' ) == 1){
 			$old_version=Version::where('document_id','=',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
-			if(!$old_version)$old_array=[];
+			if(!$old_version) $old_array = [];
 			else $old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
 		}
@@ -101,8 +101,6 @@ class ProjectController extends BaseController {
 			$old_version=$version;
 			$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
-		
-
 		//不显示出来的列名,白名单的处理也应该在后端处理
 	
 		set_time_limit ( 0 );
