@@ -92,13 +92,16 @@ class ProjectController extends BaseController {
 
 		if (Input::get ( 'isNew' ) == 1){
 			$old_version=Version::where('document_id','=',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
+			if(!$old_version)$old_array=[];
+			else $old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
 		}
 		else{
 			$version = Version::find ( Input::get ( 'version_id' ) );
 			$old_version=$version;
+			$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
-		$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
+		
 
 		//不显示出来的列名,白名单的处理也应该在后端处理
 	
@@ -390,19 +393,28 @@ class ProjectController extends BaseController {
 		else{$p=Project::find ( $id );}
 		if(!$p)return [];
 		$graph=json_decode($p->graph);
-		$cells=$graph?$graph->cells:[];
+		$cells=$graph?$graph->cells:[];$new_graph=array();
 		foreach($cells as $key=>$node){
 		if ($node->type == 'basic.Rect'){
 			$doc=Document::find($node->id);
 			//var_dump($graph->cells[$key]->attrs->text->text='123');
 			if($doc){
-				$graph->cells[$key]->attrs->text->text=$doc->name;
-				$p->graph=json_encode($graph);
-				$p->save();
+				//$graph->cells[$key]->attrs->text->text=$doc->name;
+				$new_node=$node;
+				$new_node->attrs->text->text=$doc->name;
+				$new_graph[]=$new_node;
+			}else{//说明此文档被删除掉了,应该更新一下
+
+			   continue;
 			}
+		}else{//连线属性
+			
+			$new_graph[]=$node;
 		}
-		}
-		if($p)$p->documents;
+		}//foreach
+		$p->graph=json_encode(array('cells'=>$new_graph));
+		$p->save();
+		$p->documents;
 		return $p;
 	}
 
@@ -422,7 +434,7 @@ class ProjectController extends BaseController {
 				continue;
 				$src = Document::find($node->source->id);
 				$dst = Document::find($node->target->id );
-				$src->dests()->attach($dst);
+				if($src)$src->dests()->attach($dst);
 			}//foreach
 		}
 		$project->update ( $data );
