@@ -97,7 +97,7 @@ class ProjectController extends BaseController {
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
 		}
 		else{
-			$version = Version::find ( Input::get ( 'version_id' ) );
+			$version = Version::find (Input::get ( 'version_id' ));
 			$old_version=$version;
 			$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
@@ -107,6 +107,8 @@ class ProjectController extends BaseController {
 		$name = uniqid () . '.doc';
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
 		$version->filename = $name;
+		$regrex=Input::get("regrex")?Input::get("regrex"):null;
+		$version->regrex=$regrex;
 		$version->touch();
 		$version->save ();
 		$url_path = public_path () . '/files/' . $name;
@@ -125,7 +127,7 @@ class ProjectController extends BaseController {
 			$type = Input::get ( "type" );
 			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			//$doc_url='http://192.100.212.31:8080/files/'.$name;
-			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -140,21 +142,20 @@ class ProjectController extends BaseController {
 				return array ('success' => false, 'msg' =>$version->result);
 			}
 			$resolveResult =$this->objtoarr(json_decode($result2));
-
+			//var_dump($resolveResult);exit();
 			if (Input::get ( 'type' ) == 'tc') {
-				foreach ( $resolveResult as $value ) {
+				foreach ($resolveResult as $value ) {
 
 					$num = Tc::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $version->id )->first ();
 
 					if ($num) {
 						$num->column = "";
-						foreach ( $value as $key => $item ) {
-
+						foreach ($value as $key => $item ) {
 							if ($key != 'tag' && $key != 'test steps') {
 								$num->column .= '"'.strtolower(trim($key)) . '":"' .  addslashes(trim($item)) . '",';
 							} else if ($key == 'test steps') {
 								//做相应的处理哦
-								$wait_save = json_decode ( $item,true );
+								$wait_save = json_decode ( $item,true )?json_decode ( $item,true ):array();
 
 							} //else if
 						}
@@ -171,20 +172,19 @@ class ProjectController extends BaseController {
 							$step = TcStep::create ( $in );
 
 						}
-
 						$modify ++;
 						///	return "更新记录";
 
 					} else { //不存在此记录了
 						$tc = new TC ( );
 
-						foreach ( $value as $key => $item ) {
+						foreach ((array)$value as $key => $item ) {
 
 							if ($key != 'tag' && $key != 'test steps') {
 								$tc->column .= '"'.strtolower(trim($key)) . '":"' .  addslashes(trim($item)) . '",';
 							} else if ($key == 'test steps') {
 								//做相应的处理哦
-								$wait_save = json_decode ( $item, true );
+								$wait_save =json_decode ( $item,true )?json_decode ( $item,true ):array();
 
 							} else if ($key == 'tag') {
 
@@ -340,7 +340,7 @@ class ProjectController extends BaseController {
 			$this->p();
 			$version->result=json_encode(array ('success' => false, 'msg' => $e->getMessage () ));
 			$version->save();
-			return array ('success' => false, 'msg' => $e->getMessage () );
+			return array ('success' => false, 'msg' => $e->getMessage ());
 		} catch ( Exception $e ) {
 			$this->p();
 			if($version){
