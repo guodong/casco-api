@@ -61,7 +61,7 @@ class TreeVatController extends Controller
 
 	public function array_column($input,$column_key,$index_key=''){
 
-		if(!is_array($input)) return;
+		if(!is_array($input)) return [];
 		$results=array();
 		if($column_key===null){
 			if(!is_string($index_key)&&!is_int($index_key)) return false;
@@ -172,18 +172,21 @@ class TreeVatController extends Controller
 			switch ($docs->type) {
 				case 'rs':
 					$rsitem = Rs::find(Input::get('rs_id'));
-					if(!$rsitem){$items=[];break;}
 					$this->getTags_down($rsitem);
 					$this->getTags_up($rsitem);
+					if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
+
 					//var_dump($this->array_column($this->tags,'id'));
-					$items =Rs::where('version_id', $version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
+					$items =Rs::where('version_id','=', $version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					break;
 				case 'tc':
 					$rsitem = Rs::find(Input::get('rs_id'));
-					if(!$rsitem){$items=[];break;}
+					
 					$this->getTags_down($rsitem);
 					$this->getTags_up($rsitem);
-					$items =Tc::where('version_id', $version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
+					if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
+//var_dump(count($this->array_column($this->tags,'id')));exit;
+					$items =Tc::where('version_id','=',$version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					/*Tc::where('version_id','=', $version->id)->where(function ($query)use($rsitem){
 					 $query->orWhere('column', 'like', '%"source":%' . $rsitem->tag . '%');
 					 foreach ($this->tags as $v){

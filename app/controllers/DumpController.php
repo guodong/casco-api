@@ -90,8 +90,10 @@ class DumpController extends Controller
 					//var_dump($data->parents);
 					foreach($item->sources() as $rs){
 						$d = new stdClass();
-						$d->name = $tc->tag;
+						$d->name = $rs;
 						$d->isparent = true;
+
+
 						if(!in_array($d,$data->parents)){
 							$d->name=$rs.':不符合';
 							$d->_children=true;

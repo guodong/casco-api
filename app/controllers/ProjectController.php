@@ -125,9 +125,10 @@ class ProjectController extends BaseController {
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
-			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			//$doc_url='http://192.100.212.31:8080/files/'.$name;
-			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
+			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+			$doc_url='http://192.100.212.31:8080/files/'.$name;
+			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -265,6 +266,7 @@ class ProjectController extends BaseController {
 					if($old['tag']==$new['tag']){
 
 						if(!$std=json_decode('{'.$old['column'].'}')){
+
 
 							//var_dump("hehhe".$old['column']);
 
@@ -405,8 +407,8 @@ class ProjectController extends BaseController {
 
 			   continue;
 			}
-		}else{//连线属性
-			
+		}else if($node->type == 'fsa.Arrow'){//连线属性(also judge)
+			if(Document::find($node->source->id)&&Document::find($node->target->id))
 			$new_graph[]=$node;
 		}
 		}//foreach
