@@ -8,6 +8,18 @@ class Tc extends BaseModel {
 	{
 		return $this->hasMany('TcStep')->orderBy('num');
 	}
+	
+	public function description(){
+		
+		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}',true);
+		if(!$arr)return null;
+		if(array_key_exists('description',$arr)){
+			return $arr['description'];
+		}else if(array_key_exists('test case description',$arr)){
+			return  $arr['test case description'];
+		}else return null;
+		
+	}
 
 	public function sources()
 	{

@@ -64,6 +64,14 @@ Route::get('export_all_sheets', 'VerificationController@export_all_sheets');
 );
 //这个要放出来不然找不到的
 Route::resource('verification', 'VerificationController');
+Route::group(array('prefix' => 'center'), function()
+{
+Route::get('export','ReportController@export');
+Route::get('verify','ReportVerifyController@index');
+Route::get('export_all_sheets', 'ReportController@export_all_sheets');
+}
+);
+Route::resource('center', 'ReportController');
 Route::get('session', 'UserController@session');
 Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');

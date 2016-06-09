@@ -130,5 +130,26 @@ class Rs extends BaseModel {
 	{ 
 		return $this->belongsTo('Version');
 	}
+	
+	public function  vats(){
+		$arr=array();
+		foreach(array($this->vat_json)  as  $vat){
+			$vat=json_decode($vat);
+			$vat&&$arr[]=$vat;
+		}
+		return $arr;
+	}
+	public function  column_text(){
+		
+		$column=json_decode('{'.$this->column.'}',true);$ans=null;
+		foreach((array)$column as  $key=>$value){
+			if(strtolower($key)=='description' ||strtolower($key)=='test case description'){
+			$ans=$value.'\n'.$ans;}
+			else 
+			$ans.='#'.$key.':'.$value.'\n';
+		}
+		return $ans;
+		
+	}
 
 }
