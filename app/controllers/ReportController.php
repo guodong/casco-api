@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
-class ReportController extends ExportController
+class ReportController extends ExportReportController
 {
 	public function index()
 	{
@@ -20,15 +20,19 @@ class ReportController extends ExportController
 		return $vefs;
 	}
 	public function  get_result(){
-		if(!Input::get('test_id'))  return [];
-		$testjob=Testjob::find(Input::get('test_id'))->results;
+		if(!Input::get('report_id'))  return [];
+		$report=Report::find(Input::get('report_id'));
+		if(!$report) return 'no report';
+		$testjob=$report->testjob->results;
+		//$testjob=Testjob::find(Input::get('test_id'))->results;
 		$datas=[];
 		foreach($testjob  as  $tests){
 			$tc=Tc::find($tests->tc_id);
+			$data['id']=$tc->id;
 			$data['tag']=$tc->tag;
 			$data['description']=$tc->description();
 			$data['result']=$tc->result;
-			$data['build']=$testjob->name.':'.$testjob->build->name;
+			$data['build']=$report->testjob->name.':'.$report->testjob->build->name;
 			$datas[]=$data;
 		}
 		return $datas;
@@ -46,6 +50,7 @@ class ReportController extends ExportController
 		DB::beginTransaction();
 		try{
 			$job = Report::create(Input::get());
+			var_dump($job);
 			$job->author=Input::get('account')?Input::get('account'):null;
 			//此时已经过滤了一次哦
 			if(!Input::get('test_id')||!Input::get('child_id')) throw  new  Exception("参数不合法");
@@ -127,34 +132,8 @@ class ReportController extends ExportController
 			}
 		}//foreach
 }
-public function update($id)
-{
-	$t = Verification::find($id);
-	$t->update(Input::get());
-	if (! Input::get('data'))
-	return $t;
-	foreach (Input::get('data') as $item) {
-		// $t->child_matrix->attach(json_encode($item));
-		($matrix = ChildMatrix::find($item['id'])) || ($matrix = ParentMatrix::find($item['id']));
-		$matrix->update($item);
-	}
-	return $t;
-}
 
-public function addFileToZip($path, $zip)
-{
-	$handler = opendir($path); // 打开当前文件夹由$path指定。
-	while (($filename = readdir($handler)) !== false) {
-		if ($filename != "." && $filename != "..") { // 文件夹文件名字为'.'和‘..’，不要对他们进行操作
-			if (is_dir($path . "/" . $filename)) { // 如果读取的某个对象是文件夹，则递归
-				$this->addFileToZip($path . "/" . $filename, $zip);
-			} else { // 将文件加入zip对象
-				$zip->addFile($path . "/" . $filename);
-			}
-		}
-	}
-	@closedir($path);
-}
+
 public function del($path)
 {
 	if (is_dir($path)) {
@@ -169,55 +148,13 @@ public function del($path)
 		@unlink($path); // 这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
 	}
 }
-public function export_pro()
-{
-	$job = Testjob::find(Input::get("job_id"));
-	$results = $job->results;
-	$zip = new ZipArchive();
-	foreach ($results as $v) {
-		$tc = $v->tc;
-		$path = "./case";
-		if (! file_exists($path)) {
-			mkdir($path);
-		}
-		// $handler=opendir($path); //打开当前文件夹由$path指定。
-		$filename = $path . "/" . trim($tc->tag, "[]");
-		! file_exists($filename) ? mkdir($filename) : null;
-		$fp = fopen($filename . '/checklog.py', "wb");
-		fwrite($fp, $tc->checklog);
-		fclose($fp);
-		$robot = $filename . '/' . trim($tc->tag, "[]") . '.robot';
-		$fp = fopen($robot, "wb");
-		fwrite($fp, $tc->robot);
-		fclose($fp);
-	} // foreach
 
-	$zip_name = 'result.zip';
-	$fp_zip = fopen($zip_name, "wb");
-	if ($zip->open($zip_name, ZipArchive::OVERWRITE) === TRUE) {
-		$this->addFileToZip($path, $zip);
-	}
-	fclose($fp_zip);
-	$zip->close();
-	// chmod($path,0755);
-	header("Cache-Control: max-age=0");
-	header("Content-Description: File Transfer");
-	header('Content-disposition: attachment; filename=' . basename($zip_name)); // 文件名
-	header("Content-Type: application/zip"); // zip格式的
-	header("Content-Transfer-Encoding: binary"); // 告诉浏览器，这是二进制文件
-	header('Content-Length: ' . filesize($zip_name)); // 告诉浏览器，文件大小
-	@readfile($zip_name); // 输出文件;
-	$this->del($zip_name);
-	$this->del($path);
-	// rmdir($path);
-}
 
-public function export(){
+public function export_result(){
 	//导出所有的report啊我去
-	$project_id=Input::get('project_id');
-	$child_id=Input::get('child_id');
+	if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
 	$active_sheet=0;
-	$objPHPExcel=parent::export_report($project_id,$child_id,$active_sheet);
+	$objPHPExcel=parent::export_testing($report,$active_sheet);
 	header('Content-Type: application/vnd.ms-excel');
 	header('Content-Disposition: attachment;filename="report.xls"');
 	header('Cache-Control: max-age=0');
@@ -247,9 +184,8 @@ public function export_all_sheets(){
 	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 	$objWriter->save('php://output');
 		
-		
-		
-
 }
 
 }
+
+?>

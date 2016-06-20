@@ -66,7 +66,9 @@ Route::get('export_all_sheets', 'VerificationController@export_all_sheets');
 Route::resource('verification', 'VerificationController');
 Route::group(array('prefix' => 'center'), function()
 {
-Route::get('export','ReportController@export');
+Route::get('export_result','ReportController@export_result');
+Route::get('result','ReportController@get_result');
+Route::post('','ReportController@store');
 Route::get('verify','ReportVerifyController@index');
 Route::get('export_all_sheets', 'ReportController@export_all_sheets');
 }

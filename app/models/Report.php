@@ -13,6 +13,11 @@ class Report extends BaseModel {
 		return  $this->belongsTo('Project','project_id');
 	}
 	
+	public function  covers(){
+	
+	    return  $this->hasMany('ReportCover','report_id');
+	}
+	
 	public  function  testjob(){
 		
 		return  $this->belongsTo('Testjob','test_id');

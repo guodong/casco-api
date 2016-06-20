@@ -264,7 +264,6 @@ class ExportController extends BaseController {
 				->setCellValue($val['Col'].$num,$data[$num1++]);
 				$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setName($val['font']['Name']);
 				$objPHPExcel->getActiveSheet()->getStyle($val['Col'].$num)->getFont()->setSize($val['font']['size']);
-
 			}
 			$num++;
 		}
@@ -340,7 +339,6 @@ class ExportController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10, $row,$this->filter($item,'Comment'));
 			$j=10; $data=[];
 			foreach($column as $key){
-
 				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(++$j, $row,$this->filter($item,$key));
 			}
 			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
