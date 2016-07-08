@@ -68,6 +68,7 @@ Route::group(array('prefix' => 'center'), function()
 {
 Route::get('export_result','ReportController@export_result');
 Route::get('result','ReportController@get_result');
+Route::get('cover','ReportCoverController@index');
 Route::post('','ReportController@store');
 Route::get('verify','ReportVerifyController@index');
 Route::get('export_all_sheets', 'ReportController@export_all_sheets');

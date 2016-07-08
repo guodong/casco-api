@@ -148,7 +148,7 @@ public function del($path)
 		@unlink($path); // 这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
 	}
 }
-
+    
 
 public function export_result(){
 	//导出所有的report啊我去
