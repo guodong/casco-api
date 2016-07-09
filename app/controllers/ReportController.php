@@ -5,8 +5,8 @@ class ReportController extends ExportReportController
 {
 	public function index()
 	{
-		if(!Input::get('child_id')||!Input::get('project_id'))return [];
-		$vefs=Report::where('project_id','=',Input::get('project_id'))->where('child_id',Input::get('child_id'))->orderBy('created_at','desc')->get();
+		if(!Input::get('doc_id')||!Input::get('project_id'))return [];
+		$vefs=Report::where('project_id','=',Input::get('project_id'))->where('doc_id',Input::get('doc_id'))->orderBy('created_at','desc')->get();
 		$ans=[];
 		foreach ($vefs as $v){
 			//&&短路原则很有
@@ -14,26 +14,91 @@ class ReportController extends ExportReportController
 		}
 		return $ans;
 	}
+	public function  get_results(){
+		//必须要合并好吧
+
+		if(!($tc_id=Input::get('tc_id'))||!($project_id=Input::get('project_id'))) return [];
+		$versions_id=$this->array_column(Document::find($tc_id)->versions->toArray(),'id');
+		$testjob=Testjob::where('project_id','=',$project_id)->where('status',1)
+		->whereIn('tc_version_id',$versions_id)->orderBy('created_at','desc')->get();
+		//$testjob=Testjob::find(Input::get('test_id'))->results;
+		$datas=[];
+		foreach($testjob  as  $tests){
+			//var_dump($tests);
+			foreach($tests->results as $res){
+				$tc=Tc::find($res->tc_id);
+				//过滤重复的规则
+				//if(in_array($tc->id,$this->array_column($datas,'id')))continue;
+				//var_dump($res);
+				$data['id']=$tc->id;
+				$data['tag']=$tc->tag;
+				$data['result_id']=$res->id;
+				$data['description']=$tc->description();
+				$data['result']=$res->result;
+				$data['created_at']=$res->created_at;
+				$data['updated_at']=$res->updated_at;
+				$data['build']=$tests->name.':'.$tests->build->name;
+				$datas[]=$data;
+			}
+		}
+		return $datas;
+	}
 	public function  show($id){
 		$vefs=[];
 		$vefs=Report::find($id);
 		return $vefs;
 	}
+
+	public function array_column($input,$column_key,$index_key=''){
+
+		if(!is_array($input)) return;
+		$results=array();
+		if($column_key===null){
+			if(!is_string($index_key)&&!is_int($index_key)) return false;
+			foreach($input as $_v){
+				if(array_key_exists($index_key,$_v)){
+					$results[$_v[$index_key]]=$_v;
+				}
+			}
+			if(empty($results)) $results=$input;
+		}else if(!is_string($column_key)&&!is_int($column_key)){
+			return false;
+		}else{
+			if(!is_string($index_key)&&!is_int($index_key)) return false;
+			if($index_key===''){
+				foreach($input as $_v){
+					if(is_array($_v)&&array_key_exists($column_key,$_v)){
+						$results[]=$_v[$column_key];
+					}
+				}
+			}else{
+				foreach($input as $_v){
+					if(is_array($_v)&&array_key_exists($column_key,$_v)&&array_key_exists($index_key,$_v)){
+						$results[$_v[$index_key]]=$_v[$column_key];
+					}
+				}
+			}
+
+		}
+		return $results;
+	}
+
 	public function  get_result(){
+		//必须要合并好吧
 		if(!Input::get('report_id'))  return [];
 		$report=Report::find(Input::get('report_id'));
-		if(!$report) return 'no report';
-		$testjob=$report->testjob->results;
-		//$testjob=Testjob::find(Input::get('test_id'))->results;
-		$datas=[];
-		foreach($testjob  as  $tests){
-			$tc=Tc::find($tests->tc_id);
-			$data['id']=$tc->id;
-			$data['tag']=$tc->tag;
-			$data['description']=$tc->description();
-			$data['result']=$tc->result;
-			$data['build']=$report->testjob->name.':'.$report->testjob->build->name;
-			$datas[]=$data;
+		if(!$report) return [];
+		$testjob=$report->results;$datas=[];
+		foreach($report->results  as $res){
+				$tc=Tc::find($res->result->tc_id);
+				$data['id']=$tc->id;
+				$data['tag']=$tc->tag;
+				$data['description']=$tc->description();
+				$data['result']=$res->result->result;
+				$data['created_at']=$res->created_at;
+				$data['updated_at']=$res->updated_at;
+				$data['build']=$res->result->testjob->name.':'.$res->result->testjob->build->name;
+				$datas[]=$data;
 		}
 		return $datas;
 	}
@@ -50,24 +115,30 @@ class ReportController extends ExportReportController
 		DB::beginTransaction();
 		try{
 			$job = Report::create(Input::get());
-			var_dump($job);
+			//var_dump($job);
 			$job->author=Input::get('account')?Input::get('account'):null;
 			//此时已经过滤了一次哦
-			if(!Input::get('test_id')||!Input::get('child_id')) throw  new  Exception("参数不合法");
-			$rs=Testjob::find(Input::get('test_id'))->rsVersions;
-			$result=Testjob::find(Input::get('test_id'))->results;
-			//从中确定了RS的版本了的
-			foreach($rs as $r){
+			if(!Input::get('project_id')||!Input::get('doc_id')) throw  new  Exception("参数不合法");
+			foreach (Input::get('results') as $result_id){
+				ReportResult::create(array(
+		            'result_id' => $result_id, 
+		            'report_id' => $job->id
+				));
+			}
+			/*$rs=Testjob::find(Input::get('test_id'))->rsVersions;
+			 $result=Testjob::find(Input::get('test_id'))->results;
+			 //从中确定了RS的版本了的
+			 foreach($rs as $r){
 				if($r->document->id==Input::get('child_id'))
 				$version=$r;
-			}
-			$rss=$version->rss;
-			foreach($rss  as  $rs)
-			{
+				}
+				$rss=$version->rss;
+				foreach($rss  as  $rs)
+				{
 				$bak_tc=[];
 				foreach($result as $re)
 				foreach((array)json_decode(Rs::find($rs->id)->vat_json)  as  $vat){
-					$vat&&($re->tc_id==$vat->id)&&$bak_tc[]=$re->tc_id;
+				$vat&&($re->tc_id==$vat->id)&&$bak_tc[]=$re->tc_id;
 				}
 			 if(count($bak_tc)<=0)continue;
 			 //var_dump($rs->tag,$bak_tc);
@@ -77,22 +148,29 @@ class ReportController extends ExportReportController
 			 'report_id'=>$job->id,
 			 ));
 			 //注意有个最新版本的对应关系问题哦
-			}//rss
-			//还需要建立另外一张表吧
-			$this->cover_status($job,$version);
+			 }//rss
+			 //还需要建立另外一张表吧
+			 */
+			//$testjob=$report->testjob;
+			$parents=[];
+			$array_child=Tc::whereIn('id',Input::get('results'))->get()->toArray();
+			foreach($job->document->dests as $dests){
+				$parents=array_merge($parents,$dests->latest_version()->rss->toArray());
+			}
+			//var_dump($parents);
+			$this->cover_status((array)$parents,(array)$array_child,$job);
 			$job->save();//失败了就不save了
 			DB::commit();
+			return  array('success'=>true,'data'=>$job);
 		}catch(Exception $e){
 			DB::rollback();
 			return   array('success'=>false,'data'=>json_encode($e));
 		}
-		return  array('success'=>true,'data'=>$job);
+
 	}
 
-	public function cover_status($report,$version){
-        $testjob=$report->testjob;
-		$array_child=$version->rss;
-		$parents=$report->testjob->tcVersion->tcs;
+	public function cover_status($parents,$array_child,$report){
+
 		foreach($parents as  $parent){
 			$flag=false;
 			$parent_column=json_decode('{'.$parent['column'].'}',true);
@@ -103,14 +181,15 @@ class ReportController extends ExportReportController
 				{
 					$flag=true;
 					$array=array(
-							 	 'parent_id'=>$parent['id'],
-								 'Parent Requirement Tag'=>$parent['tag'],
-                	   			 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
-                  				 'child_type'=>'tc',///$job->childVersion->document->type,
-								 'Child Requirement Tag'=>$child['tag'],
-                	             'child_id'=>$child['id'],
-					             //'parent_v_id'=>$parent['version_id'],
-                                 'report_id'=>$report->id
+					//写反了好像哦!
+				 	 'parent_id'=>$parent['id'],
+					 'Parent Requirement Tag'=>$parent['tag'],
+             	   			 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
+               				 'child_type'=>'tc',///$job->childVersion->document->type,
+					 'Child Requirement Tag'=>$child['tag'],
+             	             'child_id'=>$child['id'],
+					//'parent_v_id'=>$parent['version_id'],
+                              'report_id'=>$report->id
 					);
 					//var_dump($array);
 					ReportCover::create($array);
@@ -131,60 +210,60 @@ class ReportController extends ExportReportController
 				ReportCover::create($array);
 			}
 		}//foreach
-}
-
-
-public function del($path)
-{
-	if (is_dir($path)) {
-		$file_list = scandir($path);
-		foreach ($file_list as $file) {
-			if ($file != '.' && $file != '..') {
-				$this->del($path . '/' . $file);
-			}
-		}
-		@rmdir($path); // 这种方法不用判断文件夹是否为空, 因为不管开始时文件夹是否为空,到达这里的时候,都是空的
-	} else {
-		@unlink($path); // 这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
 	}
-}
 
 
-public function export_result(){
-	//导出所有的report啊我去
-	if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
-	$active_sheet=0;
-	$objPHPExcel=parent::export_testing($report,$active_sheet);
-	header('Content-Type: application/vnd.ms-excel');
-	header('Content-Disposition: attachment;filename="report.xls"');
-	header('Cache-Control: max-age=0');
-	header('Cache-Control: max-age=1');
-	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-	header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-	header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-	header('Pragma: public'); // HTTP/1.0
-	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-	$objWriter->save('php://output');
-}
+	public function del($path)
+	{
+		if (is_dir($path)) {
+			$file_list = scandir($path);
+			foreach ($file_list as $file) {
+				if ($file != '.' && $file != '..') {
+					$this->del($path . '/' . $file);
+				}
+			}
+			@rmdir($path); // 这种方法不用判断文件夹是否为空, 因为不管开始时文件夹是否为空,到达这里的时候,都是空的
+		} else {
+			@unlink($path); // 这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
+		}
+	}
 
 
-public function export_all_sheets(){
-		
-	$objPHPExcel=parent::export_all_sheet(Input::get('project_id'),Input::get('child_id'),Input::get('v_id'));
-	header('Content-Type: application/vnd.ms-excel');
-	header('Content-Disposition: attachment;filename="verification_report.xls"');
-	header('Cache-Control: max-age=0');
-	header('Cache-Control: max-age=1');
-	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-	header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-	header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-	header('Pragma: public'); // HTTP/1.0
-	$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-	$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-	$objWriter->save('php://output');
-		
-}
+	public function export_result(){
+		//导出所有的report啊我去
+		if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
+		$active_sheet=0;
+		$objPHPExcel=parent::export_testing($report,$active_sheet);
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="report.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+	}
+
+
+	public function export_all_sheets(){
+
+		$objPHPExcel=parent::export_all_sheet(Input::get('project_id'),Input::get('child_id'),Input::get('v_id'));
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="verification_report.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+
+	}
 
 }
 

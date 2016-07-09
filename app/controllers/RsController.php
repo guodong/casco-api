@@ -107,26 +107,20 @@ class RsController extends Controller{
 		}
 	 	return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
 		// return  json_encode(array('columModle'=>$columModle));
-
-	 	
-	 	
-	  
-	  
-	  
-	  
-	  
-	  
-	  
-
 	}
+	
+	
 	public function store($id){
 
 
-
-
 	}
 
-
+	
+	public function destroy($id){
+			$rs=Rs::find($id);
+			$rs->delete();
+			return $rs;
+	}
 
 
 	//走的是put头

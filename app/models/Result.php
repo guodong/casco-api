@@ -2,7 +2,7 @@
 class Result extends BaseModel {
 
 	protected $table = 'result';
-	protected $fillable = array('tc_id', 'tc_id', 'testjob_id', 'result', 'cr', 'comment', 'begin_at', 'end_at');
+	protected $fillable = array('tc_id', 'tc_id', 'testjob_id', 'result', 'cr', 'comment', 'created_at', 'updated_at');
 	
 	public function tc()
 	{
@@ -12,5 +12,10 @@ class Result extends BaseModel {
 	public function steps()
 	{
 	    return $this->hasMany('ResultStep');
+	}
+	
+	public function  testjob()
+	{
+	    return $this->belongsTo('Testjob', 'testjob_id');
 	}
 }

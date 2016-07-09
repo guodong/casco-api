@@ -14,7 +14,6 @@ class Project extends BaseModel {
 	    return $this->hasMany("TestjobTmp");
 	}
 	
-	
 	public function vatstrs()
 	{
 	    return $this->hasMany("Vatstr");
