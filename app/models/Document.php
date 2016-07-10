@@ -3,7 +3,7 @@ class Document extends BaseModel {
 
 
 	protected $table = 'document';
-	protected $fillable = array('name', 'project_id', 'type', 'fid','graph', 'regex', 'filename');
+	protected $fillable = array('id','name', 'project_id', 'type', 'fid','graph', 'regex', 'filename');
 
 	public function latest_version()
 	{	
@@ -34,10 +34,38 @@ class Document extends BaseModel {
 	    return $this->belongsToMany('Document', 'relation', 'dest', 'src');
 	}
 	
-	public function dests()
+	public function src(){
+		
+		$result=Document::whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                      ->from('relation')
+                      ->whereRaw('dest=\''.$this->id.'\' and src=document.id');
+            })
+            ->distinct()->get();
+          return  $result;
+		
+	}
+	
+	public function dests()//记得去重哦
 	{
 	    return $this->belongsToMany('Document', 'relation', 'src', 'dest');
 	}
+	
+	public function dest()//记得去重哦
+	{
+		
+		$result=Document::whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                      ->from('relation')
+                      ->whereRaw('src=\''.$this->id.'\' and dest=document.id');
+            })
+            ->distinct()->get();
+          return  $result;
+		// $testjob=Document
+		//->orWhere(function($query)use($tc_id){$query->tcVersion->documnet->id=$tc_id})->orderBy('created_at','desc')->get();
+		
+	}
+	
 	public function subs(){
 		
 		return $this->hasMany('Document','fid','id');;

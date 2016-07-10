@@ -6,17 +6,21 @@ class ReportVerifyController extends  BaseController{
     public function index()
     {
     	$datas=[];
-        $verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->get();
+    	if(Input::get('report_id')&&Input::get('doc_id')){
+        $verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->where('doc_id',Input::get('doc_id'))->get();
+    	}else if(Input::get('report_id')){
+    	$verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->get();
+    	}
         if(!$verify) return $datas;
         foreach($verify  as $ver){
         $array=(array)explode(',',$ver->tc_id);
         $ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
-        $results=Result::where('testjob_id',$ver->report->testjob->id)->whereIn('tc_id',$array)->select('result')->get()->toArray();
+        //$results=Result::->whereIn('tc_id',$array)->select('result')->get()->toArray();
 		//注意有个最新版本的对应关系问题哦
 		  $data[]=$ver;
 		  $data['test_case']=implode(',',$this->array_column($ans,'tag'));
 		  $data['tag']=Rs::find($ver->rs_id)->tag;
-		  $data['result']=array_product($results);
+		  $data['result']=$ver->result;
 		  $data['description']=Rs::find($ver->rs_id)->column_text();
 		  $datas[]=$data;
         }//遍历$verify
