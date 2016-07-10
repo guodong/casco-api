@@ -5,6 +5,7 @@ define('MID_COMPOSE',' // ');
 $origin = array_key_exists('HTTP_ORIGIN', $_SERVER)?$_SERVER['HTTP_ORIGIN']:'*';
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Origin: '.$origin);
+//header("Access-Control-Allow-Origin: *");
 header('Access-Control-Allow-Methods: GET,PUT,DELETE,POST,OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type,X-Requested-With');
 

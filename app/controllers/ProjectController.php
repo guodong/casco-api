@@ -16,7 +16,34 @@ class ProjectController extends BaseController {
 		}
 		return $project;
 	}
-
+	
+	public function destroy($id){
+		
+		$project=Project::find($id);
+		if(!$project)  return [];
+		foreach($project->documents as $doc){
+			$doc->delete();
+		}
+		foreach($project->testjobtmps as  $test){
+			$test->delete();
+		}
+		foreach($project->verifications as $ver){
+			$ver->delete();
+		}
+		foreach($project->testjobs as $testjob){
+			$testjob->delete();
+		}
+		foreach($project->vatstrs as $vat){
+			$vat->delete();
+		}
+		$project->participants()->detach();// as $pa){
+		$project->delete();
+		return $project;
+		
+		
+	}
+	
+	
 	public function array_column($input,$column_key,$index_key=''){
 
 		if(!is_array($input)) return;
@@ -371,13 +398,9 @@ class ProjectController extends BaseController {
 		}
 		if ($projects) {
 			$projects->each(function ($v)
-
-
-
-
 			{
 				$v->participants;
-
+				$v->vatstr;
 			})
 
 
