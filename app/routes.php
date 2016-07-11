@@ -35,6 +35,7 @@ Route::resource('user', 'UserController');
 Route::resource('role','RoleController');
 Route::resource('testmethod', 'TestmethodController');
 Route::get('dump', 'DumpController@dump');
+Route::get('dump_tag','DumpController@dump_tag');
 Route::resource('build', 'BuildController');  
 Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
@@ -72,7 +73,7 @@ Route::get('export_result','ReportController@export_result');
 Route::get('result','ReportController@get_result');
 Route::get('results','ReportController@get_results');
 Route::post('','ReportController@store');
-Route::get('verify','ReportVerifyController@index');
+Route::resource('verify','ReportVerifyController');
 Route::get('export_all_sheets', 'ReportController@export_all_sheets');
 }
 );

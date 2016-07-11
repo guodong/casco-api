@@ -3,7 +3,7 @@ class Rs extends BaseModel {
 
 	protected $table = 'rs';
 	protected $fillable = array('tag','column','version_id');
-
+	
 	public function tcs()
 	{
 		$tcs = [];
@@ -28,7 +28,7 @@ class Rs extends BaseModel {
 	public function dests()
 	{
 		$tcs = [];
-		$srcs = $this->version->document->dests;
+		$srcs = $this->version->document->dest();
 		$this->column=json_decode('{'.$this->column.'}');
 		if(!$this->column||!property_exists($this->column,'source'))return [];
 		preg_match_all('/\[.*?\]/i',$this->column->source,$matches);
@@ -56,7 +56,7 @@ class Rs extends BaseModel {
 	public function srcs()
 	{
 		$result = [];
-		$srcs = $this->version->document->srcs;
+		$srcs = $this->version->document->src();
 		foreach($srcs as $src){
 			switch($src->type){
 				case 'tc':
@@ -119,7 +119,7 @@ class Rs extends BaseModel {
 		//.var_dump($this->column);exit;
 		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}');
 		if(!$arr)return [];
-	    property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):($matches[0]=null);
+	    property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):($matches[0]=[]);
 	    return $matches[0];
 	}
 	public function isNewest(){

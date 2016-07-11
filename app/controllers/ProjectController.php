@@ -400,7 +400,7 @@ class ProjectController extends BaseController {
 			$projects->each(function ($v)
 			{
 				$v->participants;
-				$v->vatstr;
+				$v->vatstrs;
 			})
 
 
