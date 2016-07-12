@@ -16,7 +16,7 @@ class Project extends BaseModel {
 	
 	public function vatstrs()
 	{
-	    return $this->hasMany("Vatstr");
+	    return $this->hasMany("Vatstr")->orderBy('name');
 	}
 	
 	public function participants()

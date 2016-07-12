@@ -28,6 +28,24 @@ class Report extends BaseModel {
 		return  $this->hasMany('ReportResult','report_id');
 	}
 	
+	public function  get_results(){
+		//必须要合并好吧
+		$tests=$this->results;$datas=[];
+			foreach($tests as $res){
+				$result=Result::find($res->result_id);
+				$tc=$result->tc;
+				$data['id']=$tc->id;
+				$data['tag']=$tc->tag;
+				$data['result_id']=$res->result_id;
+				$data['description']=$tc->description();
+				$data['result']=$result->result;
+				$data['updated_at']=$res->updated_at;
+				$data['build']=$result->testjob->name.':'.$result->testjob->build->name;
+				$datas[]=$data;
+			}
+		return $datas;
+	}
+	
 	public function  recursion(){//树的遍历操作算法
 		
 		$docs=[];$data=[];
@@ -43,13 +61,10 @@ class Report extends BaseModel {
 				}
 			}
 		}//while
-		
-		//var_dump($docker->dest());exit;
 		foreach($docker->dest() as $dests){
 			array_push($docs,$dests);
 		}
 		while($doc=array_shift($docs)){
-			//var_dump($doc->srcs);
 			foreach($doc->src()  as $srcs){
 			   if($srcs->type=="rs"&&!in_array($srcs,$data)){
 					array_push($docs,$srcs);

@@ -3,36 +3,41 @@ use Illuminate\Support\Facades\Input;
 
 class DumpController extends Controller
 {
-
+	
 	public function dump(){
-		if(1){
-			//最后一次导入视为最新版本,而不是最近一次修改!
-			($item=Rs::where('tag','=',Input::get('tag'))->orderBy('created_at','desc')->first())||
-			($item=Tc::where('tag','=',Input::get('tag'))->orderBy('created_at','desc')->first());
-			//var_dump($item);
+	
+		if($id=Input::get('id')){
+			 ($item=Rs::find($id))||($item=Tc::find($id));
+		}else {
+		 	 return [];
+		}
 			if (!$item){
 				return Response::json(array(
                 'name' => '文档中不存在此tag!',
                 'children' => array(),
                 'parents' => array()
-			));}else if($item->version->document->latest_version()->id!=$item->version->id){
+			));
+			}else if($item->version->document->latest_version()->id!=$item->version->id){
+				
+				//可能再也不用纠结这个问题了
 				return Response::json(array(
                 'name' => '当前tag不属于最新版本!',
                 'children' => array(),
                 'parents' => array()
 					));
 				}
-				//var_dump($item);
 				$document = ($item&&$item->version)?$item->version->document:null;
 				$data = new stdClass();
 				if ($document->type =='rs') {
 					$item = Rs::find($item->id);
+					$data->id=$item->id;
 					$data->name = $item->tag;
 					$data->children = array();
 					$data->parents = array();
 					foreach($item->dests() as $tc){
 						$d = new stdClass();
 						$d->name = $tc->tag;
+						$d->id=$tc->id;
 						$d->isparent = true;
 						$data->parents[] = $d;
 					};
@@ -49,6 +54,7 @@ class DumpController extends Controller
 					foreach($item->srcs() as $rs){
 						$d = new stdClass();
 						$d->name = $rs->tag;
+						$d->id=$rs->id;
 						$d->isparent = false;
 						$data->children[] = $d;
 					};
@@ -66,6 +72,7 @@ class DumpController extends Controller
 						}//加入已经编辑的vat!
 						$d = new stdClass();
 						$d->name = $v->tag;
+						$d->id=$v->id;
 						$d->isparent = false;
 						$data->children[] = $d;
 					};
@@ -73,6 +80,7 @@ class DumpController extends Controller
 				} else {
 					$item = Tc::find($item->id);
 					$data->name = $item->tag;
+					$data->id   =$item->id;
 					$data->children = array();
 					$data->parents = array();
 					/*foreach($item->sources() as $rs){
@@ -83,6 +91,7 @@ class DumpController extends Controller
 					};*/
 					foreach($item->dests() as $tc){
 						$d = new stdClass();
+						$d->id=$tc->id;
 						$d->name = $tc->tag;
 						$d->isparent = true;
 						$data->parents[] = $d;
@@ -103,71 +112,14 @@ class DumpController extends Controller
 					foreach($item->srcs() as $rs){
 						$d = new stdClass();
 						$d->name = $tc->tag;
+						$d->id=$tc->id;
 						$d->isparent = false;
 						$data->children[] = $d;
 					};
 				}
 				return Response::json($data);
 
-				$document = Document::find(Input::get('document_id'));
-				$data = new stdClass();
-				$data->name = $document->name;
-				$data->children = array();
-				if ($document->type == 'rs') {
-					$document->rss->each(function ($rs) use($data) {
-						$d = new stdClass();
-						$d->name = $rs->tag;
-						$d->children = array();
-						$d->parents = [];
-						$rs->tcs->each(function ($tc) use($d) {
-							$d->children[] = array(
-                        'name' => $tc->tag
-							);
-							$d->parents[] = array(
-                        'name' => $tc->tag
-							);
-						});
-						$data->children[] = $d;
-					});
-				} elseif ($document->type == 'tc') {
-					$document->tcs->each(function ($tc) use($data) {
-						$d = new stdClass();
-						$d->name = $tc->tag;
-						$d->children = array();
-						$tc->sources->each(function ($rs) use($d) {
-							$d->children[] = array(
-                        'name' => $rs->tag
-							);
-						});
-						$data->children[] = $d;
-					});
-				}
-				$d = array(
-            'name' => 'root',
-            'children' => array(
-				array(
-                    'name' => '123',
-                    'id' => 1
-				),
-				array(
-                    'name' => '234',
-                    'children' => array(
-				array(
-                            'name' => 'c1'
-                            ),
-                            array(
-                            'id' => 1,
-                            'name' => 'c2'
-                            )
-                            )
-                            )
-                            )
-                            );
-
-                            // return $d;
-		}
-		return '{"name":"[TSP-SyRS-0001]","children":[{"name":"[TSP-SyRTC-011]","isparent": true},{"name":"2","isparent":true,"parents":[{"name":1,"isparent":true}]}],"parents":[{"name":"[TSP-SyRTC-01117]","isparent":false},{"name":"21","isparent":false}]}';
-		return Response::json($data);
+		
 	}
 
 	public function index()
@@ -197,7 +149,18 @@ class DumpController extends Controller
 		}
 		return $rss;
 	}
-
+	
+ 	public function dump_tag(){
+ 	
+ 	 if(!$id=Input::get('id')) return [];
+ 	 $item=(Tc::find($id))||(Rs::find($id));
+ 	 $item->version;
+ 	 $item->document;
+ 	 $item->project;
+ 	 return  $item;
+ 	
+ 	}
+ 	
 	public function update($id)
 	{
 		$m = Rs::find($id);

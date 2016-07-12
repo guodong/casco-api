@@ -7,11 +7,11 @@ class Version extends BaseModel {
 
 	public function tcs()
 	{
-	    return $this->hasMany('Tc')->orderBy('tag');
+	    return $this->hasMany('Tc')->orderBy('tag')->distinct();
 	}
 	public function rss()
 	{
-	    return $this->hasMany('Rs')->orderBy('tag');
+	    return $this->hasMany('Rs')->orderBy('tag')->distinct();
 	}
 	public function items(){
 		

@@ -218,6 +218,7 @@ class ProjectController extends BaseController {
 
 								$tc->tag = $item;
 							}
+							
 						} //foreach
 						$tc->column = substr ( $tc->column, 0, - 1 );
 						$tc->version_id = $version->id ;
@@ -400,7 +401,7 @@ class ProjectController extends BaseController {
 			$projects->each(function ($v)
 			{
 				$v->participants;
-				$v->vatstr;
+				$v->vatstrs;
 			})
 
 

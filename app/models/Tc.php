@@ -3,10 +3,11 @@ class Tc extends BaseModel {
 
 	protected $table = 'tc';
 	protected $fillable = array('tag','column','checklog','robot','version_id', 'description', 'testmethod_id', 'pre_condition', 'result','source_json');
-
+	
+	
 	public function steps()
 	{
-		return $this->hasMany('TcStep')->orderBy('num');
+		return $this->hasMany('TcStep')->orderBy('num')->orderBy('created_at','asc');
 	}
 	
 	public function description(){
@@ -26,13 +27,13 @@ class Tc extends BaseModel {
 		//.var_dump($this->column);exit;
 		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}');
 		if(!$arr)return [];
-		property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):($matches[0]=null);
+		property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):($matches[0]=[]);
 		return $matches[0];
 	}
 	public function dests()
 	{
 		$tcs = [];
-		$srcs = $this->version->document->dests;
+		$srcs = $this->version->document->dest();
 		$this->column=json_decode('{'.$this->column.'}');
 		if(!$this->column||!property_exists($this->column,'source'))return [];
 		preg_match_all('/\[.*?\]/i',$this->column->source,$matches);
@@ -60,7 +61,7 @@ class Tc extends BaseModel {
 	{
 		$result = [];
 		//if(!$this->version||!$this->version->document)return $result;
-		$srcs = $this->version->document->srcs;
+		$srcs = $this->version->document->src();
 		foreach($srcs as $src){
 			switch($src->type){
 				case 'tc':

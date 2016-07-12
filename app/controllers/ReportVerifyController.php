@@ -17,14 +17,13 @@ class ReportVerifyController extends  BaseController{
         $ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
         //$results=Result::->whereIn('tc_id',$array)->select('result')->get()->toArray();
 		//注意有个最新版本的对应关系问题哦
-		  $data[]=$ver;
-		  $data['test_case']=implode(',',$this->array_column($ans,'tag'));
-		  $data['tag']=Rs::find($ver->rs_id)->tag;
-		  $data['result']=$ver->result;
-		  $data['description']=Rs::find($ver->rs_id)->column_text();
-		  $datas[]=$data;
+		  $ver['test_case']=implode(',',$this->array_column($ans,'tag'));
+		  $ver['tag']=Rs::find($ver->rs_id)->tag;
+		  $ver['result']=$ver->result;
+		  $ver['description']=Rs::find($ver->rs_id)->column_text();
+	
         }//遍历$verify
-        return $datas;
+        return $verify;
     }
     
 	public function show($id)
@@ -37,6 +36,15 @@ class ReportVerifyController extends  BaseController{
 	    $build = Build::create(Input::get());
 	    return $build;
 	} 
+	
+	public function  update($id){
+		
+	$verify=ReportVerify::find($id);
+	$verify->update(Input::get());
+	return $verify;
+	
+	}
+	
 	
 	public function  destroy($id)
     {

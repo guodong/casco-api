@@ -12,7 +12,7 @@ class VersionController extends BaseController {
 		  $versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
 		  $versions&&$versions->document;
 		  }else if(Input::get('document_id')){
-		      $versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('updated_at', 'desc')->get();
+		      $versions =Version::where('document_id', '=', Input::get('document_id'))->orderBy('created_at', 'desc')->get();
 		      foreach($versions as $vers){
 			     $vers->document;
 		      }
