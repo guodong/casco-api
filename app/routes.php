@@ -45,6 +45,8 @@ Route::get('childmatrix/export', 'ChildMatrixController@export');
 Route::get('parentmatrix/export', 'ParentMatrixController@export');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
+Route::resource('reportcover','ReportCoverController');
+//Route::get('reportcover','ReportCoverController@index');
 Route::group(array('prefix' => 'testjob'), function()
 {
 Route::get('export','TestjobController@export');

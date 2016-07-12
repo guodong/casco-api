@@ -110,9 +110,9 @@ class RsController extends Controller{
 	}
 	
 	
-	public function store($id){
-
-
+	public function store(){
+	    $rs = Rs::create(Input::get());
+	    return $rs;
 	}
 
 	

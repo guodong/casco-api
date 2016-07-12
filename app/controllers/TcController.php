@@ -194,7 +194,9 @@ class TcController extends Controller{
 	public function update($id)
 	{
 		$m = Tc::find($id);
+		var_dump($m);
 		$m->update(Input::get());
+		var_dump(Input::get());
 
 		$m->save();
 		if(Input::get('steps')){
