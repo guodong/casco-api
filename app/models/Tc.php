@@ -7,7 +7,7 @@ class Tc extends BaseModel {
 	
 	public function steps()
 	{
-		return $this->hasMany('TcStep')->orderBy('num');
+		return $this->hasMany('TcStep')->orderBy('num')->orderBy('created_at','asc');
 	}
 	
 	public function description(){

@@ -141,26 +141,27 @@ class ReportController extends ExportReportController
 		DB::beginTransaction();
 		try{
 
-			if(!Input::get('project_id')||!Input::get('doc_id')) throw  new  Exception("参数不合法");
+			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('tcs')||!Input::get('results')) throw  new  Exception("参数不合法");
 			$job = Report::create(Input::get());
 			$job->author=Input::get('account')?Input::get('account'):null;
 			//此时已经过滤了一次哦
-			$result=$array_child=Tc::whereIn('id',($results=Input::get('tcs')))->get();
+			$result=Tc::whereIn('id',($results=Input::get('tcs')))->get();
+			$array_child=[];
 			foreach (Input::get('results') as $result_id){
+				$child=Result::find($result_id)->tc->toArray();
+				$child['result_id']=$result_id;
+				$array_child[]=$child;
 				ReportResult::create(array(
 		            'result_id' => $result_id,
 		            'report_id' => $job->id
 				));
 			}
-
-
 			$all_rs=$job->recursion();
 			//从中确定了RS的版本了的
 			foreach($all_rs as $r){
 				$rss=$r->latest_version()->rss;//最新版本的原则
 				foreach($rss  as  $rs)
 				{	
-					
 					$bak_tc=[];
 					$vat_id=(array)$this->array_column(json_decode($rs->vat_json,true),'id');
 					$bak_tc=array_intersect($vat_id,$results);
@@ -183,7 +184,7 @@ class ReportController extends ExportReportController
 				$parents=array_merge($parents,$dests->latest_version()->rss->toArray());
 			}
 			$parents=$this->distinct($parents);
-			$this->cover_status((array)$parents,(array)$array_child->toArray(),$job);
+			$this->cover_status((array)$parents,(array)$array_child,$job);
 			$job->save();//失败了就不save了
 			DB::commit();
 			return  array('success'=>true,'data'=>$job->id);
@@ -212,6 +213,7 @@ class ReportController extends ExportReportController
                		 'child_type'=>'tc',///$job->childVersion->document->type,
 					 'Child Requirement Tag'=>$child['tag'],
              	     'child_id'=>$child['id'],
+					 'result_id'=>$child['result_id'],
                      'report_id'=>$report->id
 					);
 					//var_dump($array);

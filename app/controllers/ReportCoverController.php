@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Input;
 
-class ReportCoverController extends ExportController {
+class ReportCoverController extends ExportReportController {
 
 	public function index(){
 		$items=[];
@@ -44,15 +44,43 @@ class ReportCoverController extends ExportController {
 						//:$da[$key]=$val.MID_COMPOSE;
 				}//switch
 			}//foreach
+			//Vat我们存活的好了
+			$da['result']=$item->result->result;
+			$da['allocation']=$parent->vat_json;
 			$data[]=$da;
 		}//foreach
 
 		return  $data;
 	}
 
+
+	public function  update($id){
+		$cover=ReportCover::find($id);
+		if(!$cover)return [];
+		$cover->update(Input::get());
+		return $cover;
+	}
 	
-
-
+	public function export(){
+		
+		if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
+		$active_sheet=0;
+		$objPHPExcel=parent::export_cover($report,$active_sheet);
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="cover_status.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+	}
+	
+	
+	
 }
 
 

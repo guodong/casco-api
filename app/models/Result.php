@@ -2,7 +2,7 @@
 class Result extends BaseModel {
 
 	protected $table = 'result';
-	protected $fillable = array('tc_id', 'tc_id', 'testjob_id', 'result', 'cr', 'comment', 'created_at', 'updated_at');
+	protected $fillable = array('tc_id', 'tc_id', 'testjob_id',  'cr', 'comment', 'created_at', 'updated_at');
 	
 	public function tc()
 	{
