@@ -147,6 +147,60 @@ class ExportReportController extends BaseController {
 	}
 
 
+	public function  verify($verify,$active_sheet=0){
+
+		if(!$verify)return [];
+		$objPHPExcel=$this->objPHPExcel;
+		$circle =array('col'=>'C','row' => 4);
+		$config = array(0=>'Req ID',1=>'Text',2=>'Result',3=>'Test Case ID',4=>'Comment');
+		$objPHPExcel->setActiveSheetIndex($active_sheet);
+	 foreach ($config as $key => $val) {
+
+	 	$objPHPExcel->getActiveSheet()->getColumnDimension(chr(ord($circle['col'])+$key))->setWidth(20);
+	 	$objPHPExcel->setActiveSheetIndex($active_sheet)->setCellValue(chr(ord($circle['col']) + $key) . $circle['row'], $val);
+	 	$objPHPExcel->getActiveSheet()
+	 	->getStyle(chr(ord($circle['col'])+$key) . $circle['row'])
+	 	->getBorders()
+	 	->getAllBorders()
+	 	->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+	 	$objPHPExcel->getActiveSheet()
+	 	->getStyle(chr(ord($circle['col'])+$key) . $circle['row'])
+	 	->getFont()
+	 	->setName('Arial');
+	 	$objPHPExcel->getActiveSheet()
+	 	->getStyle(chr(ord($circle['col'])+$key) . $circle['row'])
+	 	->getFont()
+	 	->setBold(true);
+	 	$objPHPExcel->getActiveSheet()
+	 	->getStyle(chr(ord($circle['col'])+$key) . $circle['row'])
+	 	->getFont()
+	 	->setSize(15);
+	 }
+	 $num=$circle['row']+1;
+		foreach($verify  as  $flag=>$value){
+			$j=0;
+			$array=(array)explode(',',$value->tc_id);
+        	$ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
+        	$test_case=implode(',',$this->array_column($ans,'tag'));
+			$objPHPExcel->setActiveSheetIndex($active_sheet)
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,Rs::find($value->rs_id)->tag);
+			$objPHPExcel->setActiveSheetIndex($active_sheet)
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,Rs::find($value->rs_id)->column_text());
+			$objPHPExcel->setActiveSheetIndex($active_sheet)
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['result']);
+			$objPHPExcel->setActiveSheetIndex($active_sheet)
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$test_case);
+			$objPHPExcel->setActiveSheetIndex($active_sheet)
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['comment']);
+			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getFont()->setName('Arial');
+			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getFont()->setSize(10);
+			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+			$num++;
+		}
+		return  $objPHPExcel;
+
+	}
 
 
 	public function  filter($array,$key){
