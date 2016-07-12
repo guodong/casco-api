@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Input;
-class ReportVerifyController extends  BaseController{
+class ReportVerifyController extends  ExportReportController{
 
     public function index()
     {
@@ -53,6 +53,27 @@ class ReportVerifyController extends  BaseController{
         return  $build;
 
      }
+     
+    public  function export_verify(){
+    	
+    	if(!Input::get('report_id')||!Input::get('doc_id')){
+    		return [];
+    	}
+    	$verify=ReportVerify::where('report_id',Input::get('report_id'))->where('doc_id',Input::get('doc_id'))->get();
+    	$active_sheet=0;
+		$objPHPExcel=parent::verify($verify,$active_sheet);
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="requirement_verify.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+    }
 	
     public function array_column($input,$column_key,$index_key=''){
 
