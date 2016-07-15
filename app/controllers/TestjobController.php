@@ -269,7 +269,7 @@ class TestjobController extends BaseController{
 			$tc = $v->tc;
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $startrow, $tc->tag);
 			$item=json_decode('{'.$tc->column.'}',true);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $startrow, array_key_exists('description',$item)?$item['description']:$item['test case description']);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $startrow, $item->description());
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $startrow, $v->result == 0?'untested':($v->result == 1?'passed':'failed'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $startrow, substr($v->begin_at, 0, 1)=='0'?'':$v->begin_at);
 // 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $startrow, substr($v->end_at, 0, 1)=='0'?'':$v->end_at);
