@@ -61,13 +61,12 @@ class VerificationController extends ExportController
 			{
 				//返回是二维数组的结构
 				$parent_items=$job->childVersion->parent_item($parent_vids);
-				// $parents=(count($parent_items)>0)?$parent_items:[];
 				switch($job->childVersion->document->type){
 					case 'tc':
-						$array_child=Tc::where('version_id','=',$job->child_version_id)->get()->toArray();
+						$array_child=Tc::where('version_id','=',$job->child_version_id)->get();
 						break;
 					case  'rs':
-						$array_child=Rs::where('version_id','=',$job->child_version_id)->get()->toArray();
+						$array_child=Rs::where('version_id','=',$job->child_version_id)->get();
 						break;
 					default:
 				}
@@ -77,19 +76,16 @@ class VerificationController extends ExportController
 				foreach($parent_items  as  $key=>$parents){//有可能多个父类
 					foreach($parents as  $parent){//for循环结束就是空行记录的了
 						$column=[];
-						$parent_column=json_decode('{'.$parent['column'].'}',true);
-						$child_column=json_decode('{'.$child['column'].'}',true);
-						($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
-						if(in_array($parent['tag'],$matches[0]))
+						if(in_array($parent['tag'],$child?$child->sources():[]))
 						{
 							$array=array(
-								 'child_id'=>$child['id'],
-								 'Child Requirement Tag'=>$child['tag'],
+								 'child_id'=>$child->id,
+								 'Child Requirement Tag'=>$child->tag,
 								 'child_type'=>$job->childVersion->document->type,
-                	             'parent_id'=>$parent['id'],
+                	            					 'parent_id'=>$parent['id'],
 								 'Parent Requirement Tag'=>$parent['tag'],
-                               	 'parent_type'=>Version::find($parent['version_id'])->document->type,
-                                 'verification_id'=>$job->id
+                               	 				 'parent_type'=>Version::find($parent['version_id'])->document->type,
+                                 					 'verification_id'=>$job->id
 							);
 							ChildMatrix::create($array);
 						}//if
@@ -99,27 +95,22 @@ class VerificationController extends ExportController
 			//可能有多个父类因此要加层循环结构
 			foreach($parent_items  as  $key=>$parents){
 				foreach($parents as  $parent){
-					//var_dump($parent);return;
 					$flag=false;
-					$parent_column=json_decode('{'.$parent['column'].'}',true);
 					foreach($array_child as $child){
 						//$column[]的位置很重要
-						$column=[];$child_column=json_decode('{'.$child['column'].'}',true);
-						($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
-						if(in_array($parent['tag'],$matches[0]))
+						if(in_array($parent['tag'],$child->sources()))
 						{
 							$flag=true;
 							$array=array(
 							 	 'parent_id'=>$parent['id'],
 								 'Parent Requirement Tag'=>$parent['tag'],
-                	   			 'parent_type'=>Version::find($parent['version_id'])->document->type,
-                  				 'child_type'=>$job->childVersion->document->type,
-								 'Child Requirement Tag'=>$child['tag'],
-                	             'child_id'=>$child['id'],
-					             'parent_v_id'=>$parent['version_id'],
-                                 'verification_id'=>$job->id
+                	   			 			'parent_type'=>Version::find($parent['version_id'])->document->type,
+                  				 			'child_type'=>$job->childVersion->document->type,
+								 'Child Requirement Tag'=>$child->tag,
+                	             					 'child_id'=>$child->id,
+					             		'parent_v_id'=>$parent['version_id'],
+                                					 'verification_id'=>$job->id
 							);
-							//var_dump($array);
 							ParentMatrix::create($array);
 						}//if
 					}//foreach
@@ -128,15 +119,14 @@ class VerificationController extends ExportController
 						$array=array(
 								 'parent_id'=>$parent['id'],
 								 'Parent Requirement Tag'=>$parent['tag'],
-                	   			 'parent_type'=>Version::find($parent['version_id'])->document->type,
-                  				 'child_type'=>null,
+                	   			 			 'parent_type'=>Version::find($parent['version_id'])->document->type,
+                  				 			 'child_type'=>null,
 								 'Child Requirement Tag'=>null,
-                	             'child_id'=>null,
-					             'parent_v_id'=>$parent['version_id'],
-                                 'verification_id'=>$job->id
+                	             					'child_id'=>null,
+					             		'parent_v_id'=>$parent['version_id'],
+                                 					'verification_id'=>$job->id
 						);
-						//var_dump($array);
-						ParentMatrix::create($array);
+							ParentMatrix::create($array);
 					}
 				}//foreach
 			}//foreach parent_items

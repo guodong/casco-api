@@ -33,10 +33,11 @@ class DumpController extends Controller
 					$data->id=$item->id;
 					$data->name = $item->tag;
 					$data->children = array();
-					$data->parents = array();
+					$data->parents = array();$dis=[];
+
 					foreach($item->dests() as $tc){
 						$d = new stdClass();
-						$d->name = $tc->tag;
+						$dis[]=$d->name = $tc->tag;
 						$d->id=$tc->id;
 						$d->isparent = true;
 						$data->parents[] = $d;
@@ -45,7 +46,8 @@ class DumpController extends Controller
 						$d = new stdClass();
 						$d->name = $rs;
 						$d->isparent = true;
-						if(!in_array($d,$data->parents)){
+
+						if(!in_array($d->name,$dis)){
 							$d->name=$rs.':不符合';
 							$d->_children=true;
 							$data->parents[] = $d;
@@ -82,7 +84,7 @@ class DumpController extends Controller
 					$data->name = $item->tag;
 					$data->id   =$item->id;
 					$data->children = array();
-					$data->parents = array();
+					$data->parents = array();$dis=[];
 					/*foreach($item->sources() as $rs){
 						$d = new stdClass();
 						$d->name = $rs;
@@ -92,7 +94,7 @@ class DumpController extends Controller
 					foreach($item->dests() as $tc){
 						$d = new stdClass();
 						$d->id=$tc->id;
-						$d->name = $tc->tag;
+						$dis[]=$d->name = $tc->tag;
 						$d->isparent = true;
 						$data->parents[] = $d;
 					};
@@ -101,9 +103,7 @@ class DumpController extends Controller
 						$d = new stdClass();
 						$d->name = $rs;
 						$d->isparent = true;
-
-
-						if(!in_array($d,$data->parents)){
+						if(!in_array($d->name,$dis)){
 							$d->name=$rs.':不符合';
 							$d->_children=true;
 							$data->parents[] = $d;
@@ -121,6 +121,41 @@ class DumpController extends Controller
 
 		
 	}
+
+	  public function array_column($input,$column_key,$index_key=''){
+
+		if(!is_array($input)) return;
+		$results=array();
+		if($column_key===null){
+			if(!is_string($index_key)&&!is_int($index_key)) return false;
+			foreach($input as $_v){
+				if(array_key_exists($index_key,$_v)){
+					$results[$_v[$index_key]]=$_v;
+				}
+			}
+			if(empty($results)) $results=$input;
+		}else if(!is_string($column_key)&&!is_int($column_key)){
+			return false;
+		}else{
+			if(!is_string($index_key)&&!is_int($index_key)) return false;
+			if($index_key===''){
+				foreach($input as $_v){
+					if(is_array($_v)&&array_key_exists($column_key,$_v)){
+						$results[]=$_v[$column_key];
+					}
+				}
+			}else{
+				foreach($input as $_v){
+					if(is_array($_v)&&array_key_exists($column_key,$_v)&&array_key_exists($index_key,$_v)){
+						$results[$_v[$index_key]]=$_v[$column_key];
+					}
+				}
+			}
+
+		}
+		return $results;
+	}
+
 
 	public function index()
 	{

@@ -1,9 +1,25 @@
 <?php
-class Rs extends BaseModel {
+class Rs extends Tag {
 
 	protected $table = 'rs';
-	protected $fillable = array('tag','column','version_id');
+	protected $fillable = array('tag','column','vat_json','created_at','updated_at','version_id');
 	
+	
+	
+	public function  striplashes($item){
+
+		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
+		$item=str_replace('\\','\\\\',$item);
+		return  $item;
+	}
+	public function  column(){
+		if($this->column){
+		return (array)json_decode('{'.$this->column.'}',true);
+		}else if(array_key_exists('column',$this["original"])){
+		return (array)json_decode('{'.$this->striplashes($this["original"]["column"]).'}',true);
+		}else return [];
+	}
+
 	public function tcs()
 	{
 		$tcs = [];
@@ -27,11 +43,11 @@ class Rs extends BaseModel {
 	}
 	public function dests()
 	{
-		$tcs = [];
+		$tcs = [];parent::dests();
 		$srcs = $this->version->document->dest();
 		$this->column=json_decode('{'.$this->column.'}');
 		if(!$this->column||!property_exists($this->column,'source'))return [];
-		preg_match_all('/\[.*?\]/i',$this->column->source,$matches);
+		preg_match_all('/\[.*?\]/i',preg_replace('/\s/','',$this->column->source),$matches);
 		//var_dump($matches);
 		foreach($srcs as $src){
 			switch($src->type){
@@ -56,6 +72,7 @@ class Rs extends BaseModel {
 	public function srcs()
 	{
 		$result = [];
+		$this->tag=preg_replace('/[\[\]]/','',$this->tag);
 		$srcs = $this->version->document->src();
 		foreach($srcs as $src){
 			switch($src->type){
@@ -82,7 +99,6 @@ class Rs extends BaseModel {
 	public function rss()
 	{
 		$rss = [];
-
 		$srcs = $this->version->document->srcs;
 		foreach($srcs as $src){
 			if($src->type == 'rs'){
@@ -116,11 +132,10 @@ class Rs extends BaseModel {
 
 	public function sources()
 	{
-		//.var_dump($this->column);exit;
 		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}');
 		if(!$arr)return [];
-	    property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',$arr->source,$matches):($matches[0]=[]);
-	    return $matches[0];
+		property_exists($arr,'source')?preg_match_all('/\[.*?\]/i',preg_replace('/\s/','',($arr->source)),$matches):($matches[0]=[]);
+		return $matches[0];
 	}
 	public function isNewest(){
 
@@ -142,6 +157,7 @@ class Rs extends BaseModel {
 	
 	public function description(){
 		
+		parent::description();
 		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}',true);
 		if(!$arr)return null;
 		if(array_key_exists('description',$arr)){
@@ -152,7 +168,7 @@ class Rs extends BaseModel {
 		
 	}
 	public function  column_text(){
-		
+		parent::column_text();
 		$column=json_decode('{'.$this->column.'}',true);$ans=null;
 		foreach((array)$column as  $key=>$value){
 			if(strtolower($key)=='description' ||strtolower($key)=='test case description'){

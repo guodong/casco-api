@@ -192,10 +192,12 @@ class ProjectController extends BaseController {
 						if ($wait_save) {
 							$num->steps()->delete();
 
-						}
-						foreach ( $wait_save as $value ) {
-							$in = array ();
+						}$i=1;
+						foreach ( $wait_save as  $value) {
+							$in = array ();$value=(array)$value;
+							$in['num']=$i++;
 							$in ["tc_id"] = $num->id;
+							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
 							$in = array_merge ( $in, (array)$value );
 							$step = TcStep::create ( $in );
 
@@ -222,12 +224,12 @@ class ProjectController extends BaseController {
 						} //foreach
 						$tc->column = substr ( $tc->column, 0, - 1 );
 						$tc->version_id = $version->id ;
-						$tc->save ();
-						foreach ( $wait_save as $value ) {
-							$in = array ();
+						$tc->save ();$i=1;
+						foreach ( $wait_save as  $value ) {
+							$in = array ();$value=(array)$value;$in['num']=$i++;
 							$in ["tc_id"] = $tc->id;
+							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
 							$in = array_merge ( $in, (array)$value );
-							//	var_dump($in);
 							$step = TcStep::create ( $in );
 							//$step->save(); //这一句有问题么
 						}

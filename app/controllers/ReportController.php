@@ -141,7 +141,7 @@ class ReportController extends ExportReportController
 		DB::beginTransaction();
 		try{
 
-			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('tcs')||!Input::get('results')) throw  new  Exception("参数不合法");
+			if(!Input::get('project_id')||!Input::get('doc_id')) throw  new  Exception("参数不合法");
 			$job = Report::create(Input::get());
 			$job->author=Input::get('account')?Input::get('account'):null;
 			//此时已经过滤了一次哦
@@ -152,8 +152,8 @@ class ReportController extends ExportReportController
 				$child['result_id']=$result_id;
 				$array_child[]=$child;
 				ReportResult::create(array(
-		            'result_id' => $result_id,
-		            'report_id' => $job->id
+		            	'result_id' => $result_id,
+		            	'report_id' => $job->id
 				));
 			}
 			$all_rs=$job->recursion();
@@ -162,10 +162,12 @@ class ReportController extends ExportReportController
 				$rss=$r->latest_version()->rss;//最新版本的原则
 				foreach($rss  as  $rs)
 				{	
-					$bak_tc=[];
+					$bak_tc=[];;
 					$vat_id=(array)$this->array_column(json_decode($rs->vat_json,true),'id');
 					$bak_tc=array_intersect($vat_id,$results);
-					$res=Result::whereIn('id',Input::get('results'))->whereIn('tc_id',(array)$bak_tc)->select('result')->get()->toArray();
+//var_dump($bak_tc);
+					//$res=Result::whereIn('id',Input::get('results'))->whereIn('tc_id',$bak_tc)->select('result')->get()->toArray();
+					//$array_child
 					if(count($bak_tc)<=0)continue;
 					ReportVerify::create(array(
 					 'tc_id'=>implode(',',$bak_tc),
@@ -178,7 +180,6 @@ class ReportController extends ExportReportController
 			 }//rss
 			}//$r
 			//还需要建立另外一张表吧
-
 			$parents=[];
 			foreach($job->document->dest() as $dests){
 				$parents=array_merge($parents,$dests->latest_version()->rss->toArray());

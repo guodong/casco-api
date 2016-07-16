@@ -10,7 +10,8 @@ class TcController extends Controller{
 	public function  striplashes($item){
 
 		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
-		$item=str_replace("'","\'",$item);
+		//$item=str_replace("'","\'",$item);
+		$item=str_replace('\\','\\\\',$item);
 		return  $item;
 	}
 
@@ -194,10 +195,7 @@ class TcController extends Controller{
 	public function update($id)
 	{
 		$m = Tc::find($id);
-		var_dump($m);
 		$m->update(Input::get());
-		var_dump(Input::get());
-
 		$m->save();
 		if(Input::get('steps')){
 			$m->steps()->delete();

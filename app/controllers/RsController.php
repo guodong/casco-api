@@ -11,7 +11,7 @@ class RsController extends Controller{
 	public function  striplashes($item){
 
 		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
-		$item=str_replace('\'',"'",$item);
+		$item=str_replace('\\','\\\\',$item);
 		return  $item;
 	}
 	public function array_column($input,$column_key,$index_key=''){
@@ -82,12 +82,12 @@ class RsController extends Controller{
 		$data=array();
 		foreach ($rss as $v){
 			$v->column=$this->striplashes($v->column);
-			//if(preg_match('/0051/',$v->tag)){var_dump($v->column);exit;}
+			//if(preg_match('/SyRS-0040/',$v->tag)){var_dump($v->column);exit;}
 			$base=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}',true);
-			if(!$base)continue;
+			if(!$base){continue;}
 			if (!json_decode($v->vat_json)){
 				$v->vat_json = '[]';
-				$v->save();
+				//$v->save();
 			}
 			$obj=array();
 			$obj['vat']=json_decode($v->vat_json);
