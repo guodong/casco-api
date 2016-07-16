@@ -110,9 +110,11 @@ class RsController extends Controller{
 	}
 	
 	
-	public function store($id){
+	public function store(){
 
-
+		$rs=Rs::create(Input::get());
+		if($rs) return $rs;
+		return [];
 	}
 
 	
@@ -132,5 +134,6 @@ class RsController extends Controller{
 		$m->tag=$data['tag'];
 		$m->vat_json = json_encode($data['vat']);
 		$m->save();
+		return $m;
 	}
 }

@@ -4,7 +4,11 @@ class Tc extends BaseModel {
 	protected $table = 'tc';
 	protected $fillable = array('tag','column','checklog','robot','version_id', 'description', 'testmethod_id', 'pre_condition', 'result','source_json');
 	
-	
+	public function  striplashes($item){
+		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
+		$item=str_replace("\\","\\\\",$item);
+		return  $item;
+	}
 	public function steps()
 	{
 		return $this->hasMany('TcStep')->orderBy('num')->orderBy('created_at','asc');
@@ -18,7 +22,21 @@ class Tc extends BaseModel {
 			return $arr['description'];
 		}else if(array_key_exists('test case description',$arr)){
 			return  $arr['test case description'];
+		}else if(array_key_exists('test description',$arr)){
+			return  $arr['test case description'];
 		}else return null;
+		
+	}
+	
+	public function  dynamic_col($key){
+		
+		$arr =is_object($this->column)?$this->column:json_decode('{'.($this->column).'}',true);
+		if(!$arr)return null;
+		if(array_key_exists($key,$arr)){
+			return $arr[$key];
+		}else{
+			return [];
+		}
 		
 	}
 

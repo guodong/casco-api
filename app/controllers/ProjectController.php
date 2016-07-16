@@ -152,10 +152,10 @@ class ProjectController extends BaseController {
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
-			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			$doc_url='http://192.100.212.31:8080/files/'.$name;
-			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
+			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+			//$doc_url='http://192.100.212.31:8080/files/'.$name;
+			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -192,10 +192,12 @@ class ProjectController extends BaseController {
 						if ($wait_save) {
 							$num->steps()->delete();
 
-						}
-						foreach ( $wait_save as $value ) {
-							$in = array ();
+						}$i=1;
+						foreach ( $wait_save as  $value) {
+							$in = array ();$value=(array)$value;
+							$in['num']=$i++;
 							$in ["tc_id"] = $num->id;
+							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
 							$in = array_merge ( $in, (array)$value );
 							$step = TcStep::create ( $in );
 
@@ -222,12 +224,12 @@ class ProjectController extends BaseController {
 						} //foreach
 						$tc->column = substr ( $tc->column, 0, - 1 );
 						$tc->version_id = $version->id ;
-						$tc->save ();
-						foreach ( $wait_save as $value ) {
-							$in = array ();
+						$tc->save ();$i=1;
+						foreach ( $wait_save as  $value ) {
+							$in = array ();$value=(array)$value;$in['num']=$i++;
 							$in ["tc_id"] = $tc->id;
+							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
 							$in = array_merge ( $in, (array)$value );
-							//	var_dump($in);
 							$step = TcStep::create ( $in );
 							//$step->save(); //这一句有问题么
 						}
