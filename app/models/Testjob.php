@@ -2,7 +2,7 @@
 class Testjob extends BaseModel {
 
 	protected $table = 'testjob';
-	protected $fillable = array('name', 'project_id', 'build_id', 'tc_version_id', 'rs_version_id', 'status');
+	protected $fillable = array('name', 'project_id', 'build_id', 'tc_version_id', 'rs_version_id', 'status','created_at','updated_at');
 
 	public function build()
 	{

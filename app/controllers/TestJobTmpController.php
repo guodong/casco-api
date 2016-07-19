@@ -1,6 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Input;
-class TestJobTmpController extends BaseController {
+class TestjobTmpController extends BaseController {
 	
 public function index()
 	{	

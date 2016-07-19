@@ -29,11 +29,6 @@ class Document extends BaseModel {
 	    return $this->hasMany('Rs');
 	}
 	
-	public function srcs()
-	{
-	    return $this->belongsToMany('Document', 'relation', 'dest', 'src');
-	}
-	
 	public function src(){
 		
 		$result=Document::whereExists(function ($query) {
@@ -44,11 +39,6 @@ class Document extends BaseModel {
             ->distinct()->get();
           return  $result;
 		
-	}
-	
-	public function dests()//记得去重哦
-	{
-	    return $this->belongsToMany('Document', 'relation', 'src', 'dest');
 	}
 	
 	public function dest()//记得去重哦

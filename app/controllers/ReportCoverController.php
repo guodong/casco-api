@@ -1,5 +1,6 @@
 <?php
 
+
 use Illuminate\Support\Facades\Input;
 
 class ReportCoverController extends ExportReportController {

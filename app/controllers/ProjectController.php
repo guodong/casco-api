@@ -152,10 +152,10 @@ class ProjectController extends BaseController {
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
-			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			//$doc_url='http://192.100.212.31:8080/files/'.$name;
-			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
+			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+			$doc_url='http://192.100.212.31:8080/files/'.$name;
+			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
+			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -180,7 +180,7 @@ class ProjectController extends BaseController {
 						$num->column = "";
 						foreach ($value as $key => $item ) {
 							if ($key != 'tag' && $key != 'test steps') {
-								$num->column .= '"'.strtolower(trim($key)) . '":"' .  addslashes(trim($item)) . '",';
+								$num->column .= '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
 							} else if ($key == 'test steps') {
 								//做相应的处理哦
 								$wait_save = json_decode ( $item,true )?json_decode ( $item,true ):array();
@@ -211,7 +211,7 @@ class ProjectController extends BaseController {
 						foreach ((array)$value as $key => $item ) {
 
 							if ($key != 'tag' && $key != 'test steps') {
-								$tc->column .= '"'.strtolower(trim($key)) . '":"' .  addslashes(trim($item)) . '",';
+								$tc->column .= '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
 							} else if ($key == 'test steps') {
 								//做相应的处理哦
 								$wait_save =json_decode ( $item,true )?json_decode ( $item,true ):array();
@@ -255,7 +255,7 @@ class ProjectController extends BaseController {
 
 							if ($key != 'tag') {
 
-								$rs->column .=  '"'.strtolower(trim($key)) . '":"' .  addslashes(trim($item)) . '",';
+								$rs->column .=  '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
 							}
 						}
 						$rs->column = substr ( $rs->column, 0, - 1 );
@@ -268,7 +268,7 @@ class ProjectController extends BaseController {
 						foreach ( $value as $key => $item ) {
 
 							if ($key != 'tag') {
-								$rs->column .= '"'.strtolower(trim($key)) . '":"' .  addslashes(trim($item)) . '",';
+								$rs->column .= '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
 							}else{
 
 								$rs->tag=$item;

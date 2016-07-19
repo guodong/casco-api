@@ -25,12 +25,9 @@ class ReportController extends ExportReportController
 		//$testjob=Testjob::find(Input::get('test_id'))->results;
 		$datas=[];
 		foreach($testjob  as  $tests){
-			//var_dump($tests);
 			foreach($tests->results as $res){
 				$tc=Tc::find($res->tc_id);
 				//过滤重复的规则
-				//if(in_array($tc->id,$this->array_column($datas,'id')))continue;
-				//var_dump($res);
 				$data['id']=$tc->id;
 				$data['tag']=$tc->tag;
 				$data['result_id']=$res->id;
@@ -86,20 +83,49 @@ class ReportController extends ExportReportController
 
 	public function  get_result(){
 		//必须要合并好吧
-		if(!Input::get('report_id'))  return [];
-		$report=Report::find(Input::get('report_id'));
-		if(!$report) return [];
-		$testjob=$report->results;$datas=[];
-		foreach($report->results  as $res){
-			$tc=Tc::find($res->result->tc_id);
-			$data['id']=$tc->id;
-			$data['tag']=$tc->tag;
-			$data['description']=$tc->description();
-			$data['result']=$res->result->result;
-			$data['created_at']=$res->created_at;
-			$data['updated_at']=$res->updated_at;
-			$data['build']=$res->result->testjob->name.':'.$res->result->testjob->build->name;
-			$datas[]=$data;
+		if(!Input::get('test_id'))return [];
+		$testjob=Testjob::find(Input::get('test_id'));
+		$doc=$testjob->tcVersion->document;
+		$tests=Testjob::where('created_at','<=',$testjob->created_at)->where('status',1)->where(
+		function($query)use($doc){$datas=[];
+		foreach($doc->versions as $d){
+			array_push($datas,$d->id);
+		}
+        $query->whereIn('tc_version_id',$datas);
+		})->get();
+		$datas=[];
+		foreach($tests  as   $test)
+			foreach($test->results as $result)
+			{	$tag=$result->tc->tag;
+				if(!array_key_exists($tag,$datas)){
+				$tc=$result->tc;
+				$data['id']=$tc->id;
+				$data['tag']=$tc->tag;
+				$data['description']=$tc->description();
+				$data['result']=$result->result;
+				$data['created_at']=$result->created_at;
+				$data['updated_at']=$result->updated_at;
+				$data['build']=$result->testjob->name.':'.$result->testjob->build->name;
+				$datas[$tag]=$data;
+				}
+				else{
+					if($datas[$tag]['created_at']<=$result->created_at){
+						$tc=$result->tc;
+						$data['id']=$tc->id;
+						$data['tag']=$tc->tag;
+						$data['description']=$tc->description();
+						$data['result']=$result->result;
+						$data['created_at']=$result->created_at;
+						$data['updated_at']=$result->updated_at;
+						$data['build']=$result->testjob->name.':'.$result->testjob->build->name;
+						$datas[$tag]=$result;
+					}
+					else continue;
+				}
+			}
+		$da=[];
+		foreach($datas as $data){
+		$da[]=$data;
 		}
 		return $datas;
 	}
@@ -141,7 +167,7 @@ class ReportController extends ExportReportController
 		DB::beginTransaction();
 		try{
 
-			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('tcs')||!Input::get('results')) throw  new  Exception("参数不合法");
+			if(!Input::get('project_id')||!Input::get('doc_id')) throw  new  Exception("参数不合法");
 			$job = Report::create(Input::get());
 			$job->author=Input::get('account')?Input::get('account'):null;
 			//此时已经过滤了一次哦
@@ -152,8 +178,8 @@ class ReportController extends ExportReportController
 				$child['result_id']=$result_id;
 				$array_child[]=$child;
 				ReportResult::create(array(
-		            'result_id' => $result_id,
-		            'report_id' => $job->id
+		            	'result_id' => $result_id,
+		            	'report_id' => $job->id
 				));
 			}
 			$all_rs=$job->recursion();
@@ -161,11 +187,10 @@ class ReportController extends ExportReportController
 			foreach($all_rs as $r){
 				$rss=$r->latest_version()->rss;//最新版本的原则
 				foreach($rss  as  $rs)
-				{	
-					$bak_tc=[];
+				{
+					$bak_tc=[];;
 					$vat_id=(array)$this->array_column(json_decode($rs->vat_json,true),'id');
 					$bak_tc=array_intersect($vat_id,$results);
-					$res=Result::whereIn('id',Input::get('results'))->whereIn('tc_id',(array)$bak_tc)->select('result')->get()->toArray();
 					if(count($bak_tc)<=0)continue;
 					ReportVerify::create(array(
 					 'tc_id'=>implode(',',$bak_tc),
@@ -178,7 +203,6 @@ class ReportController extends ExportReportController
 			 }//rss
 			}//$r
 			//还需要建立另外一张表吧
-
 			$parents=[];
 			foreach($job->document->dest() as $dests){
 				$parents=array_merge($parents,$dests->latest_version()->rss->toArray());
@@ -252,6 +276,7 @@ class ReportController extends ExportReportController
 			@unlink($path); // 这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
 		}
 	}
+
 
 
 	public function export_result(){
