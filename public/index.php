@@ -2,6 +2,7 @@
 define('PATH_BASE', realpath(__DIR__.'/../'));
 define('COL_PREFIX','(P) // (C)');
 define('MID_COMPOSE',' // ');
+$black=array('description','test case description','test description');
 $origin = array_key_exists('HTTP_ORIGIN', $_SERVER)?$_SERVER['HTTP_ORIGIN']:'*';
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Origin: '.$origin);
