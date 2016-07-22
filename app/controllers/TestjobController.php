@@ -21,21 +21,21 @@ class TestjobController extends BaseController{
 	public function index()
 	{
 		$jobs = Project::find(Input::get('project_id'))->testjobs;
-		if(Input::get('child_id')){
-			//这个应该是过滤出相应的rs_doc
-		$data=[];
-		foreach ($jobs as $v){
-			if(!$v)continue;
-			$rsVersions=$v->rsVersions?$v->rsVersions:null;
-			foreach ($rsVersions as $vv){
-				if($vv->document->id==Input::get('child_id')){
-				$data[]=$v;
-				}
-				continue;
-			}
-		}
-			return $data;
-		}
+// 		if(Input::get('child_id')){
+// 			//这个应该是过滤出相应的rs_doc
+// 		$data=[];
+// 		foreach ($jobs as $v){
+// 			if(!$v)continue;
+// 			$rsVersions=$v->rsVersions?$v->rsVersions:null;
+// 			foreach ($rsVersions as $vv){
+// 				if($vv->document->id==Input::get('child_id')){
+// 				$data[]=$v;
+// 				}
+// 				continue;
+// 			}
+// 		}
+// 			return $data;
+// 		}
 		foreach ($jobs as $v){
 			if(!$v)continue;
 			$v->build;
@@ -47,6 +47,7 @@ class TestjobController extends BaseController{
 		}
 		return $jobs;
 	}
+	
 	public function destroy($id){
 		$job=Testjob::find($id);
 		foreach($job->results  as $result){

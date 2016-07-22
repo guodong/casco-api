@@ -48,6 +48,12 @@ class DocumentController extends Controller
                
             }
         }
+        if(!Input::get('type') && !Input::get('mode')){
+            $docs = $docs->get();
+            foreach ($docs as $v){
+                $v->versions;
+            }
+        }
         return $docs;
         if (! empty($_GET['project_id'])) {
             $d = Document::where('project_id', '=', $_GET['project_id']);

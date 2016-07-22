@@ -9,6 +9,10 @@ class Project extends BaseModel {
 	    return $this->hasMany("Document");
 	}
 	
+	public function vatbuilds(){
+	    return $this->hasMany('VatBuild','project_id','id')->orderBy('created_at','desc');
+	}
+	
 	public function testjobtmps()
 	{
 	    return $this->hasMany("TestjobTmp");
