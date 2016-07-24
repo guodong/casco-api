@@ -48,6 +48,7 @@ Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
 Route::get('reportcover/export','ReportCoverController@export');
 Route::resource('reportcover','ReportCoverController');
+Route::resource('vat','VatBuildController');
 
 Route::group(array('prefix' => 'testjob'), function()
 {
