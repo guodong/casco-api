@@ -2,28 +2,38 @@
 class Testjob extends BaseModel {
 
 	protected $table = 'testjob';
-	protected $fillable = array('name', 'project_id', 'build_id', 'tc_version_id', 'rs_version_id', 'status');
+	protected $fillable = array('name', 'project_id', 'build_id', 'vat_build_id', 'status','created_at','updated_at');
 
 	public function build()
 	{
 	    return $this->belongsTo('Build');
 	}
 	
-	public function tcVersion()
+	public function  vatbuild()
 	{
-	    return $this->belongsTo('Version', 'tc_version_id');
+	    return $this->belongsTo('VatBuild', 'vat_build_id');
 	}
-	
-	public function rsRelations()
-	{
-		return $this->hasMany('TestjobRs','id','testjob_id');
+	public function  rencents(){
+		
+		$tests=Testjob::where('vat_build_id',$this->vat_build_id)->where('status',1)->where('created_at','<',$this->created_at)->get();
+		$tmp=[];
+		foreach($tests as $v){
+			foreach($v->results as $data){
+				if(!in_array($data->tc->tag,$tmp)){
+					$tmp[$data->tc->tag]=$data;	
+				}else{
+					if($tmp[$data->tc->tag]['created_at']<$data['created_at']){
+					$tmp[$data->tc->tag]=$data;
+					}
+				}
+			}//foreach
+		}
+		return $tmp;
+			
+		
+		
 	}
-	
-	public function rsVersions()
-	{
-	    return $this->belongsToMany('Version', 'testjob_rs_version', 'testjob_id', 'rs_version_id');
-	}
-	
+
 	public function results()
 	{
 	    return $this->hasMany('Result', 'testjob_id');

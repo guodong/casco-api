@@ -30,23 +30,11 @@ class TcController extends Controller{
 		$final=array();
 		if(Input::get('act')=="stat"){
 			foreach($tcs as $tc){
-				$arr = json_decode('{'.$tc->column.'}',true);
-				if($arr&&array_key_exists('test method',$arr))
-				{
-					(count($test_methods=explode('/',$arr['test method']))>1)||
-					(count($test_methods=explode('+',$arr['test method']))>1)||
-					(count($test_methods=explode('&',$arr['test method']))>1);
-						
-
-					$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
-					$tc->testmethods = $ids;
-					$tc->result = 0;}
-					foreach ($tc->results as $r){
-						if ($r->rs_version_id == Input::get('rs_version_id') && $r->build_id == Input::get('build_id')){
-							$tc->result = $r->result;
-						}
-					}
-					$final[]=array('tc'=>$tc);
+				//$arr = json_decode($tc->column,true);
+				$tc->description=$tc->description();
+			   ($tc->testmethods=$tc->dynamic_col('test method'))||$tc->testmethods=$tc->dynamic_col('method');
+	
+			   $final[]=array('tc'=>$tc);
 			}
 
 			return  $final;

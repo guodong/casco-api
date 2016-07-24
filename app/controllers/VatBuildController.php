@@ -5,6 +5,11 @@ class VatBuildController extends BaseController{
     
    public function index(){
        $vats = Project::find(Input::get('project_id'))->vatbuilds;
+       if(!Input::get('document_id')){
+       	foreach($vats as $v)
+       	{$v->tcVersion;$v->rsVersions;}
+       	return  $vats;
+       }
        foreach ($vats as $v){
            if(!$v) continue;
            if($v->tcVersion && $v->tcVersion->document->id == Input::get('document_id')){

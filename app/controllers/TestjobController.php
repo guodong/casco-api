@@ -9,11 +9,7 @@ class TestjobController extends BaseController{
 	  $jobs=Testjob::find($id);
 	  if(!$jobs)return [];
 	  $jobs->build;
-	  $jobs->tcVersion&&$jobs->tcVersion->document;
-	  $rsVersions=$jobs->rsVersions?$jobs->rsVersions:null;
-		foreach ($rsVersions as $vv){
-			$vv->document;
-		}
+	  $jobs->vat_build;
 	  return $jobs;
 	  
 	}
@@ -39,11 +35,7 @@ class TestjobController extends BaseController{
 		foreach ($jobs as $v){
 			if(!$v)continue;
 			$v->build;
-			$v->tcVersion?$v->tcVersion->document:null;
-			$rsVersions=$v->rsVersions?$v->rsVersions:null;
-			foreach ($rsVersions as $vv){
-				$vv->document;
-			}
+			$v->vatbuild;
 		}
 		return $jobs;
 	}
@@ -56,9 +48,6 @@ class TestjobController extends BaseController{
 			}
 			$result->delete();
 		}
-		foreach($job->rsRelations as $rels){
-			$rels->delete();
-		}
 		$job->destroy($id);
 		return $job;
 	}
@@ -66,15 +55,6 @@ class TestjobController extends BaseController{
 	{
 		$job = Testjob::create(Input::get());
 		$job->status = 0;
-		foreach (Input::get('rs_versions') as $v){
-			$job->rsVersions()->attach($v['rs_version_id']);
-		}
-		$v = $job;
-		$v->build;
-		$v->tcVersion->document;
-		foreach ($v->rsVersions as $vv){
-			$vv->document;
-		}
 		foreach (Input::get('tcs') as $tcid){
 			Result::create(array(
 	            'tc_id' => $tcid,

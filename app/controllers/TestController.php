@@ -5,9 +5,11 @@ class TestController extends Controller{
 
     public function index()
     {
-        $tc = Rs::all();
+      $tc = Tc::all();
 	foreach($tc as $tcs){
-	$tcs->column=str_replace('\\','',$tcs["original"]["column"]);
+	if(!preg_match('/{.*?}/',$tcs["original"]["column"])){
+	$tcs->column='{'.$tcs["original"]["column"].'}';
+	}
 	$tcs->save();
 	}
         

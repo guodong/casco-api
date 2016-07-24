@@ -141,33 +141,26 @@ class ReportController extends ExportReportController
 		DB::beginTransaction();
 		try{
 
-			if(!Input::get('project_id')||!Input::get('doc_id')) throw  new  Exception("参数不合法");
+			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('testjob_id')) throw  new  Exception("参数不合法");
 			$job = Report::create(Input::get());
 			$job->author=Input::get('account')?Input::get('account'):null;
 			//此时已经过滤了一次哦
-			$result=Tc::whereIn('id',($results=Input::get('tcs')))->get();
-			$array_child=[];
-			foreach (Input::get('results') as $result_id){
-				$child=Result::find($result_id)->tc->toArray();
-				$child['result_id']=$result_id;
-				$array_child[]=$child;
+			//创建result表；
+			$test=Testjob::find(Input::get('testjob_id'));
+			$result=(array)$this->array_column($test->recents(),'tc_id'); $all_rs=$test->vatbuild->rsVersions;
+			foreach ($results as $result_id){
 				ReportResult::create(array(
 		            	'result_id' => $result_id,
 		            	'report_id' => $job->id
 				));
 			}
-			$all_rs=$job->recursion();
-			//从中确定了RS的版本了的
 			foreach($all_rs as $r){
-				$rss=$r->latest_version()->rss;//最新版本的原则
+				$rss=$r;
 				foreach($rss  as  $rs)
 				{	
 					$bak_tc=[];;
 					$vat_id=(array)$this->array_column(json_decode($rs->vat_json,true),'id');
 					$bak_tc=array_intersect($vat_id,$results);
-//var_dump($bak_tc);
-					//$res=Result::whereIn('id',Input::get('results'))->whereIn('tc_id',$bak_tc)->select('result')->get()->toArray();
-					//$array_child
 					if(count($bak_tc)<=0)continue;
 					ReportVerify::create(array(
 					 'tc_id'=>implode(',',$bak_tc),
@@ -181,7 +174,7 @@ class ReportController extends ExportReportController
 			}//$r
 			//还需要建立另外一张表吧
 			$parents=[];
-			foreach($job->document->dest() as $dests){
+			foreach($job->vatbuild->tcVersion->document->dest() as $dests){
 				$parents=array_merge($parents,$dests->latest_version()->rss->toArray());
 			}
 			$parents=$this->distinct($parents);
