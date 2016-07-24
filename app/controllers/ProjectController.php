@@ -87,7 +87,7 @@ class ProjectController extends BaseController {
 			if (gettype ( $value ) == 'array' || gettype ( $value ) == 'object') {
 				$ret [$key] = $this->objtoarr ( $value );
 			} else {
-				$ret [$key] = $value;
+				$ret [$key] = ($value);
 			}
 		}
 		return $ret;
@@ -148,7 +148,6 @@ class ProjectController extends BaseController {
 
 		try{
 			/*	$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
-			 //$result2 = $soap->test( array ('url'=>'123' ) );
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
@@ -174,20 +173,17 @@ class ProjectController extends BaseController {
 			if (Input::get ( 'type' ) == 'tc') {
 				foreach ($resolveResult as $value ) {
 
-					$num = Tc::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $version->id )->first ();
-
+					$num = Tc::where ( "tag", "=", $value['tag'] )->where ("version_id", "=", $version->id )->first ();
+										
 					if ($num) {
-						$num->column = "";
+						$num->column = json_encode($value);			
 						foreach ($value as $key => $item ) {
-							if ($key != 'tag' && $key != 'test steps') {
-								$num->column .= '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
-							} else if ($key == 'test steps') {
+							if ($key == 'test steps') {
 								//做相应的处理哦
 								$wait_save = json_decode ( $item,true )?json_decode ( $item,true ):array();
 
 							} //else if
 						}
-						$num->column = substr ( $num->column, 0, - 1 );
 						$num->save ();
 						if ($wait_save) {
 							$num->steps()->delete();
@@ -206,23 +202,15 @@ class ProjectController extends BaseController {
 						///	return "更新记录";
 
 					} else { //不存在此记录了
-						$tc = new TC ( );
-
+						$tc = new TC ( );$tc->column=json_encode($value);
+						$tc->tag=$value['tag'];
 						foreach ((array)$value as $key => $item ) {
-
-							if ($key != 'tag' && $key != 'test steps') {
-								$tc->column .= '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
-							} else if ($key == 'test steps') {
+							 if ($key == 'test steps') {
 								//做相应的处理哦
 								$wait_save =json_decode ( $item,true )?json_decode ( $item,true ):array();
 
-							} else if ($key == 'tag') {
-
-								$tc->tag = $item;
-							}
-							
+							} 							
 						} //foreach
-						$tc->column = substr ( $tc->column, 0, - 1 );
 						$tc->version_id = $version->id ;
 						$tc->save ();$i=1;
 						foreach ( $wait_save as  $value ) {
@@ -243,38 +231,25 @@ class ProjectController extends BaseController {
 				} //foreach
 			} //if
 
-
+				
 			if (Input::get ( 'type' ) == 'rs') {
 
 				foreach ($resolveResult as $value ) {
 
 					$rs = Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $version->id  )->first ();
+					//$old=Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $old_version?$old_version->id:null)->first ();
+					
 					if ($rs) {
-						$rs->column='';
-						foreach ( $value as $key => $item ) {
-
-							if ($key != 'tag') {
-
-								$rs->column .=  '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
-							}
-						}
-						$rs->column = substr ( $rs->column, 0, - 1 );
+						//$rs->vat_json=($old&&$old->vat_json)?$old->vat_json:[];
+						$rs->column=json_encode($value);
 						$rs->save ();
 						$modify++;
 
 					} else { //不存在此记录了
 						//原来的tag为空的version_id的rs要不要删除掉
-						$rs = new RS ( );
-						foreach ( $value as $key => $item ) {
-
-							if ($key != 'tag') {
-								$rs->column .= '"'.strtolower(trim($key)) . '":"' . (trim($item)) . '",';
-							}else{
-
-								$rs->tag=$item;
-							}
-						} //foreach
-						$rs->column = substr ( $rs->column, 0, - 1 );
+						$rs = new RS ( );$rs->tag=$value['tag'];
+						//$rs->vat_json=($old&&$old->vat_json)?$old->vat_json:[];
+						$rs->column=json_encode($value);
 						$rs->version_id = $version->id ;
 						$rs->save ();
 						$add++;
@@ -283,7 +258,6 @@ class ProjectController extends BaseController {
 					}//else
 				} //foreach
 			} //if rs
-
 			$adds=array();$updates=array();$nochange=array();$delete=array();
 			//获取新的值出来进行比较,有问题逻辑错乱了,因为会把旧的新的一股脑dump出来
 			// $new_array=Input::get('type')=="rs"?Version::find($version->id)->rss->toArray():Version::find($version->id)->tcs->toArray();
@@ -295,7 +269,7 @@ class ProjectController extends BaseController {
 
 					if($old['tag']==$new['tag']){
 
-						if(!$std=json_decode('{'.$old['column'].'}')){
+						if(!$std=json_decode($old['column'])){
 
 
 							//var_dump("hehhe".$old['column']);
@@ -357,7 +331,7 @@ class ProjectController extends BaseController {
 			*/
 			//要不要做个显示报表啊更直观一些.
 	$result='<table border=”1″ cellspacing=”0″ cellpadding=”2″>
-	<tr><td colspan="2"  align=center>旧版本'.$old_version->name.';新版本'.$version->name.'</td></tr>
+	<tr><td colspan="2"  align=center>旧版本'.($old_version?$old_version->name:null).';新版本'.$version->name.'</td></tr>
 	<tr><td><font size="3" color="#00FF00">增添'.count($adds).'条</font></td><td>'.(string)implode(',',$adds).'</td></tr>
 	<tr><td><font size="3" color="blue">修改'.count($updates)."条</font></td><td>".(string)implode(',',$updates).'</td></tr>
 	<tr><td><font size="3" color="red">遗留(删除)'.count($delete)."条</font></td><td>".(string)implode(',',$delete).'</td></tr>

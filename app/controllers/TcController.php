@@ -7,14 +7,6 @@ class TcController extends Controller{
 	{
 		return Tc::find($id);
 	}
-	public function  striplashes($item){
-
-		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
-		//$item=str_replace("'","\'",$item);
-		//$item=str_replace('\\','\\\\',$item);
-		return  $item;
-	}
-
 
 	public function tc_steps(){
 		 
@@ -63,10 +55,12 @@ class TcController extends Controller{
 
 		$data=array();
 		foreach ($tcs as $v){
-			$v->column=$this->striplashes($v->column);
-			$obj=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
-			if(!$obj)continue;
-			$data[]=$obj;
+			$base=(array)json_decode($v->column,true);
+			if(!$base){continue;}
+			$obj=array();
+			$obj['id']=$v->id;
+			$obj=array_merge($base,$obj);
+			$data[]=array_change_key_case($obj,CASE_LOWER);
 		}
 		 
 		//还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?

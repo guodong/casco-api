@@ -10,7 +10,7 @@
 | and give it the Closure to execute when that URI is requested.
 |
 */
-Route::get('/test', 'ReportController@get_result');
+Route::get('/test', 'TestController@index');
 Route::get('tc/export', 'TcController@export');
 Route::get('tc/matrix','TcController@matirx');
 Route::resource('project', 'ProjectController');

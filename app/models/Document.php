@@ -19,7 +19,7 @@ class Document extends BaseModel {
 	{
 	    return $this->hasMany('Tc');
 	}
-     public function project()
+    	 public function project()
         {
             return $this->belongsTo('Project');
         }
@@ -27,6 +27,11 @@ class Document extends BaseModel {
 	public function rss()//这个不是已经没用了么?
 	{
 	    return $this->hasMany('Rs');
+	}
+	
+	public function srcs()
+	{
+	    return $this->belongsToMany('Document', 'relation', 'dest', 'src');
 	}
 	
 	public function src(){
@@ -39,6 +44,11 @@ class Document extends BaseModel {
             ->distinct()->get();
           return  $result;
 		
+	}
+	
+	public function dests()//记得去重哦
+	{
+	    return $this->belongsToMany('Document', 'relation', 'src', 'dest');
 	}
 	
 	public function dest()//记得去重哦

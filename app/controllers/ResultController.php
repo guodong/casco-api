@@ -31,7 +31,8 @@ class ResultController extends BaseController{
 			(count($test_methods=explode('+',$arr['test method']))>1)||
 			(count($test_methods=explode('&',$arr['test method']))>1);
 			$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
-			$v->tc->testmethods = $ids;*/
+			$v->tc->testmethods = $ids;
+			*/
 
 		}
 		return $results;
