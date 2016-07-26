@@ -29,16 +29,16 @@ class ParentMatrixController extends ExportController {
 			$item->child_type=='rs'?$child=Rs::find($item->child_id):$child=Tc::find($item->child_id);
 			$item->parent_type=='rs'?$parent=Rs::find($item->parent_id):$parent=Tc::find($item->parent_id);
 			$child_column=$child?$child->column():[];
-// 			$da['justification']=$parent?$parent->vat_json:[];
+			$da['justification']=$parent?$parent->vat_json:[];
+			//if(preg_match('/-0011/',$parent->tag)){var_dump($parent->column());exit();}
 			$da['Child Requirement Text']=$child?$child->description():null;$da['Parent Requirement Text']=$parent?$parent->description():null;
-			foreach($column=$parent->column() as $key=>$val){
-// 			    var_dump($parent->column());
+			foreach($column=(array)$parent->column() as $key=>$val){
 				switch($key){
 					case 'contribution':
-						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
+						array_key_exists('safety',(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
 						break;
 					default:
-						array_key_exists($key,$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column[$key]
+						array_key_exists($key,(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column[$key]
 						:$da[$key]=$val.MID_COMPOSE;
 				}//switch
 			}//foreach

@@ -5,7 +5,13 @@ class TestController extends Controller{
 
     public function index()
     {
-        $tc = Tc::find("399b97e7-776f-49f3-b4fe-ffc218f0ff55");
+      $tc = Tc::all();
+	foreach($tc as $tcs){
+	if(!preg_match('/{.*?}/',$tcs["original"]["column"])){
+	$tcs->column='{'.$tcs["original"]["column"].'}';
+	}
+	$tcs->save();
+	}
         
     }
 

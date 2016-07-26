@@ -23,6 +23,11 @@ class Report extends BaseModel {
 	    return  $this->hasMany('ReportCover','report_id');
 	}
 	
+	public function  testjob(){
+		
+		return $this->hasMany('Testjob','testjob_id');
+		
+	}
 	public function  results(){
 		
 		return  $this->hasMany('ReportResult','report_id');

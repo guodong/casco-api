@@ -7,14 +7,6 @@ class TcController extends Controller{
 	{
 		return Tc::find($id);
 	}
-	public function  striplashes($item){
-
-		$item=preg_replace("/([\r\n])+/", "", $item);//过滤掉一种奇葩编码,shit!
-		//$item=str_replace("'","\'",$item);
-		$item=str_replace('\\','\\\\',$item);
-		return  $item;
-	}
-
 
 	public function tc_steps(){
 		 
@@ -38,23 +30,11 @@ class TcController extends Controller{
 		$final=array();
 		if(Input::get('act')=="stat"){
 			foreach($tcs as $tc){
-				$arr = json_decode('{'.$tc->column.'}',true);
-				if($arr&&array_key_exists('test method',$arr))
-				{
-					(count($test_methods=explode('/',$arr['test method']))>1)||
-					(count($test_methods=explode('+',$arr['test method']))>1)||
-					(count($test_methods=explode('&',$arr['test method']))>1);
-						
-
-					$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
-					$tc->testmethods = $ids;
-					$tc->result = 0;}
-					foreach ($tc->results as $r){
-						if ($r->rs_version_id == Input::get('rs_version_id') && $r->build_id == Input::get('build_id')){
-							$tc->result = $r->result;
-						}
-					}
-					$final[]=array('tc'=>$tc);
+				//$arr = json_decode($tc->column,true);
+				$tc->description=$tc->description();
+			   ($tc->testmethods=$tc->dynamic_col('test method'))||$tc->testmethods=$tc->dynamic_col('method');
+	
+			   $final[]=array('tc'=>$tc);
 			}
 
 			return  $final;
@@ -63,10 +43,12 @@ class TcController extends Controller{
 
 		$data=array();
 		foreach ($tcs as $v){
-			$v->column=$this->striplashes($v->column);
-			$obj=json_decode('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}');//票漂亮哦
-			if(!$obj)continue;
-			$data[]=$obj;
+			$base=(array)json_decode($v->column,true);
+			if(!$base){continue;}
+			$obj=array();
+			$obj['id']=$v->id;
+			$obj=array_merge($base,$obj);
+			$data[]=array_change_key_case($obj,CASE_LOWER);
 		}
 		 
 		//还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
