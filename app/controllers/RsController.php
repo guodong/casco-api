@@ -123,9 +123,16 @@ class RsController extends Controller{
 	{
 		$data = Input::get();
 		$m = Rs::find($id);
-		$m->column=$data['column'];
+		$cols=$m->column();
+		$column=json_decode('{'.$data['column'].'}',true);
+		foreach((array)$column as $key=>$value){
+		if(array_key_exists($key,$cols)){
+			$cols[$key]=$value;
+		}}
+		$m->column=json_encode($cols);
 		$m->tag=$data['tag'];
 		$m->vat_json = json_encode($data['vat']);
 		$m->save();
+		return $m;
 	}
 }

@@ -12,6 +12,7 @@ class Rs extends BaseModel {
 		}else if(array_key_exists('column',$this["original"])){
 			$column=array_change_key_case((array)json_decode($this["original"]["column"],true),CASE_LOWER);
 		}
+		//var_dump($column);
 		return $column;
 	}
 	
@@ -24,7 +25,6 @@ class Rs extends BaseModel {
 	}
 
 	public function description(){
-
 		$arr =$this->column();
 		if(!$arr) return []; // {var_dump($this->column);exit;}
 		if(array_key_exists('description',$arr)){
@@ -55,7 +55,6 @@ class Rs extends BaseModel {
 			}
 		};
 		return $tcs;
-		//return $this->belongsToMany('Tc', 'tc_source', 'source_id', 'tc_id');
 	}
 	public function dests()
 	{
@@ -162,7 +161,6 @@ class Rs extends BaseModel {
 	}
 
 	public function  column_text(){
-
 		$column=$this->column();$ans=null;
 		foreach($column as  $key=>$value){
 			if(strtolower($key)=='description' ||strtolower($key)=='test case description'||strtolower($key)=='test description'){
@@ -171,7 +169,6 @@ class Rs extends BaseModel {
 				$ans.='#'.$key.':'.$value.'\n';
 		}
 		return $ans;
-
 	}
 
 }
