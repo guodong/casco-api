@@ -6,11 +6,11 @@ class VatBuildController extends BaseController{
    public function index(){
        $ans = [];
        $vats = Project::find(Input::get('project_id'))->vatbuilds;
-       if(!Input::get('document_id')){
-       	foreach($vats as $v)
-       	{$v->tcVersion;$v->rsVersions;}
-       	return  $vats;
-       }
+//        if(!Input::get('document_id')){
+//        	foreach($vats as $v)
+//        	{$v->tcVersion;$v->rsVersions;}
+//        	return  $vats;
+//        }
        foreach ($vats as $v){
            if(!$v) continue;
            if($v->tcVersion && $v->tcVersion->document->id == Input::get('document_id')){
@@ -47,22 +47,19 @@ class VatBuildController extends BaseController{
    
    public function show(){
        $json = [];
-//        $rs_tags = [];
        $vatbuild = VatBuild::find(Input::get('vat_build_id'));
        $tcversion = $vatbuild->tcVersion;
-//        var_dump($tcversion);exit;
        $tcdoc = $tcversion->document;
        $tc_tags = $tcversion->tcs;
-//        var_dump($tc_tag);exit;
-       $rsversions = $vatbuild->rsVersions;
+       $rsversions = $vatbuild->rsVersions; 
        foreach ($rsversions as $rsversion){ //取rs vat_json中type=tc的id在tc_tag中检索
            $rs_tags = $rsversion->rss;
            $rsdoc = $rsversion->document;
            foreach($rs_tags as $rs_tag){
                $rs_vat_json = $rs_tag->vat_json;
-               if($rs_vat_json && $rs_vat_json != '[]'){ //NULL ? 到底为空时是个什么情况
-                   $rs_vat_json_objs = json_decode($rs_vat_json);
-                   foreach($rs_vat_json_objs as $rs_vat_json_obj){
+               if($rs_vat_json && $rs_vat_json != 'Array'){ //NULL ? 到底为空时是个什么情况
+                   $rs_vat_json_objs = json_decode($rs_vat_json,true);
+                   foreach($rs_vat_json as $rs_vat_json_obj){
                        if($rs_vat_json_obj->type == 'tc'){
                            if($tc_tags->has($rs_vat_json_obj->id)){
                                $tc_tag = $tc_tags->get($rs_vat_json_obj->id);
