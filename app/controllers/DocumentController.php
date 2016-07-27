@@ -41,6 +41,7 @@ class DocumentController extends Controller
             foreach ($docs as $v){
                 $v->versions;
             }
+            return $docs;
         }
         if(Input::get('mode') == 'related'){
             $doc = Document::find(Input::get('document_id'));
