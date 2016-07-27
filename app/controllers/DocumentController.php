@@ -32,10 +32,20 @@ class DocumentController extends Controller
     public function index()
     {   
     	
-       if(!Input::get('project_id')&&!Input::get('mode')){return  DB::table('document')->join('project','document.project_id','=','project.id')->select('document.project_id as project_id','project.name as project_name','document.id as document_id','document.name as document_name','document.type as document_type')->get();}
-        $docs =(Document::where('project_id', '=', Input::get('project_id')));
+       if(!Input::get('project_id')&&!Input::get('mode')){
+           return  DB::table('document')->join('project','document.project_id','=','project.id')->select('document.project_id as project_id','project.name as project_name','document.id as document_id','document.name as document_name','document.type as document_type')->get();
+       }
+        $docs =Document::where('project_id', '=', Input::get('project_id'));
         if (Input::get('type')){
             $docs = $docs->where('type', '=', Input::get('type'))->get();
+            foreach ($docs as $v){
+                $v->versions;
+            }
+            return $docs;
+        }
+        if(Input::get('mode') == 'related'){
+            $doc = Document::find(Input::get('document_id'));
+            $docs = $doc->dests;
             foreach ($docs as $v){
                 $v->versions;
             }
