@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
+use Rhumsaa\Uuid\Uuid;
 class ReportController extends ExportReportController
 {
 	public function index()
@@ -11,10 +12,13 @@ class ReportController extends ExportReportController
 		foreach ($vefs as $v){
 			//&&短路原则很有，版本的原则哦
 			if(!$v->testjob||!$v->testjob->vatbuild)continue;
+			//var_dump($v->testjob->vatbuild->id.$v->testjob->vatbuild->name);
 			foreach($v->testjob->vatbuild->rsVersions as $value){
+				
 				$value->document;
 			}
 			$v['docs']=$v->testjob->vatbuild->rsVersions;
+		
 			$datas[]=$v;
 		}
 		return $datas;
@@ -152,6 +156,8 @@ class ReportController extends ExportReportController
 			$test->vatbuild&&($all_rs=$test->vatbuild->rsVersions);
 			foreach ($rencents as $key=>$value){
 				$child=Result::find($value['id'])->tc->toArray();
+				$item=Tc::find($child['id']);
+				$child['sources']=$item?$item->sources():[];
 				$child['result_id']=$value['id'];
 				$array_child[]=$child;
 				$results[]=$value['tc_id'];$shits[$value['tc_id']]=$value['result'];
@@ -186,11 +192,9 @@ class ReportController extends ExportReportController
 			$parents=$test->vatbuild->directDests();
 			$job->save();//失败了就不save了
 			$this->cover_status((array)$parents,(array)$array_child,$job);
-			
 			DB::commit();
 			return  array('success'=>true,'data'=>$job->id);
-		}
-		catch(Exception $e){
+		}catch(Exception $e){
 			DB::rollback();
 			return   array('success'=>false,'data'=>json_encode($e));
 		}
@@ -199,15 +203,13 @@ class ReportController extends ExportReportController
 
 	public function cover_status($parents,$array_child,$report){
 
-		foreach($parents as  $parent){
-			$flag=false;
-			foreach($array_child as $child){
-				$column=[];$item=Tc::find($child['id']);
-				var_dump($parent['tag']);
-				if(in_array($parent['tag'],$item?$item->sources():[]))
-				{
-					$flag=true;
-					$array=array(
+		$datas=[];$i=1;
+		foreach($parents as  $parent){$flag=false;
+		foreach($array_child as $child){
+			if(in_array($parent['tag'],$child['sources']))
+			{
+				$flag=true;
+				$datas[]=array(
 				 	 'parent_id'=>$parent['id'],
 					 'Parent Requirement Tag'=>$parent['tag'],
              	   	 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
@@ -215,29 +217,32 @@ class ReportController extends ExportReportController
 					 'Child Requirement Tag'=>$child['tag'],
              	     'child_id'=>$child['id'],
 					 'result_id'=>$child['result_id'],
-                     'report_id'=>$report->id
-					);
-					ReportCover::create($array);
-				}//if
-			}//foreach
-			/*if(!$flag){
-				$column=[];
-				$array=array(
-								 'parent_id'=>$parent['id'],
-								 'Parent Requirement Tag'=>$parent['tag'],
-                	   			 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
-                  				 'child_type'=>null,
-								 'Child Requirement Tag'=>null,
-                	             'child_id'=>null,
-                                 'report_id'=>$report->id
+                     'report_id'=>$report->id,
+					 'id'=>Uuid::uuid4()
 				);
-				//var_dump($array);
-				//ReportCover::create($array);
-			}*/
+					
+			}//if
 		}//foreach
+		}//foreach
+		//var_dump($datas);
+		$cover=DB::table('report_cover_status')->insert($datas);
+		/*if(!$flag){
+		 $column=[];
+		 $array=array(
+		 'parent_id'=>$parent['id'],
+		 'Parent Requirement Tag'=>$parent['tag'],
+		 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
+		 'child_type'=>null,
+		 'Child Requirement Tag'=>null,
+		 'child_id'=>null,
+		 'report_id'=>$report->id
+		 );
+		 //var_dump($array);
+		 //ReportCover::create($array);
+			}*/
 	}
-	
-	
+
+
 	public function del($path)
 	{
 		if (is_dir($path)) {

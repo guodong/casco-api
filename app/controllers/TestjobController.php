@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
+use Rhumsaa\Uuid\Uuid;
 class TestjobController extends BaseController{
 
 	public function show($id)
@@ -51,12 +52,15 @@ class TestjobController extends BaseController{
 	{
 		$job = Testjob::create(Input::get());
 		$job->status = 0;
+		$data=[];
 		foreach (Input::get('tcs') as $tcid){
-			Result::create(array(
+			$data[]=array(
 	            'tc_id' => $tcid,
-	            'testjob_id' => $job->id
-			));
+	            'testjob_id' => $job->id,
+				'id'=>Uuid::uuid4()
+			);
 		}
+		DB::table('result')->insert($data);
 		return $job;
 	}
 

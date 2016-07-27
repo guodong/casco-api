@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
 class VatBuildController extends BaseController{
+
     
    public function index(){
        $ans = [];
@@ -86,5 +87,4 @@ class VatBuildController extends BaseController{
    }
     
 }
-    
-    
+
