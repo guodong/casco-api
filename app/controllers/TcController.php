@@ -9,15 +9,11 @@ class TcController extends Controller{
 	}
 
 	public function tc_steps(){
-		 
+			
 		if(Input::get('tc_id')){
-
 			$tc=Tc::find(Input::get('tc_id'));
-			return $tc?json_encode($tc->steps):null;
-			 
-		}
-		 
-		 
+			return $tc?($tc->steps):null;
+		}	
 	}
 	public function index()
 	{
@@ -32,11 +28,9 @@ class TcController extends Controller{
 			foreach($tcs as $tc){
 				//$arr = json_decode($tc->column,true);
 				$tc->description=$tc->description();
-			   ($tc->testmethods=$tc->dynamic_col('test method'))||$tc->testmethods=$tc->dynamic_col('method');
-	
-			   $final[]=array('tc'=>$tc);
+				($tc->testmethods=$tc->dynamic_col('test method'))||$tc->testmethods=$tc->dynamic_col('method');
+				$final[]=array('tc'=>$tc);
 			}
-
 			return  $final;
 		}//if
 
@@ -47,10 +41,12 @@ class TcController extends Controller{
 			if(!$base){continue;}
 			$obj=array();
 			$obj['id']=$v->id;
+			if(array_key_exists('test steps',$base))
+			unset($base['test steps']);
 			$obj=array_merge($base,$obj);
 			$data[]=array_change_key_case($obj,CASE_LOWER);
 		}
-		 
+			
 		//还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
 		$version = Version::find ( Input::get ( 'version_id' ) );
 		$column=explode(",",$version->headers);
@@ -60,13 +56,11 @@ class TcController extends Controller{
 		$columModle[]=array('dataIndex'=>'tag','header'=>'tag','width'=> 140);
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
-
 			if(in_array($item,$black_list))continue;
 			$columModle[]=array('dataIndex'=>$item,'header'=>$item,'width'=> 140);
 			$fieldsNames[]=array('name'=>$item);
-
 		}
-	  
+			
 		return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
 		/*
 		 if (Input::get('version_id')) {
@@ -119,7 +113,7 @@ class TcController extends Controller{
 			if(!$obj)continue;
 			$data[]=$obj;
 		}
-		 
+			
 		//还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
 		$column=explode(",",$version->headers);
 		$columModle=array();
@@ -127,20 +121,12 @@ class TcController extends Controller{
 		$columModle[]=(array('dataIndex'=>'tag','header'=>'tag','width'=> 140));
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
-			 
+
 			if($item=='test steps')continue;
 			$columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
 			$fieldsNames[]=array('name'=>$item);
-
 		}
-	  
 		return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
-
-
-
-
-
-
 	}
 
 	public function store()
@@ -155,9 +141,8 @@ class TcController extends Controller{
 	public function destroy($id){
 
 		$tc=Tc::find($id);
-	 $tc=$tc->destroy($id);
-	 return $tc;
-
+		$tc=$tc->destroy($id);
+		return $tc;
 	}
 
 
@@ -177,14 +162,22 @@ class TcController extends Controller{
 	public function update($id)
 	{
 		$m = Tc::find($id);
-		$m->update(Input::get());
+		//var_dump('原来的column'.$m->column);
+		$cols=$m->column();	$data = Input::get('column');
+		foreach((array)$data as $key=>$value){
+			if(array_key_exists($key,$cols)){
+				$cols[$key]=$value;//包括了test steps
+			}
+		}//foreach
+		//多一层转义也没有啥关系吧
+		$m->column=json_encode($cols);
 		$m->save();
 		if(Input::get('steps')){
-			$m->steps()->delete();
-			foreach (Input::get('steps') as $v){
-				$step = new TcStep($v);
-				$m->steps()->save($step);
-			}
+			 $m->steps()->delete();
+			 foreach ((array)json_decode(Input::get('steps'),true) as $v){
+			 	$step = new TcStep($v);
+			 	$m->steps()->save($step);
+			 }
 		}
 		return $m;
 	}
@@ -210,7 +203,7 @@ class TcController extends Controller{
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row++, $tc->tag);
 			$tc->column=json_decode('{'.$tc->column.'}',true);
 			if(!$tc->column)continue;
-			 
+
 			foreach($columns as $column){
 				/*var_dump($column);
 				 if(!array_key_exists($column,$tc->column)){
@@ -228,14 +221,14 @@ class TcController extends Controller{
 						break;
 
 					case 'test case description':
-						 
+							
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $column);
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->column['test case description']);//."\r\n".
-						 
+							
 						break;
-						 
+							
 					case  'test steps':
-						 
+							
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'test steps');
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, 'actions');
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'expected result');
@@ -247,14 +240,14 @@ class TcController extends Controller{
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Result');
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->result==0?'untested':($tc->result==1?'passed':'failed'));
 						break;
-						 
+							
 					default:
-						 
+							
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $column);
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, array_key_exists($column,$tc->column)?$tc->column[$column]:null);
-						 
-						 
-						 
+							
+							
+							
 				}
 				/*
 				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Test Method');
@@ -266,7 +259,7 @@ class TcController extends Controller{
 				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'Expected Result');
 				 */
 
-	    
+					
 			}//foreach
 			$row++;$row++;
 		}
@@ -275,14 +268,11 @@ class TcController extends Controller{
 		header('Cache-Control: max-age=0');
 		// If you're serving to IE 9, then the following may be needed
 		header('Cache-Control: max-age=1');
-
 		// If you're serving to IE over SSL, then the following may be needed
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-		// modified
 		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
 		header('Pragma: public'); // HTTP/1.0
-
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
 	}

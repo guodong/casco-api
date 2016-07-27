@@ -25,7 +25,7 @@ class Report extends BaseModel {
 	
 	public function  testjob(){
 		
-		return $this->hasMany('Testjob','testjob_id');
+		return $this->belongsTo('Testjob');
 		
 	}
 	public function  results(){

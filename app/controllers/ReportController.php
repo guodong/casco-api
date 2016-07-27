@@ -9,8 +9,12 @@ class ReportController extends ExportReportController
 		$vefs=Report::where('project_id','=',Input::get('project_id'))->where('doc_id',Input::get('doc_id'))->orderBy('created_at','desc')->get();
 		$datas=[];
 		foreach ($vefs as $v){
-			//&&短路原则很有
-			$v['docs']=$v->recursion();
+			//&&短路原则很有，版本的原则哦
+			if(!$v->testjob||!$v->testjob->vatbuild)continue;
+			foreach($v->testjob->vatbuild->rsVersions as $value){
+				$value->document;
+			}
+			$v['docs']=$v->testjob->vatbuild->rsVersions;
 			$datas[]=$v;
 		}
 		return $datas;
@@ -29,8 +33,6 @@ class ReportController extends ExportReportController
 			foreach($tests->results as $res){
 				$tc=Tc::find($res->tc_id);
 				//过滤重复的规则
-				//if(in_array($tc->id,$this->array_column($datas,'id')))continue;
-				//var_dump($res);
 				$data['id']=$tc->id;
 				$data['tag']=$tc->tag;
 				$data['result_id']=$res->id;
@@ -141,48 +143,54 @@ class ReportController extends ExportReportController
 		DB::beginTransaction();
 		try{
 
-			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('testjob_id')) throw  new  Exception("参数不合法");
+			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('test_id')) throw  new  Exception("参数不合法");
 			$job = Report::create(Input::get());
 			$job->author=Input::get('account')?Input::get('account'):null;
-			//此时已经过滤了一次哦
-			//创建result表；
-			$test=Testjob::find(Input::get('testjob_id'));
-			$result=(array)$this->array_column($test->recents(),'tc_id'); $all_rs=$test->vatbuild->rsVersions;
-			foreach ($results as $result_id){
+			$job->testjob_id=Input::get('test_id');
+			$test=Testjob::find(Input::get('test_id'));
+			$rencents=$test->rencents();$all_rs=[];$results=$shits=[];$last=1;
+			$test->vatbuild&&($all_rs=$test->vatbuild->rsVersions);
+			foreach ($rencents as $key=>$value){
+				$child=Result::find($value['id'])->tc->toArray();
+				$child['result_id']=$value['id'];
+				$array_child[]=$child;
+				$results[]=$value['tc_id'];$shits[$value['tc_id']]=$value['result'];
 				ReportResult::create(array(
-		            	'result_id' => $result_id,
+		            	'result_id' => $value['id'],
 		            	'report_id' => $job->id
 				));
 			}
 			foreach($all_rs as $r){
-				$rss=$r;
+				$rss=$r->rss;
 				foreach($rss  as  $rs)
-				{	
-					$bak_tc=[];;
+				{
+					$bak_tc=[];
 					$vat_id=(array)$this->array_column(json_decode($rs->vat_json,true),'id');
-					$bak_tc=array_intersect($vat_id,$results);
+					$bak_tc=array_intersect($vat_id,$results);$res=[];
 					if(count($bak_tc)<=0)continue;
+					foreach ($bak_tc  as $id){
+						if(array_key_exists($id,$shits)){
+							$last*=$shits[$id];
+						}
+					}
 					ReportVerify::create(array(
 					 'tc_id'=>implode(',',$bak_tc),
 					 'doc_id'=>$r->id,//文档的ID
 					 'rs_id'=>$rs->id,
-					 'result'=>array_product($res),
+					 'result'=>$last,
 					 'report_id'=>$job->id
 					));
-					//注意有个最新版本的对应关系问题哦
 			 }//rss
 			}//$r
 			//还需要建立另外一张表吧
-			$parents=[];
-			foreach($job->vatbuild->tcVersion->document->dest() as $dests){
-				$parents=array_merge($parents,$dests->latest_version()->rss->toArray());
-			}
-			$parents=$this->distinct($parents);
-			$this->cover_status((array)$parents,(array)$array_child,$job);
+			$parents=$test->vatbuild->directDests();
 			$job->save();//失败了就不save了
+			$this->cover_status((array)$parents,(array)$array_child,$job);
+			
 			DB::commit();
 			return  array('success'=>true,'data'=>$job->id);
-		}catch(Exception $e){
+		}
+		catch(Exception $e){
 			DB::rollback();
 			return   array('success'=>false,'data'=>json_encode($e));
 		}
@@ -193,11 +201,10 @@ class ReportController extends ExportReportController
 
 		foreach($parents as  $parent){
 			$flag=false;
-			$parent_column=json_decode('{'.$parent['column'].'}',true);
 			foreach($array_child as $child){
-				$column=[];$child_column=json_decode('{'.$child['column'].'}',true);
-				($child_column&&array_key_exists('source',$child_column))?preg_match_all('/\[.*?\]/i',$child_column['source'],$matches):($matches[0]=[]);
-				if(in_array($parent['tag'],$matches[0]))
+				$column=[];$item=Tc::find($child['id']);
+				var_dump($parent['tag']);
+				if(in_array($parent['tag'],$item?$item->sources():[]))
 				{
 					$flag=true;
 					$array=array(
@@ -210,11 +217,10 @@ class ReportController extends ExportReportController
 					 'result_id'=>$child['result_id'],
                      'report_id'=>$report->id
 					);
-					//var_dump($array);
 					ReportCover::create($array);
 				}//if
 			}//foreach
-			if(!$flag){
+			/*if(!$flag){
 				$column=[];
 				$array=array(
 								 'parent_id'=>$parent['id'],
@@ -227,11 +233,11 @@ class ReportController extends ExportReportController
 				);
 				//var_dump($array);
 				//ReportCover::create($array);
-			}
+			}*/
 		}//foreach
 	}
-
-
+	
+	
 	public function del($path)
 	{
 		if (is_dir($path)) {

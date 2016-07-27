@@ -16,11 +16,10 @@ class ReportVerifyController extends  ExportReportController{
         $array=(array)explode(',',$ver->tc_id);
         $ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
         //$results=Result::->whereIn('tc_id',$array)->select('result')->get()->toArray();
-		//注意有个最新版本的对应关系问题哦
 		  $ver['test_case']=implode(',',$this->array_column($ans,'tag'));
 		  $ver['tag']=Rs::find($ver->rs_id)->tag;
 		  $ver['result']=$ver->result;
-		  $ver['description']=Rs::find($ver->rs_id)->column_text();
+		  $ver['description']=$text=Rs::find($ver->rs_id)->column_text();
 	
         }//遍历$verify
         return $verify;
