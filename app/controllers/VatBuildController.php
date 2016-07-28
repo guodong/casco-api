@@ -78,8 +78,6 @@ class VatBuildController extends BaseController{
 //                                return $tmp;
                                $relation_json[] = $tmp;
                            }
-                               
-                                
                        }
                    }
                }
