@@ -3,66 +3,73 @@
 use Illuminate\Support\Facades\Input;
 class ReportVerifyController extends  ExportReportController{
 
-    public function index()
-    {
-    	$datas=[];
-    	if(Input::get('report_id')&&Input::get('doc_id')){
-        $verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->where('doc_id',Input::get('doc_id'))->get();
-    	}else if(Input::get('report_id')){
-    	$verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->get();
-    	}
-        if(!$verify) return $datas;
-        foreach($verify  as $ver){
-        $array=(array)explode(',',$ver->tc_id);
-        $ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
-        //$results=Result::->whereIn('tc_id',$array)->select('result')->get()->toArray();
-		  $ver['test_case']=implode(',',$this->array_column($ans,'tag'));
-		  $ver['tag']=Rs::find($ver->rs_id)->tag;
-		  $ver['result']=$ver->result;
-		  $ver['description']=$text=Rs::find($ver->rs_id)->column_text();
-	
-        }//遍历$verify
-        return $verify;
-    }
-    
+	public function index()
+	{
+		$datas=[];
+		if(Input::get('report_id')&&Input::get('doc_id')){
+			$verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->where('doc_id',Input::get('doc_id'))->get();
+		}else if(Input::get('report_id')){
+			$verify =ReportVerify::where('report_id', '=', Input::get('report_id'))->get();
+		}
+		if(!$verify) return $datas;
+		foreach($verify  as $ver){
+			$array=(array)explode(',',$ver->tc_id);
+			$ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
+			//$results=Result::->whereIn('tc_id',$array)->select('result')->get()->toArray();
+			$ver['test_case']=implode(',',$this->array_column($ans,'tag'));
+			$ver['tag']=Rs::find($ver->rs_id)->tag;
+			$ver['result']=$ver->result;
+			$ver['description']=$text=Rs::find($ver->rs_id)->column_text();
+
+		}//遍历$verify
+		return $verify;
+	}
+
 	public function show($id)
 	{
-	   return 	 ReportVerify::find($id);
+		return 	 ReportVerify::find($id);
 	}
-	
+
 	public function store()
 	{
-	    $build = Build::create(Input::get());
-	    return $build;
-	} 
-	
-	public function  update($id){
-		
-	$verify=ReportVerify::find($id);
-	$verify->update(Input::get());
-	return $verify;
-	
+		$build = Build::create(Input::get());
+		return $build;
 	}
-	
-	
-	public function  destroy($id)
-    {
-        $build=ReportVerify::find($id);
-        $build->destroy($id);
-        return  $build;
 
-     }
-     
-    public  function export_verify(){
-    	
-    	if(!Input::get('report_id')||!Input::get('doc_id')){
-    		return [];
-    	}
-    	$verify=ReportVerify::where('report_id',Input::get('report_id'))->where('doc_id',Input::get('doc_id'))->get();
-    	$active_sheet=0;
-		$objPHPExcel=parent::verify($verify,$active_sheet);
+	public function  update($id){
+
+		$verify=ReportVerify::find($id);
+		$verify->update(Input::get());
+		return $verify;
+
+	}
+
+
+	public function  destroy($id)
+	{
+		$build=ReportVerify::find($id);
+		$build->destroy($id);
+		return  $build;
+
+	}
+	 
+	public  function export_verify(){
+		 
+		 
+		if(Input::get('doc_id')&&Input::get('report_id')){
+		$verify=ReportVerify::where('report_id',Input::get('report_id'))->where('doc_id',Input::get('doc_id'))->get();
+		$version=Version::find(Input::get('doc_id'));
+		}
+		else if(Input::get('report_id'))
+		$verify=ReportVerify::where('report_id',Input::get('report_id'))->get();
+		else $verify=[];
+		$active_sheet=0;
+		/*foreach($verify as $v){
+		$objPHPExcel=parent::verify($v,$active_sheet++);
+		}*/
+		$objPHPExcel=parent::verify($verify,$version,$active_sheet);
 		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="requirement_verify.xls"');
+		header('Content-Disposition: attachment;filename="其他阶段分配给本阶段的需求.xls"');
 		header('Cache-Control: max-age=0');
 		header('Cache-Control: max-age=1');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -72,9 +79,9 @@ class ReportVerifyController extends  ExportReportController{
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
-    }
-	
-    public function array_column($input,$column_key,$index_key=''){
+	}
+
+	public function array_column($input,$column_key,$index_key=''){
 
 		if(!is_array($input)) return;
 		$results=array();
@@ -109,5 +116,5 @@ class ReportVerifyController extends  ExportReportController{
 	}
 
 
-	
+
 }

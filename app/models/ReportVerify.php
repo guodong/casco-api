@@ -9,4 +9,10 @@ class ReportVerify extends BaseModel {
 	    return $this->belongsTo('report', 'report_id');
 	}
 	
+	public function  version(){
+		
+		return $this->belongsTo('Version','doc_id');
+	}
+	
+	
 }

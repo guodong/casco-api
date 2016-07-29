@@ -16,12 +16,12 @@ class ExportReportController extends BaseController {
 		unset($this->objPHPExcel);
 	}
 
-	public function   export_testing($report,$active_sheet=1){
+	public function   export_testing($report,$active_sheet=0){
 		$objPHPExcel=$this->objPHPExcel;
-		//$objPHPExcel->createSheet();
 		$circle =array('col'=>'C','row' => 4);
 		$config = array(0=>'Test Case ID',1=>'Test Case Description',2=>'Pass/Fail',3=>'Version Tested');
 		$testjob=$report->get_results();
+		$objPHPExcel->createSheet();
 		$objPHPExcel->setActiveSheetIndex($active_sheet);
 	 foreach ($config as $key => $val) {
 
@@ -59,6 +59,7 @@ class ExportReportController extends BaseController {
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getFont()->setName('Arial');
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getFont()->setSize(10);
+			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 			$num++;
 		}
 		return  $objPHPExcel;
@@ -147,13 +148,15 @@ class ExportReportController extends BaseController {
 	}
 
 
-	public function  verify($verify,$active_sheet=0){
+	public function  verify($verify,$version,$active_sheet=0){
 
 		if(!$verify)return [];
 		$objPHPExcel=$this->objPHPExcel;
 		$circle =array('col'=>'C','row' => 4);
 		$config = array(0=>'Req ID',1=>'Text',2=>'Result',3=>'Test Case ID',4=>'Comment');
+		$objPHPExcel->createSheet();
 		$objPHPExcel->setActiveSheetIndex($active_sheet);
+		$objPHPExcel->getActiveSheet()->setTitle($version->document->name.'_'.$version->name);
 	 foreach ($config as $key => $val) {
 
 	 	$objPHPExcel->getActiveSheet()->getColumnDimension(chr(ord($circle['col'])+$key))->setWidth(20);
@@ -180,8 +183,8 @@ class ExportReportController extends BaseController {
 		foreach($verify  as  $flag=>$value){
 			$j=0;
 			$array=(array)explode(',',$value->tc_id);
-        	$ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
-        	$test_case=implode(',',$this->array_column($ans,'tag'));
+			$ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
+			$test_case=implode(',',$this->array_column($ans,'tag'));
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
 			->setCellValue(chr(ord($circle['col'])+$j++).$num,Rs::find($value->rs_id)->tag);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
@@ -214,14 +217,16 @@ class ExportReportController extends BaseController {
 	}
 
 
-
-
-
-	public function export_all_sheet($project_id,$child_id,$v_id){
+	public function export_all_sheet($report){
+		if(!$report) return [];
 		$i=0;
-		$this->export_report($project_id,$child_id,$i++);
-		$this->summary_exp($v_id,$i++);
-		$this->export_childs($v_id,$i++);
+		$vat=$report->testjob->vatbuild;
+		foreach($vat->rsVersions as $version){
+		 $verify=ReportVerify::where('report_id',$report->id)->where('doc_id',$version->id)->get();
+		 $this->verify($verify,$version,$i++);
+		}
+		$this->export_cover($report,$i++);
+		$this->export_testing($report,$i++);
 		return  $this->objPHPExcel;
 	}
 

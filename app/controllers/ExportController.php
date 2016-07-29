@@ -461,7 +461,6 @@ class ExportController extends BaseController {
 
 
 	public function export_all_sheet($project_id,$child_id,$v_id){
-
 		$i=0;
 		$this->export_report($project_id,$child_id,$i++);
 		$this->summary_exp($v_id,$i++);
@@ -470,8 +469,6 @@ class ExportController extends BaseController {
 		foreach($vefs->parentVersions as $parent_vers){
 			$this->export_parents($v_id,$parent_vers->id,$i++);
 		}
-
-
 		return  $this->objPHPExcel;
 
 	}
