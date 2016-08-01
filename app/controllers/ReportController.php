@@ -11,7 +11,7 @@ class ReportController extends ExportReportController
 		$datas=[];
 		foreach ($vefs as $v){
 			//&&短路原则很有，版本的原则哦
-			if(!$v->testjob||!$v->testjob->vatbuild)continue;
+			if(!$v->testjob||!$v->testjob->vatbuild){$datas[]=$v;continue;}
 			//var_dump($v->testjob->vatbuild->id.$v->testjob->vatbuild->name);
 			foreach($v->testjob->vatbuild->rsVersions as $value){
 				
@@ -277,13 +277,32 @@ class ReportController extends ExportReportController
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
 	}
-
+	
+	public function export_verify(){
+		//导出所有的report啊我去
+		if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
+		$active_sheet=0;
+		$objPHPExcel=parent::export_testing($report,$active_sheet);
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="report.xls"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+		header('Pragma: public'); // HTTP/1.0
+		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+	}
+	
 
 	public function export_all_sheets(){
-
-		$objPHPExcel=parent::export_all_sheet(Input::get('project_id'),Input::get('child_id'),Input::get('v_id'));
+		
+		if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
+		$objPHPExcel=parent::export_all_sheet($report);
 		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="verification_report.xls"');
+		header('Content-Disposition: attachment;filename="report.xls"');
 		header('Cache-Control: max-age=0');
 		header('Cache-Control: max-age=1');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past

@@ -1,8 +1,10 @@
 <?php
 class VatBuild extends BaseModel{
     
+	use SoftDeletingTrait;
     protected $table = 'vat_build';
     protected $fillable = array('name','description','project_id','tc_version_id','created_at','updated_at');
+    protected $dates=['deleted_at'];
     
     public function project(){
         return $this->belongsTo('Project','project_id');
