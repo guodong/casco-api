@@ -1,5 +1,6 @@
 <?php
 use Rhumsaa\Uuid\Uuid;  //???使用Ramsey/Uuid
+use Illuminate\Database\Eloquent\SoftDeletingTrait;
 class BaseModel extends Eloquent
 {
     /**

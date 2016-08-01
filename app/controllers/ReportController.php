@@ -11,7 +11,7 @@ class ReportController extends ExportReportController
 		$datas=[];
 		foreach ($vefs as $v){
 			//&&短路原则很有，版本的原则哦
-			if(!$v->testjob||!$v->testjob->vatbuild)continue;
+			if(!$v->testjob||!$v->testjob->vatbuild){$datas[]=$v;continue;}
 			//var_dump($v->testjob->vatbuild->id.$v->testjob->vatbuild->name);
 			foreach($v->testjob->vatbuild->rsVersions as $value){
 				

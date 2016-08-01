@@ -1,9 +1,11 @@
 <?php
 class Testjob extends BaseModel {
-
+	
+	use SoftDeletingTrait;
 	protected $table = 'testjob';
 	protected $fillable = array('name', 'project_id', 'build_id', 'vat_build_id', 'status','created_at','updated_at');
-
+	protected $dates=['deleted_at'];
+    
 	public function build()
 	{
 	    return $this->belongsTo('Build');

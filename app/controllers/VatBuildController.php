@@ -38,7 +38,6 @@ class VatBuildController extends BaseController{
    
    public function destroy($id){
        $vats = VatBuild::find($id);
-//        var_dump($vats->vatRss);exit;
        foreach ($vats->vatRss as $v){
            $v->delete();
        }
