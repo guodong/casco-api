@@ -33,6 +33,11 @@ class TestjobController extends BaseController{
 			if(!$v)continue;
 			$v->build;
 			$v->vatbuild;
+			$v->vatbuild->tcVersion->document;
+			$v->vatbuild->rsVersions;
+			foreach ($v->vatbuild->rsVersions as $vatrs){
+			    $vatrs->document;
+			}
 		}
 		return $jobs;
 	}
@@ -48,6 +53,7 @@ class TestjobController extends BaseController{
 		$job->destroy($id);
 		return $job;
 	}
+	
 	public function store()
 	{
 		$job = Testjob::create(Input::get());
