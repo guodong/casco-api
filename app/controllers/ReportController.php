@@ -18,6 +18,7 @@ class ReportController extends ExportReportController
 				$value->document;
 			}
 			$v['docs']=$v->testjob->vatbuild->rsVersions;
+			$v->testjob->vatbuild->tcVersion->document;
 		
 			$datas[]=$v;
 		}

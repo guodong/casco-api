@@ -9,7 +9,11 @@ class VatBuildController extends BaseController{
        $vats = Project::find(Input::get('project_id'))->vatbuilds;
         if(!Input::get('document_id')){
         	foreach($vats as $v)
-        	{$v->tcVersion;$v->rsVersions;}
+        	{$v->tcVersion && $v->tcVersion->document;
+        	foreach($v->rsVersions as $rsv){
+        	    $rsv->document;
+        	}
+        	}
         	return  $vats;
         }
        foreach ($vats as $v){
@@ -30,9 +34,10 @@ class VatBuildController extends BaseController{
        if(!Input::get('tc_version_id') || !Input::get('name')) return;
         $vats = VatBuild::create(Input::get());
         foreach (Input::get('rs_versions') as $v){
-            $vats->rsVersions()->attach($v['rs_version_id']);
+            if(array_key_exists('rs_version_id', $v)){ 
+                $vats->rsVersions()->attach($v['rs_version_id']);
+            }
         }
-        
         return $vats;
    }
    
