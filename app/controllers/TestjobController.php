@@ -34,8 +34,8 @@ class TestjobController extends BaseController{
 			$v->build;
 			$v->vatbuild;
 			$v->vatbuild->tcVersion->document;
-			$v->vatbuild->rsVersions;
-			foreach ($v->vatbuild->rsVersions as $vatrs){
+			$vss = $v->vatbuild->rsVersions?$v->vatbuild->rsVersions:[];
+			foreach ($vss as $vatrs){
 			    $vatrs->document;
 			}
 		}

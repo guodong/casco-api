@@ -52,16 +52,26 @@ class VatBuildController extends BaseController{
    
    public function show(){
        $relation_json = [];
+       $tc_vat=[];
+       $vat_tc=[];
+       $tc_exist=[];$index=0;
        $vatbuild = VatBuild::find(Input::get('vat_build_id'));
        $tcversion = $vatbuild->tcVersion;
        $tcdoc = $tcversion->document;
        $tc_tags = $tcversion->tcs;
 //        var_dump($tc_tags);
        $rsversions = $vatbuild->rsVersions; 
+       $relation_json['vat_build_id']=$vatbuild->id;
+       $relation_json['vat_build_name']=$vatbuild->name;
+       $relation_json['tc_doc_name']=$tcdoc->name;
+       $relation_json['tc_version_id']=$tcversion->id;
+       $relation_json['tc_version_name']=$tcversion->name;
        foreach ($rsversions as $rsversion){ //取rs vat_json中type=tc的id在tc_tag中检索
+           $vat_tc_each=[];
            $rs_tags = $rsversion->rss;
            $rsdoc = $rsversion->document;
            foreach($rs_tags as $rs_tag){
+               $tcs=[];
                $rs_vat_json = $rs_tag->vat_json;
                if($rs_vat_json && $rs_vat_json != 'Array' && $rs_vat_json != '[]'){ 
                    $rs_vat_json_objs = json_decode($rs_vat_json); //对象数组
@@ -71,24 +81,51 @@ class VatBuildController extends BaseController{
                        if($rs_vat_json_obj->type == 'tc'){
                            $tc_tag = DB::table('tc')->where('version_id',$vatbuild->tc_version_id)->where('id',$rs_vat_json_obj->id)->first();
                            if($tc_tag){
-                               $tmp = array("tc_version_id"=>$tcversion->id,"tc_version_name"=>$tcversion->name,
-                                   "tc_tag_id"=>$tc_tag->id,"tc_tag_name"=>$tc_tag->tag,
-                                   "tc_doc_id"=>$tcdoc->id,"tc_doc_name"=>$tcdoc->name,
-                                   "rs_version_id"=>$rsversion->id,"rs_version_name"=>$rsversion->name,
-                                   "rs_tag_id"=>$rs_tag->id,"rs_tag_name"=>$rs_tag->tag,
-                                   "rs_doc_id"=>$rsdoc->id,"rs_doc_name"=>$rsdoc->name,
-                                   "vat_build_id"=>$vatbuild->id,"vat_build_name"=>$vatbuild->name
-                               );
-//                                return $tmp;
-                               $relation_json[] = $tmp;
+                               if(!array_key_exists($tc_tag->id, $tc_exist)){ //Index
+                                   $tc_exist[$tc_tag->id]=$index;
+//                                    var_dump($tc_exist);
+                                   $tmp_tc = array(
+                                       "tc_tag_name"=>$tc_tag->tag,
+                                       "tc_version_id"=>$tcversion->id,
+                                       "tc_version_name"=>$tcversion->name,
+                                       "rs_version_name"=>$rsversion->name,
+                                       "rs_tag_name"=>$rs_tag->tag,
+                                       "rs_doc_name"=>$rsdoc->name,
+                                   );
+                                   $tc_vat[$index]=$tmp_tc;
+                                   $index++;
+                               }else{
+                                   $i=$tc_exist[$tc_tag->id];
+//                                    array_push($tc_vat[$i]['rs_tag_name'], $rs_tag->name);
+//                                    var_dump($tc_vat[$i]['rs_tag_name']);
+                                   $str=$tc_vat[$i]['rs_tag_name'] .",".$rs_tag->tag;
+                                   $tc_vat[$i]['rs_tag_name']=$str;
+                               }
+                               array_push($tcs,$tc_tag->tag);
                            }
                        }
                    }
                }
+               if($tcs){
+                   $tmp_vat=array(
+                       "tc_version_name"=>$tcversion->name,
+                       "rs_version_id"=>$rsversion->id,
+                       "rs_version_name"=>$rsversion->name,
+                       "rs_tag_name"=>$rs_tag->tag,
+                       "rs_doc_name"=>$rsdoc->name,
+                   );
+                   $tmp_vat['tc_tag_name']=implode(',',$tcs);
+                   $vat_tc_each[]=$tmp_vat;
+               }
+           }
+           if($vat_tc_each){
+               $vat_tc[]=$vat_tc_each;
            }
        }
+       $relation_json['tc_vat']=$tc_vat;
+       $relation_json['vat_tc']=$vat_tc;
        return $relation_json;
    }
-    
+   
 }
 
