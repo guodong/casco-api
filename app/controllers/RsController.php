@@ -75,13 +75,12 @@ class RsController extends Controller{
 
 		$data=array();
 		foreach ($rss as $v){
-			//$v->column=striplashes($v->column);
 			//if(preg_match('/-0542/',$v->tag)){var_dump(('{"id":"'.$v->id.'","tag":"'.$v->tag.($v->column?('",'.$v->column):'"').'}'));exit;}
 			$base=(array)json_decode($v->column,true);
 			if(!$base){continue;}
 			if (!json_decode($v->vat_json)){
 				$v->vat_json = '[]';
-				//$v->save();
+				$v->save();
 			}
 			$obj=array();
 			$obj['id']=$v->id;
@@ -101,7 +100,6 @@ class RsController extends Controller{
 			$fieldsNames[]=array('name'=>$item);
 		}
 	 	return  array('columModle'=>$columModle,'data'=>$data,'fieldsNames'=>$fieldsNames);
-		// return  json_encode(array('columModle'=>$columModle));
 	}
 	
 	

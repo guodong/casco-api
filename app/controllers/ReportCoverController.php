@@ -21,7 +21,7 @@ class ReportCoverController extends ExportReportController {
 			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
 			$items[$key]['Child Requirement Text']=$child?$child->description():null;
 			$items[$key]['Parent Requirement Text']=$parent?$parent->description():null;
-			$items[$key]['result']=Result::find($item['result_id'])->result;
+			$items[$key]['result']=($a=Result::find($item['result_id']))?$a->result:[];
 			$items[$key]['allocation']=$parent->vat_json;
 		}//foreach
 		return  $items;
