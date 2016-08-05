@@ -36,26 +36,7 @@ class Rs extends BaseModel {
 		}else return null;
 
 	}
-	public function tcs()
-	{
-		$tcs = [];
-		$srcs = $this->version->document->srcs;
-		foreach($srcs as $src){
-			if($src->type == 'tc'){
-				$version = $src->latest_version();
-				if($version){
-					$tmp = Tc::where('version_id', '=', $version->id)->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
-					foreach ($tmp as $v){
-						$v->column=json_decode('{'.$v->column.'}');
-						if($v->column&&property_exists($v->column,'source')&&in_array($this->tag,explode(',',$v->column->source))){
-							!in_array(array('id' => $v->id,'tag' => $v->tag),$tcs)?$tcs[]=array('id' => $v->id,'tag' => $v->tag):'';}
-
-					}
-				}
-			}
-		};
-		return $tcs;
-	}
+	
 	public function dests()
 	{
 		$tcs = [];
@@ -110,26 +91,40 @@ class Rs extends BaseModel {
 	//V模型中纵向引用该rs的rs
 	public function rss()
 	{
-		$rss = [];
-		$srcs = $this->version->document->srcs;
+		$result = [];
+		$this->tag=preg_replace('/[\[\]]/','',$this->tag);
+		$srcs = $this->version->document->src();
 		foreach($srcs as $src){
-			if($src->type == 'rs'){
-				$version = $src->latest_version();
-				if($version){
-					$tmp = Rs::where('version_id', '=', $version->id)->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
+			switch($src->type){
+				case  'rs':
+					$tmp = Rs::where('version_id','=', $src->latest_version()?$src->latest_version()->id:null)->where('column', 'like', '%"source":%'.$this->tag.'%')->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
+					//var_dump($tmp,$src->name,$src->latest_version()->id,$this->tag);//exit;
 					foreach ($tmp as $v){
-						$v->column=json_decode('{'.$v->column.'}');
-						if($v->column&&property_exists($v->column,'source')&&in_array($this->tag,explode(',',$v->column->source)))
-						{!in_array(array('id' => $v->id,'tag' => $v->tag),$rss)?$rss[]=array('id' => $v->id,'tag' => $v->tag):'';}
-
-					}
-				}
-			}
-		};
-
-		// var_dump($rss);
-		return $rss;
-		//return $this->belongsToMany('Rs', 'rs_source', 'source_id', 'rs_id');
+						if(!in_array($v,$result))$result[]=$v;
+					};break;
+				default:
+			}//switch
+		};//foreach
+		return $result;
+	}
+	
+	public function tcs()
+	{
+		$result = [];
+		$this->tag=preg_replace('/[\[\]]/','',$this->tag);
+		$srcs = $this->version->document->src();
+		foreach($srcs as $src){
+			switch($src->type){
+				case 'tc':
+					$tmp = Tc::where('version_id','=', $src->latest_version()?$src->latest_version()->id:null)->where('column', 'like', '%"source":%'.$this->tag.'%')->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
+					foreach ($tmp as $v){
+						if(!in_array($v,$result))$result[]=$v;
+					};break;
+				default:
+			}//switch
+		};//foreach
+		//while($tmp=array_shift($result)){var_dump($tmp->version,$tmp->version->document->name);};
+		return $result;
 	}
 
 	public function vat()

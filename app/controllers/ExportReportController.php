@@ -10,7 +10,8 @@ class ExportReportController extends BaseController {
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 		$this->objPHPExcel = new PHPExcel();
 	}
-
+    
+	public  $array=array(0=>'untested',1=>'passed',2=>'failed');
 
 	public function __destruct() {
 		unset($this->objPHPExcel);
@@ -53,7 +54,7 @@ class ExportReportController extends BaseController {
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
 			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['description']);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
-			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['result']);
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$this->array[$value['result']]);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
 			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['build']);
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
@@ -133,7 +134,7 @@ class ExportReportController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $item['Child Requirement Tag']);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $row, $item->child->description());
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $item['justification']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, $item->result->result);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, $this->array[$item->result->result]);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $row, Tc::find($item['child_id'])->vat_json);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $item['comment']);
 			$j=8; $data=[];
@@ -190,7 +191,7 @@ class ExportReportController extends BaseController {
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
 			->setCellValue(chr(ord($circle['col'])+$j++).$num,Rs::find($value->rs_id)->column_text());
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
-			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['result']);
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$this->array[$value['result']]);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
 			->setCellValue(chr(ord($circle['col'])+$j++).$num,$test_case);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
@@ -223,7 +224,9 @@ class ExportReportController extends BaseController {
 		$vat=$report->testjob->vatbuild;
 		foreach($vat->rsVersions as $version){
 		 $verify=ReportVerify::where('report_id',$report->id)->where('doc_id',$version->id)->get();
-		 $this->verify($verify,$version,$i++);
+		 //判断是否有数据啊
+		 if(count($verify)>0)$this->verify($verify,$version,$i++);
+		 else continue;
 		}
 		$this->export_cover($report,$i++);
 		$this->export_testing($report,$i++);
