@@ -31,6 +31,7 @@ class TestjobController extends BaseController{
 		}
 		foreach ($jobs as $v){
 			if(!$v)continue;
+			$v->user;
 			$v->build;
 			$v->vatbuild;
 			$v->vatbuild->tcVersion->document;
@@ -180,7 +181,7 @@ class TestjobController extends BaseController{
 		if(!$tmp)die("模板出错!");
 		if(!file_exists($tmp->path))die('模板文件不存在!');
 		$results = $job->results;
-		$user = User::find(Session::get('uid'));
+		$user=User::find($job->user_id);
 		include PATH_BASE . '/PE/Classes/PHPExcel.php';
 		include PATH_BASE . '/PE/Classes/PHPExcel/Writer/Excel2007.php';
 		if( $tmp->type =='xlsx' )

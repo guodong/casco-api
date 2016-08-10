@@ -59,6 +59,11 @@ class DocumentController extends Controller
             }
             return $docs;
         }
+        $docs = $docs->get();
+        foreach($docs as $v){
+            $v->versions;
+        }
+        return $docs;
 
     }
     

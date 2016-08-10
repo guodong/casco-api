@@ -74,10 +74,14 @@ class ExportController extends BaseController {
 			$child=($item->child_type=='rs')?Rs::find($item->child_id):Tc::find($item->child_id);
 			$parent=($item->parent_type=='rs')?Rs::find($item->parent_id):Tc::find($item->parent_id);
 			$child_column=$child?(array)json_decode('{'.$child->column.'}',true):[];
-			$da['justification']=[];(!$parent)?$vat_json=[]:$vat_json=json_decode($parent->vat_json);
-			foreach((array)$vat_json as $val){
-				array_push($da['justification'],$val->tag.':'.(property_exists($val,'comment')?$val->comment:''));
-			}
+			$da['justification']=[];
+			if($item->child_type=='tc'){
+			    (!$parent)?$vat_json=[]:$vat_json=json_decode($parent->vat_json);
+			    foreach((array)$vat_json as $val){
+			        array_push($da['justification'],$val->tag.':'.(property_exists($val,'comment')?$val->comment:''));
+			    }
+			}else $da['justification']=$item->justification?$item->justification:[];
+			
 			array_key_exists('description',(array)$child_column)?
 			$da['Child Requirement Text']=$child_column['description']:
 			(array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null);
@@ -438,6 +442,7 @@ class ExportController extends BaseController {
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $this->filter($item,'Child Requirement Tag'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $row, $this->filter($item,'Child Requirement Text'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, json_encode($this->filter($item,'justification')));
+// 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, $this->filter($item,'justification'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $this->filter($item,'Completeness'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $row, $this->filter($item,'No Compliance Description'));
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $this->filter($item,'Defect Type'));

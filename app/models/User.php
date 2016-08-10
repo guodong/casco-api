@@ -15,9 +15,11 @@ class User extends BaseModel {
 	}
 	
 	public function role(){
- 
-		
 		return $this->belongsTo("Role");
+	}
+	
+	public function testjobs(){
+	    return $this->hasMany('Testjob');
 	}
  
 }

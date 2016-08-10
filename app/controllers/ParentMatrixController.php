@@ -29,7 +29,7 @@ class ParentMatrixController extends ExportController {
 			$item->child_type=='rs'?$child=Rs::find($item->child_id):$child=Tc::find($item->child_id);
 			$item->parent_type=='rs'?$parent=Rs::find($item->parent_id):$parent=Tc::find($item->parent_id);
 			$child_column=$child?$child->column():[];
-			$da['justification']=$parent?$parent->vat_json:[];
+			$item->child_type=='tc'?($da['justification']=$parent?$parent->vat_json:[]):($da['justification']=$item->justification);
 			//if(preg_match('/-0011/',$parent->tag)){var_dump($parent->column());exit();}
 			$da['Child Requirement Text']=$child?$child->description():null;$da['Parent Requirement Text']=$parent?$parent->description():null;
 			foreach($column=(array)$parent->column() as $key=>$val){
