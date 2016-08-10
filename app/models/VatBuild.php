@@ -33,7 +33,7 @@ class VatBuild extends BaseModel{
     
     
     public function vatRss() {
-        return $this->hasMany('vatRs','vat_build_id');
+        return $this->hasMany('VatRs','vat_build_id');
     }
 
     

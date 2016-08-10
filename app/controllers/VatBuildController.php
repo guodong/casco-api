@@ -29,7 +29,7 @@ class VatBuildController extends TmpExportController{
 		}
 		return $ans;
 	}
-	 
+
 	public function store(){
 		if(!Input::get('tc_version_id') || !Input::get('name')) return;
 		$vats = VatBuild::create(Input::get());
@@ -40,13 +40,12 @@ class VatBuildController extends TmpExportController{
 		}
 		return $vats;
 	}
-	 
+
 	public function export(){
-		 
-		if((!$p_vid=Input::get('p_vid'))||(!$c_vid=Input::get('c_vid')))return [];
-		$name = uniqid () . '.doc';
-		$filename=public_path () . '\\files\\123.xlsx';
-		//move_uploaded_file ( $_FILES ["file"] ["tmp_name"], $filename=public_path () . '/files/' . $name );
+			
+		if((!$p_vid=Input::get('parent_version_name'))||(!$c_vid=Input::get('child_version_name')))return [];
+		$name = uniqid () . '.doc';  $filename=public_path () . '/files/' . $name;
+		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], $filename);
 		$objPHPExcel=parent::tmp_export($filename,$p_vid,$c_vid);
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="result.xls"');
@@ -59,6 +58,7 @@ class VatBuildController extends TmpExportController{
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
+		
 	}
 	public function destroy($id){
 		$vats = VatBuild::find($id);
@@ -68,7 +68,7 @@ class VatBuildController extends TmpExportController{
 		$vats->destroy($id);
 		return $vats;
 	}
-	 
+
 	public function show(){
 		$relation_json = [];
 		$tc_vat=[];
@@ -145,6 +145,6 @@ class VatBuildController extends TmpExportController{
 		$relation_json['vat_tc']=$vat_tc;
 		return $relation_json;
 	}
-	 
+
 }
 
