@@ -102,39 +102,6 @@ class TreeVatController extends Controller
 		}
 		return  $arr;
 	}
-	/*
-	 private function getTags_down($tag,$version_id)
-	 {
-	 $rss = Rs::where("version_id","=",$version_id)->where('column', 'like', '%"source":%'.$tag.'%')->get();
-	 foreach ($rss as $v){
-	 if (!in_array($v->tag, $this->tags)){
-	 $this->tags[] = $v->tag;
-	 $this->getTags_down($v->tag,$version_id);
-	 }
-	 }
-	 }
-
-	 private function getTags_up($tag,$version_id)
-	 {
-	 $rs = Rs::where("version_id","=",$version_id)->where('tag','=',$tag)->first();
-	 if ($rs){
-	  
-	 $rs->column=json_decode('{'.$rs->column.'}');
-	 if($rs->column&&property_exists($rs->column,'source')&&$array=explode(',',$rs->column->source))
-	 {
-	 foreach ($array as $v){
-	 if (!in_array($v, $this->tags)){
-	 $this->tags[] = $v;
-	 $this->getTags_up($v,$version_id);
-	 }
-	 }
-
-
-	 }
-
-	 }
-	 }
-	 */
 	public function show($foder_id)
 	{
 		if ($foder_id == 'vatstr') {
