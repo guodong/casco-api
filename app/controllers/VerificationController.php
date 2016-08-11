@@ -138,6 +138,7 @@ class VerificationController extends ExportController
 		}
 		return  array('success'=>true,'data'=>$job);
 	}
+	
 	public function summary($version = null)
 	{
 		define('c_prefix', '_Tra');
