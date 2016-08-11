@@ -142,15 +142,8 @@ class VerificationController extends ExportController
 	{
 		define('c_prefix', '_Tra');
 		define('p_prefix', '_Com');
-		if (Input::get('version')) {
-			$version = Input::get('verison');
-		} else
-		if ($version) {
-			$version = $version;
-		} else {
-			$version = (string) (Verification::orderBy('created_at', 'desc')->first()->version);
-		}
-		$ver = Verification::where('version', '=', $version)->orderBy('created_at', 'desc')->first();
+		if(
+		)return [];
 		if (! $ver)
 		return [];
 		$ans = [];
@@ -226,6 +219,8 @@ class VerificationController extends ExportController
 
 	public function update($id)
 	{
+		
+		、
 		$t = Verification::find($id);
 		$t->update(Input::get());
 		if (! Input::get('data'))

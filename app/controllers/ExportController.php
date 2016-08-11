@@ -32,28 +32,19 @@ class ExportController extends BaseController {
 			}
 			$item->child_type=='rs'?$child=Rs::find($item->child_id):$child=Tc::find($item->child_id);
 			$item->parent_type=='rs'?$parent=Rs::find($item->parent_id):$parent=Tc::find($item->parent_id);
-			$child_column=(array)json_decode('{'.$child->column.'}',true);
-			array_key_exists('description',(array)$child_column)?
-			$da['Child Requirement Text']=$child_column['description']:
-			array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null;
-			$column=$parent?$parent->column:null;
-			foreach($column=(array)json_decode('{'.$column.'}',true) as $key=>$val){
+			$child_column=$child?$child->column():[];
+		    $da['justification']=$parent?$parent->vat_json:[];
+			$da['Child Requirement Text']=$child?$child->description():null;$da['Parent Requirement Text']=$parent?$parent->description():null;
+			foreach($column=(array)$parent->column() as $key=>$val){
 				switch($key){
-					case 'description':
-						$da['Parent Requirement Text']=$column[$key];
-						break;
-					case 'test case description':
-						$da['Parent Requirement Text']=$column[$key];
-						break;
 					case 'contribution':
-						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
+						array_key_exists('safety',(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
 						break;
 					default:
-						array_key_exists($key,$child_column)?$da[$key]=$child_column[$key].MID_COMPOSE.$val
+						array_key_exists($key,(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column[$key]
 						:$da[$key]=$val.MID_COMPOSE;
 				}//switch
 			}//foreach
-			$data[]=$da;
 		}//foreach
 
 		return  $data;
@@ -73,31 +64,23 @@ class ExportController extends BaseController {
 			}
 			$child=($item->child_type=='rs')?Rs::find($item->child_id):Tc::find($item->child_id);
 			$parent=($item->parent_type=='rs')?Rs::find($item->parent_id):Tc::find($item->parent_id);
-			$child_column=$child?(array)json_decode('{'.$child->column.'}',true):[];
 			$da['justification']=[];
+			//不对不是这样分化的
 			if($item->child_type=='tc'){
 			    (!$parent)?$vat_json=[]:$vat_json=json_decode($parent->vat_json);
 			    foreach((array)$vat_json as $val){
 			        array_push($da['justification'],$val->tag.':'.(property_exists($val,'comment')?$val->comment:''));
 			    }
 			}else $da['justification']=$item->justification?$item->justification:[];
-			
-			array_key_exists('description',(array)$child_column)?
-			$da['Child Requirement Text']=$child_column['description']:
-			(array_key_exists('test case description',$child_column)?$da['Child Requirement Text']=$child_column['test case description']:null);
-			foreach($column=(array)json_decode('{'.$parent->column.'}',true) as $key=>$val){
+			$child_column=$child?$child->column():[];
+			$da['Child Requirement Text']=$child?$child->description():null;$da['Parent Requirement Text']=$parent?$parent->description():null;
+			foreach($column=(array)$parent->column() as $key=>$val){
 				switch($key){
-					case 'description':
-						$da['Parent Requirement Text']=$column[$key];
-						break;
-					case 'test case description':
-						$da['Parent Requirement Text']=$column[$key];
-						break;
 					case 'contribution':
-						array_key_exists('safety',$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
+						array_key_exists('safety',(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
 						break;
 					default:
-						array_key_exists($key,$child_column)?$da[$key]=$child_column[$key].MID_COMPOSE.$val
+						array_key_exists($key,(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column[$key]
 						:$da[$key]=$val.MID_COMPOSE;
 				}//switch
 			}//foreach
