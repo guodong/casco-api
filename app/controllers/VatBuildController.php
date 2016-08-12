@@ -71,26 +71,37 @@ class VatBuildController extends TmpExportController{
 
 	public function show(){
 		$relation_json = [];
-		$tc_vat=[];
-		$vat_tc=[];
-		$tc_exist=[];$index=0;
+// 		$tc_vat=[];
+		$vat_tc=[];$parent_vat=[];
+// 		$tc_exist=[];$index=0; //TC-VAT
 		$vatbuild = VatBuild::find(Input::get('vat_build_id'));
 		$tcversion = $vatbuild->tcVersion;
 		$tcdoc = $tcversion->document;
 		$tc_tags = $tcversion->tcs;
 		//        var_dump($tc_tags);
 		$rsversions = $vatbuild->rsVersions;
+		$parent_docs=$tcdoc->dests; //直接父文档信息
 		$relation_json['vat_build_id']=$vatbuild->id;
 		$relation_json['vat_build_name']=$vatbuild->name;
 		$relation_json['tc_doc_name']=$tcdoc->name;
 		$relation_json['tc_version_id']=$tcversion->id;
 		$relation_json['tc_version_name']=$tcversion->name;
+		
+		//封装所有RS的VAT含有该TC item的条目
 		foreach ($rsversions as $rsversion){ //取rs vat_json中type=tc的id在tc_tag中检索
-			$vat_tc_each=[];
+			$vat_tc_each=[];$parent_vat_each=[];
 			$rs_tags = $rsversion->rss;
 			$rsdoc = $rsversion->document;
+			//封装该TC的直接父文档的VAT信息
+			$found_flag=0;
+			foreach ($parent_docs as $pd){
+			    if($pd->id==$rsversion->document_id) {
+			        $found_flag=1;break;
+			    }
+			}
+			
 			foreach($rs_tags as $rs_tag){
-				$tcs=[];
+				$tcs=[];$pt_each=[];
 				$rs_vat_json = $rs_tag->vat_json;
 				if($rs_vat_json && $rs_vat_json != 'Array' && $rs_vat_json != '[]'){
 					$rs_vat_json_objs = json_decode($rs_vat_json); //对象数组
@@ -100,31 +111,37 @@ class VatBuildController extends TmpExportController{
 						if($rs_vat_json_obj->type == 'tc'){
 							$tc_tag = DB::table('tc')->where('version_id',$vatbuild->tc_version_id)->where('id',$rs_vat_json_obj->id)->first();
 							if($tc_tag){
-								if(!array_key_exists($tc_tag->id, $tc_exist)){ //Index
-									$tc_exist[$tc_tag->id]=$index;
-									//                                    var_dump($tc_exist);
-									$tmp_tc = array(
-                                       "tc_tag_name"=>$tc_tag->tag,
-                                       "tc_version_id"=>$tcversion->id,
-                                       "tc_version_name"=>$tcversion->name,
-                                       "rs_version_name"=>$rsversion->name,
-                                       "rs_tag_name"=>$rs_tag->tag,
-                                       "rs_doc_name"=>$rsdoc->name,
-									);
-									$tc_vat[$index]=$tmp_tc;
-									$index++;
-								}else{
-									$i=$tc_exist[$tc_tag->id];
-									//                                    array_push($tc_vat[$i]['rs_tag_name'], $rs_tag->name);
-									//                                    var_dump($tc_vat[$i]['rs_tag_name']);
-									$str=$tc_vat[$i]['rs_tag_name'] .",".$rs_tag->tag;
-									$tc_vat[$i]['rs_tag_name']=$str;
-								}
+							    //封装TC-VAT关系数据部分
+// 								if(!array_key_exists($tc_tag->id, $tc_exist)){ //Index
+// 									$tc_exist[$tc_tag->id]=$index;
+// 									//                                    var_dump($tc_exist);
+// 									$tmp_tc = array(
+//                                        "tc_tag_name"=>$tc_tag->tag,
+//                                        "tc_version_id"=>$tcversion->id,
+//                                        "tc_version_name"=>$tcversion->name,
+//                                        "rs_version_name"=>$rsversion->name,
+//                                        "rs_tag_name"=>$rs_tag->tag,
+//                                        "rs_doc_name"=>$rsdoc->name,
+// 									);
+// 									$tc_vat[$index]=$tmp_tc;
+// 									$index++;
+// 								}else{
+// 									$i=$tc_exist[$tc_tag->id];
+// 									//                                    array_push($tc_vat[$i]['rs_tag_name'], $rs_tag->name);
+// 									//                                    var_dump($tc_vat[$i]['rs_tag_name']);
+// 									$str=$tc_vat[$i]['rs_tag_name'] .",".$rs_tag->tag;
+// 									$tc_vat[$i]['rs_tag_name']=$str;
+// 								}
 								array_push($tcs,$tc_tag->tag);
 							}
 						}
+						//找到VAT中对应的父文档
+						if($found_flag){
+						    array_push($pt_each,$rs_vat_json_obj->tag);
+						}
 					}
 				}
+				
 				if($tcs){
 					$tmp_vat=array(
                        "tc_version_name"=>$tcversion->name,
@@ -136,12 +153,28 @@ class VatBuildController extends TmpExportController{
 					$tmp_vat['tc_tag_name']=implode(',',$tcs);
 					$vat_tc_each[]=$tmp_vat;
 				}
+				if($pt_each){
+				    $tmp_parent=array(
+				        "rs_version_id"=>$rsversion->id,
+				        "rs_version_name"=>$rsversion->name,
+				        "rs_tag_name"=>$rs_tag->tag,
+				        "rs_doc_name"=>$rsdoc->name,
+				    );
+				    $tmp_parent['rs_vat']=implode(',', $pt_each);
+				    $parent_vat_each[]=$tmp_parent;
+				}
 			}
+			
+            if($parent_vat_each){
+                $parent_vat[]=$parent_vat_each;
+            }
 			if($vat_tc_each){
 				$vat_tc[]=$vat_tc_each;
 			}
 		}
-		$relation_json['tc_vat']=$tc_vat;
+		
+// 		$relation_json['tc_vat']=$tc_vat;
+        $relation_json['parent_vat']=$parent_vat;
 		$relation_json['vat_tc']=$vat_tc;
 		return $relation_json;
 	}
