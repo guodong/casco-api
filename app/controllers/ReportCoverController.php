@@ -15,14 +15,29 @@ class ReportCoverController extends ExportReportController {
 		}
 
 		//列名用version的吧
-		$data=[];
+		$data=[];$result=[];
 		foreach($items as  $key=>$item){
+			//在此整理一波数组既可以了吧
 			$item['child_type']=='rs'?$child=Rs::find($item['child_id']):$child=Tc::find($item['child_id']);
 			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
-			$items[$key]['Child Requirement Text']=$child?$child->description():null;
+			if(!array_key_exists($item['Parent Requirement Tag'],$result)){
+			//$items[$key]['Child Requirement Text']=$child?$child->description():null;
+			$result[$key]['Child Requirement Tag']=$item['Child Requirement Tag'];
 			$items[$key]['Parent Requirement Text']=$parent?$parent->description():null;
-			$items[$key]['result']=($a=Result::find($item['result_id']))?$a->result:[];
-			$items[$key]['allocation']=$parent->vat_json;
+			//$items[$key]['result']=($a=Result::find($item['result_id']))?$a->result:0;
+			//$items[$key]['allocation']=$parent->vat_json;
+			$result[$item['Parent Requirement Tag']]['Parent Requirement Text']=$parent?$parent->description():null;
+			$result[$item['Parent Requirement Tag']]['result']=($a=Result::find($item['result_id']))?$a->result:0;
+			$items[$key]['common']=$result[$item['Parent Requirement Tag']]['common'][]=array('id'=>$item['id'],'comment'=>$item['comment']
+			,'allocation'=>$parent->vat_json,'justification'=>$item['justification']);
+			}else{
+				
+			$result[$item['Parent Requirement Tag']]['result']=$items[$key]['result']=(($a=Result::find($item['result_id']))?$a->result:0)*$result[$item['Parent Requirement Tag']]['result'];
+			array_push($result[$item['Parent Requirement Tag']]['common'],array('id'=>$item['id'],'comment'=>$item['comment']
+			,'allocation'=>$parent->vat_json,'justification'=>$item['justification']));
+			}
+			$items[$key]['common']=$result[$item['Parent Requirement Tag']]['common'];
+			
 		}//foreach
 		return  $items;
 	}

@@ -142,22 +142,11 @@ class VerificationController extends ExportController
 	{
 		define('c_prefix', '_Tra');
 		define('p_prefix', '_Com');
-		if(
-		)return [];
-		if (! $ver)
-		return [];
+		if(!Input::get('v_id'))return [];
+		$ver=Verification::find(Input::get('v_id'));
 		$ans = [];
 		// 从数据库中取太慢了吧,使用count就行了
 		$child = $ver->childVersion;
-		//从结果中继续查找了吧。。。
-		//         $middleware = DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id);
-		//         $middleware_nok = $middleware->where('Verif_Assessment', 'like', 'NOK');    //和顺序有关？
-		//         $num = $middleware->count();
-		//         $num_ok = $middleware->where('Verif_Assessment', 'like', 'OK')->count();
-		//         $middleware_nok = $middleware->where('Verif_Assessment', 'like', 'NOK');
-		//         $num_nok = $middleware_nok->count();
-		//         $num_na = $middleware->where('Verif_Assessment', 'like', 'NA')->first();
-		//         $defefct_num = $middleware_nok->where('Already described in completeness','like','NO')->first();
 		$num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->count();
 		$num_ok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'OK')->count();
 		$num_nok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->count();
@@ -220,7 +209,7 @@ class VerificationController extends ExportController
 	public function update($id)
 	{
 		
-		、
+
 		$t = Verification::find($id);
 		$t->update(Input::get());
 		if (! Input::get('data'))
