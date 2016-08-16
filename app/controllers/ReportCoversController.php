@@ -3,37 +3,51 @@
 
 use Illuminate\Support\Facades\Input;
 
-class ReportCoverController extends ExportReportController {
+class ReportCoversController extends ExportReportController {
 
 	public function index(){
 		$items=[];
 		//列名与字段一一对应起来吧
-		if($id=Input::get('report_id')){
-			$items=ReportCover::where('report_id','=',$id)->orderBy('Parent Requirement Tag','asc')->distinct()->get()->toArray();
+		if($id=Input::get('id')){
+			$id=explode(',',$id);
+			$items=ReportCover::whereIn('id',$id)->orderBy('Parent Requirement Tag','asc')->get()->toArray();
 		}else{
 			return [];
 		}
-
-		//列名用version的吧
-		$data=[];$result=[];
 		foreach($items as  $key=>$item){
 			//在此整理一波数组既可以了吧
 			$item['child_type']=='rs'?$child=Rs::find($item['child_id']):$child=Tc::find($item['child_id']);
 			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
-			if(!array_key_exists($item['Parent Requirement Tag'],$result)){
 			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
-			$result[$item['Parent Requirement Tag']]['Parent Requirement Text']=$parent?$parent->description():null;
-			$result[$item['Parent Requirement Tag']]['result']=($a=Result::find($item['result_id']))?$a->result:0;
-			$result[$item['Parent Requirement Tag']]['common'][]=$item['id'];
-			}else{
-			$result[$item['Parent Requirement Tag']]['result']=(($a=Result::find($item['result_id']))?$a->result:0)*$result[$item['Parent Requirement Tag']]['result'];
-			$result[$item['Parent Requirement Tag']]['common'][]=$item['id'];
-			}
+			$items[$key]['Child Requirement Text']=$child?$child->description():null;
+			$items[$key]['Parent Requirement Text']=$parent?$parent->description():null;
+			$items[$key]['result']=($a=Result::find($item['result_id']))?$a->result:0;
+			$items[$key]['allocation']=$parent->vat_json;
 		}//foreach
-		return  array_values($result);
+		return  $items;
 	}
 
-
+	public  function show($id){
+		
+		$ids=explode(',',$id);
+		if($ids){
+			$items=ReportCover::whereIn('id',$ids)->orderBy('Parent Requirement Tag','asc')->get()->toArray();
+		}else{
+			return [];
+		}
+		foreach($items as  $key=>$item){
+			//在此整理一波数组既可以了吧
+			$item['child_type']=='rs'?$child=Rs::find($item['child_id']):$child=Tc::find($item['child_id']);
+			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
+			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
+			$items[$key]['Child Requirement Text']=$child?$child->description():null;
+			$items[$key]['Parent Requirement Text']=$parent?$parent->description():null;
+			$items[$key]['result']=($a=Result::find($item['result_id']))?$a->result:0;
+			$items[$key]['allocation']=$parent->vat_json;
+		}//foreach
+		return  $items;
+		
+	}
 	public function  update($id){
 		$cover=ReportCover::find($id);
 		if(!$cover)return [];

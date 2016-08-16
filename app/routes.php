@@ -40,6 +40,7 @@ Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
 Route::get('reportcover/export','ReportCoverController@export');
 Route::resource('reportcover','ReportCoverController');
+Route::resource('reportcovers','ReportCoversController');
 Route::post('vat/export','VatBuildController@export');
 Route::resource('vat','VatBuildController');
 Route::get('vat/relations','VatBuildController@show');
