@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
+use Monolog\Handler\NullHandler;
 class VerificationController extends ExportController
 {
 	public function index()
@@ -143,10 +144,12 @@ class VerificationController extends ExportController
 	{
 		define('c_prefix', '_Tra');
 		define('p_prefix', '_Com');
-		if(
-		)return [];
-		if (! $ver)
-		return [];
+		if(!Input::get('v_id')) return [];
+// 		$ver=DB::table('verification')->where('id',Input::get('v_id'))->get(); //array
+//         $ver=Verification::where('id','=',Input::get('v_id'))->get(); //Eloquent collection{object}
+        $ver=Verification::find(Input::get('v_id')); //Object
+// 		var_dump($ver);
+		if (!$ver) return [];
 		$ans = [];
 		// 从数据库中取太慢了吧,使用count就行了
 		$child = $ver->childVersion;
@@ -163,14 +166,16 @@ class VerificationController extends ExportController
 		$num_ok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'OK')->count();
 		$num_nok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->count();
 		$num_na=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NA')->count();
-		$defect_num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->where('Already described in completeness','not like','YES')->count();
+		$defect_num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->where(function($query){
+		    $query->where('Already described in completeness','like','NO')->orWhere('Already described in completeness',null);
+		})->count();
 		$ans[] = array(
             'doc_name' => $child->document->name . c_prefix,
             'nb of req' => $num,
             'nb req OK' => $num_ok,
             'nb req NOK' => $num_nok,
             'nb req NA' => $num_na,
-            'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100) . '%' : 0,
+            'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100,2) . '%' : 0,
             'defect_num' => $defect_num,
             'not_complete' => 'X',
             'wrong_coverage' => 'X',
@@ -207,7 +212,7 @@ class VerificationController extends ExportController
                 'nb req OK' => $num_ok,
                 'nb req NOK' => $num_nok,
                 'nb req NA' => $num_na,
-                'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100) . '%' : 0,
+                'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100,2) . '%' : 0,
                 'defect_num' => $num_nok,
                 'not_complete' => $not_complete,
                 'wrong_coverage' => $wrong_coverage,
@@ -221,7 +226,6 @@ class VerificationController extends ExportController
 	public function update($id)
 	{
 		
-		、
 		$t = Verification::find($id);
 		$t->update(Input::get());
 		if (! Input::get('data'))
