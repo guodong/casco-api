@@ -116,6 +116,7 @@ class ProjectController extends BaseController {
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
 		$version->filename = $name;
 		$regrex=Input::get("regrex")?Input::get("regrex"):null;
+		$ismerge=Input::get("ismerge")?Input::get("ismerge"):null;
 		$version->regrex=$regrex;
 		$version->touch();
 		$version->save ();
@@ -131,10 +132,10 @@ class ProjectController extends BaseController {
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
-			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			$doc_url='http://192.100.212.31:8080/files/'.$name;
+			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+			//$doc_url='http://192.100.212.31:8080/files/'.$name;
 			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&regrex='.urlencode(urlencode($regrex));
+			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -206,14 +207,13 @@ class ProjectController extends BaseController {
 					//$old=Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $old_version?$old_version->id:null)->first ();
 					
 					if ($rs) {
-						//$rs->vat_json=($old&&$old->vat_json)?$old->vat_json:[];
+						
 						$rs->column=json_encode($value);
 						$rs->save ();
 						$modify++;
 					} else { //不存在此记录了
 						//原来的tag为空的version_id的rs要不要删除掉
 						$rs = new RS ( );$rs->tag=$value['tag'];
-						//$rs->vat_json=($old&&$old->vat_json)?$old->vat_json:[];
 						$rs->column=json_encode($value);
 						$rs->version_id = $version->id ;
 						$rs->save ();

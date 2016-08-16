@@ -102,23 +102,14 @@ class ExportReportController extends BaseController {
 		}
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $line_num, 'Parent Requirement Tag');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $line_num, 'Parent Requirement Text');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_num, 'Child Requirement Tag');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_num, 'Child Requirement Text');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_num, '通过/失败/未执行/未覆盖/可接受');//注意头部多选
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_num, 'Justification');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_num, 'Allocation');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_num,'Comments');
-		/*$objValidation = $objPHPExcel->getActiveSheet()->getCell("D".$line_num)->getDataValidation(); //这一句为要设置数据有效性的单元格
-		 $objValidation -> setType(PHPExcel_Cell_DataValidation::TYPE_LIST)
-		 -> setErrorStyle(PHPExcel_Cell_DataValidation::STYLE_INFORMATION)
-		 -> setAllowBlank(true)
-		 -> setShowInputMessage(true)
-		 -> setShowErrorMessage(true)
-		 -> setShowDropDown(true)
-		 -> setPromptTitle('设备类型')
-		 -> setFormula1('"列表项1,列表项2,列表项3"');
-		 */
-		$i=8;
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_num, 'Child Requirement Tag');
+		//$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_num, 'Child Requirement Text');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_num, '通过/失败/未执行/未覆盖/可接受');//注意头部多选
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_num,'result');//Comments');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_num,'Justification');//Justification');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_num,'Allocation');// 'Allocation');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_num,'Comments');//Comments');
+		$i=7;
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setBold(true);
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setName('Arial');
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setSize(10);
@@ -127,21 +118,51 @@ class ExportReportController extends BaseController {
 		//设置过滤
 		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
 		$row = 1+$line_num;
-		foreach ($items as $item){
-			//var_dump($item);
+		
+		
+		$result=[];
+		foreach($items as  $key=>$item){
+			//在此整理一波数组既可以了吧
+			$item['child_type']=='rs'?$child=Rs::find($item['child_id']):$child=Tc::find($item['child_id']);
+			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
+			if(!array_key_exists($item['Parent Requirement Tag'],$result)){
+			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
+			$result[$item['Parent Requirement Tag']]['Parent Requirement Text']=$parent?$parent->description():null;
+			$result[$item['Parent Requirement Tag']]['result']=($a=Result::find($item['result_id']))?$a->result:0;
+			$result[$item['Parent Requirement Tag']]['common'][]=array('id'=>$item['id'],'comment'=>$item['comment'],'result'=>$result[$item['Parent Requirement Tag']]['result']
+			,'allocation'=>$parent->vat_json,'Child Requirement Tag'=>$item['Child Requirement Tag'],'justification'=>$item['justification']);
+			}else{
+			$m=($a=Result::find($item['result_id']))?$a->result:0;
+			$result[$item['Parent Requirement Tag']]['result']=($m)*$result[$item['Parent Requirement Tag']]['result'];
+			array_push($result[$item['Parent Requirement Tag']]['common'],array('id'=>$item['id'],'comment'=>$item['comment'],'result'=>$m
+			,'allocation'=>$parent->vat_json,'Child Requirement Tag'=>$item['Child Requirement Tag'],'justification'=>$item['justification']));
+			}
+		}//foreach
+		
+		foreach ($result as $item){
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $item['Parent Requirement Tag']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $item->parents->description());
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $item['Child Requirement Tag']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $row, $item->child->description());
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $row, $item['justification']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $row, $this->array[$item->result->result]);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $row, Tc::find($item['child_id'])->vat_json);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $row, $item['comment']);
-			$j=8; $data=[];
-			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
-			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');
-			$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setSize(10);
-			$row++;
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $item['Parent Requirement Text']);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $item['result']);
+			$count=count($item['common'])-1;
+			$objPHPExcel->getActiveSheet()->mergeCells('A'.$row.":".'A'.($row+$count));
+			$objPHPExcel->getActiveSheet()->mergeCells('B'.$row.":".'B'.($row+$count));
+			$objPHPExcel->getActiveSheet()->mergeCells('C'.$row.":".'C'.($row+$count));
+			//依次进行赋值即可
+			foreach($item['common'] as $common){
+				$current=$row++;
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $current, $common['Child Requirement Tag']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $current, $common['result']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $current, $common['justification']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $current, $common['allocation']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $current, $common['comment']);
+			}
+			//  $row++;
+			
+			//$j=8; $data=[];
+			//$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+			//$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');
+			//$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setSize(10);
+			
 		}
 
 		return  $objPHPExcel;
@@ -216,7 +237,40 @@ class ExportReportController extends BaseController {
 		}
 
 	}
+	
+	public function array_column($input,$column_key,$index_key=''){
 
+		if(!is_array($input)) return;
+		$results=array();
+		if($column_key===null){
+			if(!is_string($index_key)&&!is_int($index_key)) return false;
+			foreach($input as $_v){
+				if(array_key_exists($index_key,$_v)){
+					$results[$_v[$index_key]]=$_v;
+				}
+			}
+			if(empty($results)) $results=$input;
+		}else if(!is_string($column_key)&&!is_int($column_key)){
+			return false;
+		}else{
+			if(!is_string($index_key)&&!is_int($index_key)) return false;
+			if($index_key===''){
+				foreach($input as $_v){
+					if(is_array($_v)&&array_key_exists($column_key,$_v)){
+						$results[]=$_v[$column_key];
+					}
+				}
+			}else{
+				foreach($input as $_v){
+					if(is_array($_v)&&array_key_exists($column_key,$_v)&&array_key_exists($index_key,$_v)){
+						$results[$_v[$index_key]]=$_v[$column_key];
+					}
+				}
+			}
+
+		}
+		return $results;
+	}
 
 	public function export_all_sheet($report){
 		if(!$report) return [];
