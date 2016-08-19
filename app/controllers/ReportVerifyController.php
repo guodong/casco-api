@@ -13,12 +13,18 @@ class ReportVerifyController extends  ExportReportController{
 		}
 		if(!$verify) return $datas;
 		foreach($verify  as $ver){
-			$array=(array)explode(',',$ver->tc_id);
+			$array=array_keys($ver);$values=array_values($ver);$result=1;
+			foreach($values as $value){
+				if($value)
+				$result*=(Result::find($value)->result);
+				else
+				$result*=0;
+			}
 			$ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
-			//$results=Result::->whereIn('tc_id',$array)->select('result')->get()->toArray();
 			$ver['test_case']=implode(',',$this->array_column($ans,'tag'));
 			$ver['tag']=Rs::find($ver->rs_id)->tag;
-			$ver['result']=$ver->result;
+			//重新进行计算得出值罢
+			$ver['result']=$result;
 			$ver['description']=$text=Rs::find($ver->rs_id)->column_text();
 
 		}//遍历$verify
@@ -64,9 +70,6 @@ class ReportVerifyController extends  ExportReportController{
 		$verify=ReportVerify::where('report_id',Input::get('report_id'))->get();
 		else $verify=[];
 		$active_sheet=0;
-		/*foreach($verify as $v){
-		$objPHPExcel=parent::verify($v,$active_sheet++);
-		}*/
 		$objPHPExcel=parent::verify($verify,$version,$active_sheet);
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="其他阶段分配给本阶段的需求.xls"');

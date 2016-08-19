@@ -23,7 +23,6 @@ class VatBuild extends BaseModel{
     	$doc=$this->tcVersion->document->dest();
     	foreach($doc as $d){
     		foreach($this->rsVersions as $rs_ver){
-    			//var_dump(in_array($rs_ver,(array)$d->versions));
     			($rs_ver->document->id==$d->id)&&$data=array_merge($data,$rs_ver->rss->toArray());
     		}
     	}

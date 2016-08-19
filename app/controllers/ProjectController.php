@@ -122,20 +122,19 @@ class ProjectController extends BaseController {
 		$version->save ();
 		$url_path = public_path () . '/files/' . $name;
 		//存贮列名到version里面的headers
-		$column = Input::get ("column");
+		$column = Input::get ("column");$problems=[];
 		$cols=explode(',',$column);$no_col=[];
 		foreach($cols as $col){array_push($no_col,$col);}
 		$version->headers=strtolower(implode(',',$no_col));//此时column还没有过滤
-		//$version->save();
 		try{
 			/*	$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
-			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			//$doc_url='http://192.100.212.31:8080/files/'.$name;
+			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
+			$doc_url='http://192.100.212.31:8080/files/'.$name;
 			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
+			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&//ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -153,7 +152,8 @@ class ProjectController extends BaseController {
 			if (Input::get ( 'type' ) == 'tc') {
 				foreach ($resolveResult as $value ) {
 					$num = Tc::where ( "tag", "=", $value['tag'] )->where ("version_id", "=", $version->id )->first ();
-										
+					$arr=array_keys(json_decode($value,true));
+					if(count(array_diff($arr,$no_col))<=0)array_push($problems,$value['tag']);				
 					if ($num) {
 						$num->column = json_encode($value);			
 						foreach ($value as $key => $item ) {
@@ -186,7 +186,7 @@ class ProjectController extends BaseController {
 							} 							
 						} //foreach
 						$tc->version_id = $version->id ;
-						$tc->save ();$i=1;
+						$tc->save();$i=1;
 						foreach ( $wait_save as  $value ) {
 							$in = array ();$value=(array)$value;$in['num']=$i++;
 							$in ["tc_id"] = $tc->id;
@@ -204,10 +204,9 @@ class ProjectController extends BaseController {
 			if (Input::get ( 'type' ) == 'rs') {
 				foreach ($resolveResult as $value ) {
 					$rs = Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $version->id  )->first ();
-					//$old=Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $old_version?$old_version->id:null)->first ();
-					
+					$arr=array_keys(json_decode($value,true));
+					if(count(array_diff($arr,$no_col))<=0)array_push($problems,$value['tag']);
 					if ($rs) {
-						
 						$rs->column=json_encode($value);
 						$rs->save ();
 						$modify++;
@@ -222,25 +221,17 @@ class ProjectController extends BaseController {
 				} //foreach
 			} //if rs
 			$adds=array();$updates=array();$nochange=array();$delete=array();
-			//获取新的值出来进行比较,有问题逻辑错乱了,因为会把旧的新的一股脑dump出来
-			// $new_array=Input::get('type')=="rs"?Version::find($version->id)->rss->toArray():Version::find($version->id)->tcs->toArray();
 			$new_array=$resolveResult;
-			//var_dump($new_array);
 			foreach($old_array  as $old){
 				foreach($new_array  as $new){
 					if($old['tag']==$new['tag']){
 						if(!$std=json_decode($old['column'])){
-							//var_dump("hehhe".$old['column']);
 							array_push($updates,$old['tag']);
 							break;
 						}
 						$olds=$this->objtoarr($std);
-						//注意此函数tag在前才行哦
 						$news=array_slice($new,1);
 						$news=array_map('trim',$news);
-						// var_dump(array_diff($olds,$news));
-						//  var_dump(array_diff($news,$olds));
-						//这个函数有问题哇
 						if(array_diff($olds,$news)==null&&array_diff($news,$olds)==null){
 							//说明此时并未修改;
 							array_push($nochange,$old['tag']);
@@ -280,8 +271,8 @@ class ProjectController extends BaseController {
 	<tr><td><font size="3" color="#00FF00">增添'.count($adds).'条</font></td><td>'.(string)implode(',',$adds).'</td></tr>
 	<tr><td><font size="3" color="blue">修改'.count($updates)."条</font></td><td>".(string)implode(',',$updates).'</td></tr>
 	<tr><td><font size="3" color="red">遗留(删除)'.count($delete)."条</font></td><td>".(string)implode(',',$delete).'</td></tr>
-	<tr><td><font size="3" color="#FF8C00">未变(tag)'.count($nochange)."条</font></td><td>".(string)implode(',',$nochange).'
-	</td></tr></table>';
+	<tr><td><font size="3" color="#FF8C00">未变(tag)'.count($nochange)."条</font></td><td>".(string)implode(',',$nochange).'</td></tr>
+	<tr><td><font size="3" color="blue">解析列名失败'.count($problems)."条</font></td><td>".(string)implode(',',$problems).'</td></tr></table>';
 			$version->result=$result;
 			$version->save();
 			$this->p();

@@ -2,7 +2,7 @@
 class ReportVerify extends BaseModel {
 
 	protected $table = 'report_verify';
-	protected $fillable = array('rs_id','tc_id','doc_id','result','report_id','comment','created_at','updated_at');
+	protected $fillable = array('rs_id','tc_result','doc_id','report_id','comment','created_at','updated_at');
 	
 	public function  report()
 	{
