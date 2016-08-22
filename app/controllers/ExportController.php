@@ -16,7 +16,21 @@ class ExportController extends BaseController {
 	public function __destruct() {
 		unset($this->objPHPExcel);
 	}
-
+	
+	public function   result_export($version,$active_sheet){
+		
+		$objPHPExcel=$this->objPHPExcel;
+		$objPHPExcel->createSheet();
+		$objPHPExcel->setActiveSheetIndex($active_sheet);$line_num=5;$col_num=5;
+		foreach ((array)json_decode($ver->result,true)  as  $key=>$value){
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col_num, $line_num,$key);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col_num+1, $line_num,$value);
+			$line_num+=2;
+		}
+		
+		return $objPHPExcel;
+	}
+	
 	public function childmatrix($id){
 
 		$items=[];
