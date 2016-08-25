@@ -203,27 +203,31 @@ class ReportController extends ExportReportController
 
 	public function cover_status($parents,$array_child,$report){
 
-		$datas=[];$i=1;
+		$datas=[];$i=1;$middles=[];
 		foreach($parents as  $parent){$flag=false;
 		foreach($array_child as $child){
 			if(in_array($parent['tag'],$child['sources']))
 			{
-				$flag=true;
+				$flag=true;$tmp_id=Uuid::uuid4();
 				$datas[]=array(
 				 	 'parent_id'=>$parent['id'],
 					 'Parent Requirement Tag'=>$parent['tag'],
              	   	 'parent_type'=>'rs',
+                     'report_id'=>$report->id,
+					 'id'=>$tmp_id
+				);
+				$middles[]=array(
                		 'child_type'=>'tc',
 					 'Child Requirement Tag'=>$child['tag'],
              	     'child_id'=>$child['id'],
 					 'result_id'=>$child['result_id'],
-                     'report_id'=>$report->id,
-					 'id'=>Uuid::uuid4()
+					 'p_id'=>$tmp_id
 				);
 			}//if
 		}//foreach
 		}//foreach
 		$cover=DB::table('report_cover_status')->insert($datas);
+		DB::table('report_middle')->insert($middles);
 	}
 
 

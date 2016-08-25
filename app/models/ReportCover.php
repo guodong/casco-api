@@ -8,19 +8,10 @@ class ReportCover extends BaseModel {
 	{
 	    return $this->belongsTo('report', 'report_id');
 	}
-	
 	public function  parents()
 	{
 		return $this->belongsTo('Rs','parent_id');
 	}
 	
-	public function  child(){
-		
-		return $this->belongsTo('Tc','child_id');
-	}
-	public function  result(){
-		
-		return $this->belongsTo('result','result_id');
-	}
 	
 }

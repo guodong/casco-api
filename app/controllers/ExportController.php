@@ -16,7 +16,21 @@ class ExportController extends BaseController {
 	public function __destruct() {
 		unset($this->objPHPExcel);
 	}
-
+	
+	public function   result_export($version,$active_sheet){
+		
+		$objPHPExcel=$this->objPHPExcel;
+		$objPHPExcel->createSheet();
+		$objPHPExcel->setActiveSheetIndex($active_sheet);$line_num=5;$col_num=5;
+		foreach ((array)json_decode($ver->result,true)  as  $key=>$value){
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col_num, $line_num,$key);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col_num+1, $line_num,$value);
+			$line_num+=2;
+		}
+		
+		return $objPHPExcel;
+	}
+	
 	public function childmatrix($id){
 
 		$items=[];
@@ -45,11 +59,9 @@ class ExportController extends BaseController {
 						:$da[$key]=$val.MID_COMPOSE;
 				}//switch
 			}//foreach
+			$data[]=$da;
 		}//foreach
-
 		return  $data;
-
-
 	}
 	public function parentmatrix($id,$parent_v_id){
 
@@ -295,7 +307,7 @@ class ExportController extends BaseController {
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_num, 'Already described in completeness');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_num,'Verif_Assessment');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_num,'Verif. opinion justification');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9,$line_num,'CR');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(9,$line_num, 'CR');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(10,$line_num,'Comment');
 		$i=10;
 		foreach($column as $value){
@@ -303,7 +315,6 @@ class ExportController extends BaseController {
 			//设置自定义列宽度
 			$objPHPExcel->getActiveSheet()->getColumnDimension(chr($i+ord('A')))->setWidth(20);
 		}
-		
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setBold(true);
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setName('Arial');

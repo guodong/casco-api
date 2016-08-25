@@ -31,7 +31,7 @@ class Document extends BaseModel {
 
 	public function srcs()
 	{
-		return $this->belongsToMany('Document', 'Relation', 'dest','src');
+		return $this->belongsToMany('Document', 'relation', 'dest','src');
 	}
 
 	public function src(){
@@ -48,7 +48,7 @@ class Document extends BaseModel {
 
 	public function dests()//记得去重哦
 	{
-		return $this->belongsToMany('Document', 'Relation', 'src', 'dest');
+		return $this->belongsToMany('Document', 'relation', 'src', 'dest');
 	}
 
 	public function dest()//记得去重哦

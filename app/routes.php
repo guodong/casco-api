@@ -32,6 +32,7 @@ Route::resource('build', 'BuildController');
 Route::get('stat/count', 'StatController@count');
 Route::post('setresult', 'TcController@setresult');
 Route::get('fix', 'FixController@index');
+Route::get('version/export', 'VersionController@export');
 Route::resource('version', 'VersionController');
 Route::get('projectuser','ProjectUserController@index');
 Route::get('childmatrix/export', 'ChildMatrixController@export');

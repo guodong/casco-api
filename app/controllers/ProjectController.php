@@ -134,7 +134,7 @@ class ProjectController extends BaseController {
 			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			$doc_url='http://192.100.212.31:8080/files/'.$name;
 			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&//ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
+			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
@@ -152,8 +152,8 @@ class ProjectController extends BaseController {
 			if (Input::get ( 'type' ) == 'tc') {
 				foreach ($resolveResult as $value ) {
 					$num = Tc::where ( "tag", "=", $value['tag'] )->where ("version_id", "=", $version->id )->first ();
-					$arr=array_keys(json_decode($value,true));
-					if(count(array_diff($arr,$no_col))<=0)array_push($problems,$value['tag']);				
+					$arr=array_keys(array_change_key_case($value,CASE_LOWER));
+					if(count(array_diff($no_col,$arr))>0)array_push($problems,$value['tag']);				
 					if ($num) {
 						$num->column = json_encode($value);			
 						foreach ($value as $key => $item ) {
@@ -204,8 +204,8 @@ class ProjectController extends BaseController {
 			if (Input::get ( 'type' ) == 'rs') {
 				foreach ($resolveResult as $value ) {
 					$rs = Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $version->id  )->first ();
-					$arr=array_keys(json_decode($value,true));
-					if(count(array_diff($arr,$no_col))<=0)array_push($problems,$value['tag']);
+					$arr=array_keys(array_change_key_case($value,CASE_LOWER));
+					if(count(array_diff($no_col,$arr))>0)array_push($problems,$value['tag']);
 					if ($rs) {
 						$rs->column=json_encode($value);
 						$rs->save ();
@@ -252,19 +252,7 @@ class ProjectController extends BaseController {
 				preg_match('/(\[[^\]]*?\])/',$item,$matches);
 				return $matches[1];
 			}
-			//var_dump($delete);var_dump($adds);
-			/*删除delete项目?新建的就不删,重复的就删除
-			if(Input::get ( 'isNew' )==0&&$delete=null){
-			echo DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',($delete))->toSql();
-			return ;
-			$items=DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',($delete))->delete();
-			}
-			$items=Input::get ('type')=="rs"?(Rs::where("tag", "in", $delete)->toSql()):(Tc::where("tag", "in", $delete)->toSql());
-			var_dump($items);exit();
-			foreach($items as $item ){
-			$item->delete();
-			}
-			*/
+			
 			//要不要做个显示报表啊更直观一些.
 	$result='<table border=”1″ cellspacing=”0″ cellpadding=”2″>
 	<tr><td colspan="2"  align=center>旧版本'.($old_version?$old_version->name:null).';新版本'.$version->name.'</td></tr>
