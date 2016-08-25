@@ -80,7 +80,7 @@ class VatBuildController extends TmpExportController{
 		$tc_tags = $tcversion->tcs;
 		//        var_dump($tc_tags);
 		$rsversions = $vatbuild->rsVersions;
-		$parent_docs=$tcdoc->dests; //直接父文档信息 如果有重复的情况，就用dest()吧
+		$parent_docs=$tcdoc->dest(); //直接父文档信息 如果有重复的情况，就用dest()吧
 		$relation_json['vat_build_id']=$vatbuild->id;
 		$relation_json['vat_build_name']=$vatbuild->name;
 		$relation_json['tc_doc_name']=$tcdoc->name;
