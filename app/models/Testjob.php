@@ -14,28 +14,34 @@ class Testjob extends BaseModel {
 	{
 	    return $this->belongsTo('VatBuild', 'vat_build_id')->withTrashed();
 	}
+	
 	public function  rencents(){
 		
-		$tests=Testjob::where('vat_build_id',$this->vat_build_id)->where('status',1)->where('created_at','<=',$this->created_at)->get();
-		$tmp=[];$ans=[];
+		$tests=Testjob::where('vat_build_id',$this->vat_build_id)->where('created_at','<=',$this->created_at)->get();
+		$tmp=[];$ans=[];$tcs=[];$this->vatbuild&&($tcs=$this->vatbuild->tcVersion->tcs);
 		foreach($tests as $v){
 			foreach($v->results as $data){
 				//if(!property_exists($data,'tc')||!property_exists($data->tc,'tag'))continue;
-				if(!in_array($data->tc->tag,$tmp)){
+				if(!array_key_exists($data->tc->tag,$tmp)){
 					$tmp[$data->tc->tag]=$data;
 				}else{
-					if($tmp[$data->tc->tag]['created_at']<$data['created_at']){
+					if($tmp[$data->tc->tag]->updated_at<$data->updated_at){
 					$tmp[$data->tc->tag]=$data;
 					}
 				}
 			}//foreach
 		}//foreach
+		//最后求交集的部分吧
+		foreach($tcs as  $tc){
+		if(!array_key_exists($tc->tag,$tmp))
+		$tmp[$tc->tag]=array('tc_id'=>$tc->id,'result'=>0,'testjob_id'=>$this->id);
+		}
 		return $tmp;
 	}
 
 	public function results()
 	{
-	    return $this->hasMany('Result', 'testjob_id');
+	    return $this->hasMany('Result', 'testjob_id')->orderBy('tag','asc');
 	}
 	
 	public function user(){

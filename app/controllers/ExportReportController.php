@@ -72,7 +72,7 @@ class ExportReportController extends BaseController {
 			
 		$objPHPExcel=$this->objPHPExcel;
 		$items=$report->covers;
-		$column=[];
+		$column=[];$answer=array(0=>'failed',1=>'untested',2=>'success');
 		$objPHPExcel->getProperties()
 		->setTitle('Requirement Cover Status')
 		->setSubject('PHPExcel Test Document')
@@ -142,7 +142,7 @@ class ExportReportController extends BaseController {
 		foreach ($result as $item){
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $item['Parent Requirement Tag']);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $item['Parent Requirement Text']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $item['result']);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $answer[$item['result']]);
 			$count=count($item['common'])-1;
 			$objPHPExcel->getActiveSheet()->mergeCells('A'.$row.":".'A'.($row+$count));
 			$objPHPExcel->getActiveSheet()->mergeCells('B'.$row.":".'B'.($row+$count));
@@ -151,9 +151,10 @@ class ExportReportController extends BaseController {
 			foreach($item['common'] as $common){
 				$current=$row++;
 				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $current, $common['Child Requirement Tag']);
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $current, $common['result']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $current, $answer[$common['result']]);
 				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $current, $common['justification']);
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $current, $common['allocation']);
+				//var_dump($this->array_column((array)json_decode($common['allocation'],true),'tag'));
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $current, implode(',',$this->array_column((array)json_decode($common['allocation'],true),'tag')));
 				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $current, $common['comment']);
 			}
 			//  $row++;

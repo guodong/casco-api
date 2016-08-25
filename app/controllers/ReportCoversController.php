@@ -22,7 +22,17 @@ class ReportCoversController extends ExportReportController {
 			$items[$key]['Child Requirement Text']=$child?$child->description():null;
 			$items[$key]['Parent Requirement Text']=$parent?$parent->description():null;
 			$items[$key]['result']=($a=Result::find($item['result_id']))?$a->result:0;
-			$items[$key]['allocation']=$parent->vat_json;
+			$items[$key]['vat']=$parent->vat_json;$vat_result=[];
+			foreach((array)json_decode($parent->vat_json,true) as $item){
+			 if($item->type=='vat'){
+			 	array_push($vat_result,null);
+			 }else{
+			 	$result=Result::where('tc_id',$item->id)->orderBy('created_at','desc')->first();
+			 	array_push($vat_result,$result?($result->result.':'.$result->testjob->name.'-'.$result->testjob->build->name):null);
+			 }
+			}
+			$items[$key]['vat_result']=json_encode($vat_result);
+			//$items[$key]['vat_result']=;
 		}//foreach
 		return  $items;
 	}

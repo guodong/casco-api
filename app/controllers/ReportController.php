@@ -24,18 +24,15 @@ class ReportController extends ExportReportController
 	}
 	public function  get_results(){
 		//必须要合并好吧
-
 		if(!($tc_id=Input::get('tc_id'))||!($project_id=Input::get('project_id'))) return [];
 		$versions_id=$this->array_column(Document::find($tc_id)->versions->toArray(),'id');
 		$testjob=Testjob::where('project_id','=',$project_id)->where('status',1)
 		->whereIn('tc_version_id',$versions_id)->orderBy('created_at','desc')->get();
-		//$testjob=Testjob::find(Input::get('test_id'))->results;
 		$datas=[];
 		foreach($testjob  as  $tests){
 			//var_dump($tests);
 			foreach($tests->results as $res){
 				$tc=Tc::find($res->tc_id);
-				//过滤重复的规则
 				$data['id']=$tc->id;
 				$data['tag']=$tc->tag;
 				$data['result_id']=$res->id;
@@ -96,14 +93,15 @@ class ReportController extends ExportReportController
 		if(!$report) return [];
 		$testjob=$report->results;$datas=[];
 		foreach($report->results  as $res){
-			$tc=Tc::find($res->result->tc_id);
+			//还要拼接剩余的罢
+			$tc=$res->tc;
 			$data['id']=$tc->id;
 			$data['tag']=$tc->tag;
 			$data['description']=$tc->description();
-			$data['result']=$res->result->result;
+			$data['result']=$res->result_id?$res->result->result:0;
 			$data['created_at']=$res->created_at;
 			$data['updated_at']=$res->updated_at;
-			$data['build']=$res->result->testjob->name.':'.$res->result->testjob->build->name;
+			$data['build']=$res->result_id?($res->result->testjob->name.':'.$res->result->testjob->build->name):null;
 			$datas[]=$data;
 		}
 		return $datas;
@@ -145,7 +143,6 @@ class ReportController extends ExportReportController
 		//增加事务处理
 		DB::beginTransaction();
 		try{
-
 			if(!Input::get('project_id')||!Input::get('doc_id')||!Input::get('test_id')) throw  new  Exception("参数不合法");
 			$job = Report::create(Input::get());
 			$job->author=Input::get('account')?Input::get('account'):null;
@@ -154,14 +151,19 @@ class ReportController extends ExportReportController
 			$rencents=$test->rencents();$all_rs=[];$results=$shits=[];$last=1;
 			$test->vatbuild&&($all_rs=$test->vatbuild->rsVersions);
 			foreach ($rencents as $key=>$value){
-				$child=Result::find($value['id'])->tc->toArray();
-				$item=Tc::find($child['id']);
+				$item=Tc::find($value['tc_id']);
+				$child=$item->toArray();
 				$child['sources']=$item?$item->sources():[];
-				$child['result_id']=$value['id'];
+				//没有的则是untested的
+				$child['result_id']=array_key_exists('id',$value)?$value['id']:null;
 				$array_child[]=$child;
-				$results[]=$value['tc_id'];$shits[$value['tc_id']]=$value['result'];
+				$results[]=$value['tc_id'];
+				//存入相应的result_id
+				$shits[$value['tc_id']]=array_key_exists('id',$value)?$value['id']:null;
+				//单独存储一份好了
 				ReportResult::create(array(
-		            	'result_id' => $value['id'],
+						'tc_id'=>$value['tc_id'],
+						'result_id'=>array_key_exists('id',$value)?$value['id']:null,
 		            	'report_id' => $job->id
 				));
 			}
@@ -175,14 +177,13 @@ class ReportController extends ExportReportController
 					if(count($bak_tc)<=0)continue;
 					foreach ($bak_tc  as $id){
 						if(array_key_exists($id,$shits)){
-							$last*=$shits[$id];
+							array_push($res,array($id=>$shits[$id]));
 						}
 					}
 					ReportVerify::create(array(
-					 'tc_id'=>implode(',',$bak_tc),
+					 'tc_result'=>json_encode($res),
 					 'doc_id'=>$r->id,//文档的ID
 					 'rs_id'=>$rs->id,
-					 'result'=>$last,
 					 'report_id'=>$job->id
 					));
 			 }//rss
@@ -211,34 +212,18 @@ class ReportController extends ExportReportController
 				$datas[]=array(
 				 	 'parent_id'=>$parent['id'],
 					 'Parent Requirement Tag'=>$parent['tag'],
-             	   	 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
-               		 'child_type'=>'tc',///$job->childVersion->document->type,
+             	   	 'parent_type'=>'rs',
+               		 'child_type'=>'tc',
 					 'Child Requirement Tag'=>$child['tag'],
              	     'child_id'=>$child['id'],
 					 'result_id'=>$child['result_id'],
                      'report_id'=>$report->id,
 					 'id'=>Uuid::uuid4()
 				);
-					
 			}//if
 		}//foreach
 		}//foreach
-		//var_dump($datas);
 		$cover=DB::table('report_cover_status')->insert($datas);
-		/*if(!$flag){
-		 $column=[];
-		 $array=array(
-		 'parent_id'=>$parent['id'],
-		 'Parent Requirement Tag'=>$parent['tag'],
-		 'parent_type'=>'rs',//Version::find($parent['version_id'])->document->type,
-		 'child_type'=>null,
-		 'Child Requirement Tag'=>null,
-		 'child_id'=>null,
-		 'report_id'=>$report->id
-		 );
-		 //var_dump($array);
-		 //ReportCover::create($array);
-			}*/
 	}
 
 

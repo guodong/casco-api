@@ -23,6 +23,7 @@ class ReportCoverController extends ExportReportController {
 			if(!array_key_exists($item['Parent Requirement Tag'],$result)){
 			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
 			$result[$item['Parent Requirement Tag']]['Parent Requirement Text']=$parent?$parent->description():null;
+			//$result_id为空时为增补的tc结果集
 			$result[$item['Parent Requirement Tag']]['result']=($a=Result::find($item['result_id']))?$a->result:0;
 			$result[$item['Parent Requirement Tag']]['common'][]=$item['id'];
 			}else{
@@ -34,13 +35,7 @@ class ReportCoverController extends ExportReportController {
 	}
 
 
-	public function  update($id){
-		$cover=ReportCover::find($id);
-		if(!$cover)return [];
-		$cover->update(Input::get());
-		return $cover;
-	}
-	
+
 	public function export(){
 		
 		if(!Input::get('report_id')||!$report=Report::find(Input::get('report_id')))return [];
