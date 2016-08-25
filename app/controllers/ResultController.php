@@ -23,6 +23,7 @@ class ResultController extends BaseController{
 				$step->comment = $sr->comment;
 				$step->step_result_id = $sr->id;
 			}
+			$v->tag=$v->tc->tag;
 			$v->tc->description=$v->tc->description();
 			($v->tc->testmethods=$v->tc->dynamic_col('test method'))||$v->tc->testmethods=$v->tc->dynamic_col('method');
 			/*$arr = (array)json_decode('{'.$v->tc->column.'}',true);
