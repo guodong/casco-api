@@ -41,7 +41,7 @@ class Testjob extends BaseModel {
 
 	public function results()
 	{
-	    return $this->hasMany('Result', 'testjob_id')->orderBy('tag','asc');
+	    return $this->hasMany('Result', 'testjob_id');
 	}
 	
 	public function user(){
