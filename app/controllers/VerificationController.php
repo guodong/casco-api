@@ -74,11 +74,12 @@ class VerificationController extends ExportController
 			}//if
 			$comment='';$column=[];$child_text='';$parent_text='';
 			foreach($array_child as $child){
+				$flag=false;
 				foreach($parent_items  as  $key=>$parents){//有可能多个父类
 					foreach($parents as  $parent){//for循环结束就是空行记录的了
 						$column=[];
 						if(in_array($parent['tag'],$child?$child->sources():[]))
-						{
+						{	$flag=true;
 							$array=array(
 								 'child_id'=>$child->id,
 								 'Child Requirement Tag'=>$child->tag,
@@ -92,6 +93,19 @@ class VerificationController extends ExportController
 						}//if
 					}//foreach
 				}//foreach parent_items
+				if(!$flag){
+						$column=[];
+						$array=array(
+								 'child_id'=>$child->id,
+								 'Child Requirement Tag'=>$child->tag,
+								 'child_type'=>$job->childVersion->document->type,
+                	             //'parent_id'=>$parent['id'],
+								 //'Parent Requirement Tag'=>$parent['tag'],
+                               	 //'parent_type'=>Version::find($parent['version_id'])->document->type,
+                                 'verification_id'=>$job->id
+							);
+						ChildMatrix::create($array);
+				}//if $flag
 			}//foreach child_matrix
 			//可能有多个父类因此要加层循环结构
 			foreach($parent_items  as  $key=>$parents){

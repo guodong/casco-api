@@ -13,7 +13,6 @@ class ReportCoversController extends ExportReportController {
 		}else{
 			return [];
 		}
-		//列名用version的吧
 		$data=[];$result=[];
 		foreach($items as  $key=>$item){
 			//在此整理一波数组既可以了吧
@@ -49,7 +48,7 @@ class ReportCoversController extends ExportReportController {
 		
 	}
 	public function  update($id){
-		$cover=ReportCover::find($id);
+		$cover=ReportMiddle::find($id);
 		if(!$cover)return [];
 		$cover->update(Input::get());
 		return $cover;

@@ -2,9 +2,8 @@
 class ReportMiddle extends BaseModel {
 
 	protected $table = 'report_middle';
-	protected $fillable = array('id','child_id','Child Requirement Tag','result_id','comment','p_id');
+	protected $fillable = array('id','child_id','Child Requirement Tag','result_id','comment','p_id','created_at','updated_at');
 	
-
 	public function  child(){
 		
 		return $this->belongsTo('Tc','child_id');
@@ -15,7 +14,7 @@ class ReportMiddle extends BaseModel {
 	}
 	public function   reportcover() {
 		
-		return $this->belongsTo('ReportCover','p_id');
+		return $this->belongsTo('ReportCover','p_id','id');
 	}
 	
 }
