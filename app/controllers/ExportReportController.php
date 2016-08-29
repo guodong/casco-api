@@ -11,7 +11,7 @@ class ExportReportController extends BaseController {
 		$this->objPHPExcel = new PHPExcel();
 	}
     
-	public  $array=array(0=>'untested',1=>'passed',2=>'failed');
+	public  $array=array(0=>'untested',1=>'passed',-1=>'failed');
 
 	public function __destruct() {
 		unset($this->objPHPExcel);
@@ -72,7 +72,7 @@ class ExportReportController extends BaseController {
 			
 		$objPHPExcel=$this->objPHPExcel;
 		$items=$report->covers;
-		$column=[];$answer=array(0=>'failed',1=>'untested',2=>'success');
+		$column=[];$answer=array(-1=>'failed',0=>'untested',1=>'passed');
 		$objPHPExcel->getProperties()
 		->setTitle('Requirement Cover Status')
 		->setSubject('PHPExcel Test Document')
@@ -104,61 +104,58 @@ class ExportReportController extends BaseController {
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $line_num, 'Parent Requirement Text');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_num, 'Child Requirement Tag');
 		//$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $line_num, 'Child Requirement Text');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_num,'comments');//Comments');
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $line_num, '通过/失败/未执行/未覆盖/可接受');//注意头部多选
 		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $line_num,'result');//Comments');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $line_num,'Justification');//Justification');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_num,'Allocation');// 'Allocation');
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_num,'Comments');//Comments');
-		$i=7;
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $line_num,'vat');//Justification');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $line_num,'vat_result');// 'Allocation');
+		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $line_num,'comments');//Comments');
+		$i=8;
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setBold(true);
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setName('Arial');
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setSize(10);
 		$objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
-
 		//设置过滤
 		$objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
 		$row = 1+$line_num;
-		
-		
 		$result=[];
-		foreach($items as  $key=>$item){
-			//在此整理一波数组既可以了吧
-			$item['child_type']=='rs'?$child=Rs::find($item['child_id']):$child=Tc::find($item['child_id']);
+		foreach ($items as  $key=>$item){
+			//$item['child_type']=='rs'?$child=Rs::find($item['child_id']):$child=Tc::find($item['child_id']);
 			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
-			if(!array_key_exists($item['Parent Requirement Tag'],$result)){
-			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
-			$result[$item['Parent Requirement Tag']]['Parent Requirement Text']=$parent?$parent->description():null;
-			$result[$item['Parent Requirement Tag']]['result']=($a=Result::find($item['result_id']))?$a->result:0;
-			$result[$item['Parent Requirement Tag']]['common'][]=array('id'=>$item['id'],'comment'=>$item['comment'],'result'=>$result[$item['Parent Requirement Tag']]['result']
-			,'allocation'=>$parent->vat_json,'Child Requirement Tag'=>$item['Child Requirement Tag'],'justification'=>$item['justification']);
-			}else{
-			$m=($a=Result::find($item['result_id']))?$a->result:0;
-			$result[$item['Parent Requirement Tag']]['result']=($m)*$result[$item['Parent Requirement Tag']]['result'];
-			array_push($result[$item['Parent Requirement Tag']]['common'],array('id'=>$item['id'],'comment'=>$item['comment'],'result'=>$m
-			,'allocation'=>$parent->vat_json,'Child Requirement Tag'=>$item['Child Requirement Tag'],'justification'=>$item['justification']));
-			}
-		}//foreach
-		
-		foreach ($result as $item){
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $item['Parent Requirement Tag']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $item['Parent Requirement Text']);
-			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row, $answer[$item['result']]);
-			$count=count($item['common'])-1;
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $parent?$parent->tag:null);//$item['Parent Requirement Tag']);
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $parent?$parent->description():null);//$item['Parent Requirement Text']);
+			$child=(array)json_decode($item->middles);
+			//var_dump($child);exit;
+			$results=1;
+			$vats=(array)json_decode($item->vats,true);
+			//取大的来合并吧
+			$hehe=$num_row=$row;
+			$count=(count($child)>count($vats))?(count($child)-1):(count($vats)-1);
 			$objPHPExcel->getActiveSheet()->mergeCells('A'.$row.":".'A'.($row+$count));
 			$objPHPExcel->getActiveSheet()->mergeCells('B'.$row.":".'B'.($row+$count));
 			$objPHPExcel->getActiveSheet()->mergeCells('C'.$row.":".'C'.($row+$count));
 			//依次进行赋值即可
-			foreach($item['common'] as $common){
+			
+			foreach($child as $key=>$value){
 				$current=$row++;
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $current, $common['Child Requirement Tag']);
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $current, $answer[$common['result']]);
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $current, $common['justification']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(3, $current, ($value->child_type=='rs')?$Rs::find($value->child_id)->tag:Tc::find($value->child_id)->tag);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(4, $current, $answer[$value->result_id?$value->result->result:0]);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(5, $current, $value->comment);
+				$results*=($value->result_id?$value->result->result:0);
 				//var_dump($this->array_column((array)json_decode($common['allocation'],true),'tag'));
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $current, implode(',',$this->array_column((array)json_decode($common['allocation'],true),'tag')));
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $current, $common['comment']);
+				//$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $current, implode(',',$this->array_column((array)json_decode($common['allocation'],true),'tag')));
+				//$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $current, $common['comment']);
+			}
+			foreach($vats as  $key=>$value){
+				$current=$num_row++;
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(6, $current, $value['tag']);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(7, $current, $answer[$value['vat_result']]);
+				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(8, $current, $value['comment']);
+				$results*=$value['vat_result'];
 			}
 			//  $row++;
-			
+			$row=($num_row>$row)?$num_row:$row;
+			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $hehe, $answer[$results]);
 			//$j=8; $data=[];
 			//$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
 			//$objPHPExcel->getActiveSheet()->getStyle('A'.$row.':'.chr($j+ord('A')).$row)->getFont()->setName('Arial');

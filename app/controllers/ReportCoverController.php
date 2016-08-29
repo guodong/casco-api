@@ -38,18 +38,21 @@ class ReportCoverController extends ExportReportController {
 			foreach((array)json_decode($parent->vat_json,true) as $item){
 			 if($item['type']=='vat'){
 			 	if(!in_array($item['tag'],$vat_tag)){
+			 		$item['vat_result']=0;
+			 		$item['comment']=null;
 			 		$vat_result[]=$item;
 			 	}
-			 	$results*=(array_key_exists('vat_result',$item)?$item['vat_result']:0);
-			 	
+			 	//$results*=(array_key_exists('vat_result',$item)?$item['vat_result']:0);
+			 	//$results*=$item['vat_result'];
 			 }else{
 			 	//每次show则重新计算一下
 			 	if(!in_array($item['id'],$vat_id)){
 			 	$result=Result::where('tc_id',$item['id'])->orderBy('created_at','desc')->first();
 			 	$item['vat_result']=$result?($result->result):0;
+			 	$item['comment']=null;
 			 	$item['v_build']=$result->testjob->name.'-'.$result->testjob->build->name;
 			 	$vat_result[]=$item;
-			 	}else{
+			 	}else{//第一次取决于依赖了，后续固化掉
 			 	
 			 	}
 			 	//var_dump($item['vat_result']);
