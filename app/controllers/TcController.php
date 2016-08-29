@@ -50,14 +50,15 @@ class TcController extends Controller{
 		//还要解析相应的列名，列名也要发送过去么,怎么办?列名怎样规范化处理呢?
 		$version = Version::find ( Input::get ( 'version_id' ) );
 		$column=explode(",",$version->headers);
+		$columnWidth=(string)(100/(count($column))).'%';
 		$columModle=array();
 		$fieldsNames=array();
 		$black_list=array('input','execution step','expected output','test steps');
-		$columModle[]=array('dataIndex'=>'tag','header'=>'tag','width'=> 140);
+		$columModle[]=array('dataIndex'=>'tag','header'=>'tag','width'=> $columnWidth);
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
 			if(in_array($item,$black_list))continue;
-			$columModle[]=array('dataIndex'=>$item,'header'=>$item,'width'=> 140);
+			$columModle[]=array('dataIndex'=>$item,'header'=>$item,'width'=> $columnWidth);
 			$fieldsNames[]=array('name'=>$item);
 		}
 			

@@ -1,8 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Session;
-class VatBuildController extends TmpExportController{
-
+class VatBuildController extends VatExportController{
 
 	public function index(){
 		$ans = [];
@@ -41,25 +40,6 @@ class VatBuildController extends TmpExportController{
 		return $vats;
 	}
 
-	public function export(){
-			
-		if((!$p_vid=Input::get('parent_version_name'))||(!$c_vid=Input::get('child_version_name')))return [];
-		$name = uniqid () . '.doc';  $filename=public_path () . '/files/' . $name;
-		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], $filename);
-		$objPHPExcel=parent::tmp_export($filename,$p_vid,$c_vid);
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="result.xls"');
-		header('Cache-Control: max-age=0');
-		header('Cache-Control: max-age=1');
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-		header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-		header('Pragma: public'); // HTTP/1.0
-		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
-		
-	}
 	public function destroy($id){
 		$vats = VatBuild::find($id);
 		foreach ($vats->vatRss as $v){
@@ -71,9 +51,8 @@ class VatBuildController extends TmpExportController{
 
 	public function show(){
 		$relation_json = [];
-// 		$tc_vat=[];
-		$vat_tc=[];$parent_vat=[];
-// 		$tc_exist=[];$index=0; //TC-VAT
+		$vat_tc=[];$parent_vat=[];$vat_parent=[];
+		$parent_versions=[];
 		$vatbuild = VatBuild::find(Input::get('vat_build_id'));
 		$tcversion = $vatbuild->tcVersion;
 		$tcdoc = $tcversion->document;
@@ -81,6 +60,13 @@ class VatBuildController extends TmpExportController{
 		//        var_dump($tc_tags);
 		$rsversions = $vatbuild->rsVersions;
 		$parent_docs=$tcdoc->dest(); //直接父文档信息 如果有重复的情况，就用dest()吧
+		foreach($rsversions as $rsversion){ 
+		    foreach($parent_docs as $pd){
+		        if($pd->id==$rsversion->document_id) 
+		            array_push($parent_versions,$rsversion);
+		    }
+		}
+		
 		$relation_json['vat_build_id']=$vatbuild->id;
 		$relation_json['vat_build_name']=$vatbuild->name;
 		$relation_json['tc_doc_name']=$tcdoc->name;
@@ -89,95 +75,288 @@ class VatBuildController extends TmpExportController{
 		
 		//封装所有RS的VAT含有该TC item的条目
 		foreach ($rsversions as $rsversion){ //取rs vat_json中type=tc的id在tc_tag中检索
-			$vat_tc_each=[];$parent_vat_each=[];
+			$vat_tc_each=[];$vat_rs_each=[]; $parent_vat_each=[];
 			$rs_tags = $rsversion->rss;
 			$rsdoc = $rsversion->document;
-			//封装该TC的直接父文档的VAT信息
+			
+			//判断当前遍历的是否为其直接父文档
 			$found_flag=0;
-			foreach ($parent_docs as $pd){
-			    if($pd->id==$rsversion->document_id) {
+			foreach($parent_versions as $parent_version){
+			    if($rsversion==$parent_version) {
 			        $found_flag=1;break;
 			    }
 			}
 			
 			foreach($rs_tags as $rs_tag){
-				$tcs=[];$pt_each=[];
+			    $each_vat=[];
+				$tc_each_vat=[];$rs_each_vat=[];
+				$pt_each_vat=[];$pt_each_comment=[];
 				$rs_vat_json = $rs_tag->vat_json;
+				
+				//封装直接父文档的VAT信息
+				if($found_flag){
+				    $parent_vat_objs=json_decode($rs_vat_json);
+				    foreach ($parent_vat_objs as $parent_vat_obj){
+				        array_push($pt_each_vat,$parent_vat_obj->tag);
+				        if(property_exists($parent_vat_obj, 'comment') && $parent_vat_obj->comment){
+				            $vat_comment='{'.$parent_vat_obj->tag.":".$parent_vat_obj->comment.'}';
+				            array_push($pt_each_comment,$vat_comment);
+				        }
+				    }
+				}
+				
 				if($rs_vat_json && $rs_vat_json != 'Array' && $rs_vat_json != '[]'){
 					$rs_vat_json_objs = json_decode($rs_vat_json); //对象数组
-					//                    var_dump($rs_vat_json_objs);
 					foreach($rs_vat_json_objs as $rs_vat_json_obj){ //对象
-						//                        var_dump($rs_vat_json_obj);
+						//vat_json中包含该tc item
 						if($rs_vat_json_obj->type == 'tc'){
 							$tc_tag = DB::table('tc')->where('version_id',$vatbuild->tc_version_id)->where('id',$rs_vat_json_obj->id)->first();
 							if($tc_tag){
-							    //封装TC-VAT关系数据部分
-// 								if(!array_key_exists($tc_tag->id, $tc_exist)){ //Index
-// 									$tc_exist[$tc_tag->id]=$index;
-// 									//                                    var_dump($tc_exist);
-// 									$tmp_tc = array(
-//                                        "tc_tag_name"=>$tc_tag->tag,
-//                                        "tc_version_id"=>$tcversion->id,
-//                                        "tc_version_name"=>$tcversion->name,
-//                                        "rs_version_name"=>$rsversion->name,
-//                                        "rs_tag_name"=>$rs_tag->tag,
-//                                        "rs_doc_name"=>$rsdoc->name,
-// 									);
-// 									$tc_vat[$index]=$tmp_tc;
-// 									$index++;
-// 								}else{
-// 									$i=$tc_exist[$tc_tag->id];
-// 									//                                    array_push($tc_vat[$i]['rs_tag_name'], $rs_tag->name);
-// 									//                                    var_dump($tc_vat[$i]['rs_tag_name']);
-// 									$str=$tc_vat[$i]['rs_tag_name'] .",".$rs_tag->tag;
-// 									$tc_vat[$i]['rs_tag_name']=$str;
-// 								}
-								array_push($tcs,$tc_tag->tag);
-							}
-						}
-						//找到VAT中对应的父文档
-						if($found_flag){
-						    array_push($pt_each,$rs_vat_json_obj->tag);
-						}
+							    $exist_flag=0;
+							    foreach ($each_vat as &$each_vat_i){
+							        if($each_vat_i['vat_version_id']==$tcversion->id){
+							            $str_tmp=$each_vat_i['vat_tag_name'].",".$tc_tag->tag;
+							            $each_vat_i['vat_tag_name']=$str_tmp;
+							            if(property_exists($rs_vat_json_obj, 'comment') && $rs_vat_json_obj->comment){
+							                $each_vat_i['vat_comment'] .= '{'.$rs_vat_json_obj->tag.":".$rs_vat_json_obj->comment.'}';
+							            }
+							            $exist_flag=1;
+							            break;
+							        }
+							    }
+							    if(!$exist_flag){
+							        $tmp=array(
+							            "rs_version_id"=>$rsversion->id,
+							            "rs_version_name"=>$rsversion->name,
+							            "rs_tag_name"=>$rs_tag->tag,
+							            "rs_doc_name"=>$rsdoc->name,
+							            "vat_version_id"=>$tcversion->id,
+							            "vat_version_name"=>$tcversion->name,
+							            "vat_doc_name"=>$tcdoc->name,
+							            "vat_tag_name"=>$tc_tag->tag,
+							        );
+							        if(property_exists($rs_vat_json_obj, 'comment') && $rs_vat_json_obj->comment){
+							            $tmp['vat_comment']='{'.$rs_vat_json_obj->tag.":".$rs_vat_json_obj->comment.'}';
+							        }else{
+							            $tmp['vat_comment']='';
+							        }
+							        array_push($each_vat,$tmp);
+							    }
+							} //tc
+						}else if($rs_vat_json_obj->type == 'rs'){ //vat_json包含其直接父文档item
+						    foreach($parent_versions as $parent_version){
+						        $rs_item = DB::table('rs')->where('version_id',$parent_version->id)->where('id',$rs_vat_json_obj->id)->first();
+						        if($rs_item) {
+						            $parent_doc=DB::table('document')->where('id',$parent_version->document_id)->first();
+						            $exist_flag=0;
+						            foreach ($each_vat as &$each_vat_i){
+						                if($each_vat_i['vat_version_id']==$parent_version->id){
+						                    $str_tmp=$each_vat_i['vat_tag_name'].",".$rs_item->tag;
+						                    $each_vat_i['vat_tag_name']=$str_tmp;
+						                    if(property_exists($rs_vat_json_obj, 'comment') && $rs_vat_json_obj->comment){
+						                        $each_vat_i['vat_comment'] .= '{'.$rs_vat_json_obj->tag.":".$rs_vat_json_obj->comment.'}';
+						                    }
+						                    $exist_flag=1;
+						                    break;
+						                }
+						            }
+						            if(!$exist_flag){
+						                $tmp=array(
+						                    "rs_version_id"=>$rsversion->id,
+						                    "rs_version_name"=>$rsversion->name,
+						                    "rs_tag_name"=>$rs_tag->tag,
+						                    "rs_doc_name"=>$rsdoc->name,
+						                    "vat_version_id"=>$parent_version->id,
+						                    "vat_version_name"=>$parent_version->name,
+						                    "vat_doc_name"=>$parent_doc->name,
+						                    "vat_tag_name"=>$rs_item->tag,
+						                );
+						                if(property_exists($rs_vat_json_obj, 'comment') && $rs_vat_json_obj->comment){
+						                    $tmp['vat_comment']='{'.$rs_vat_json_obj->tag.":".$rs_vat_json_obj->comment.'}';
+						                }else{
+						                    $tmp['vat_comment']='';
+						                }
+						                array_push($each_vat,$tmp);
+						            }
+						        }
+						    }
+						}//type==rs foreach
 					}
+				} //rs_vat_json_objs foreach
+				
+				//其他阶段分配给本阶段的，包括vat_json中包含该TC的item以及包含其直接父文档tag的items
+				if($each_vat){
+// 				    var_dump($each_vat);
+				    foreach ($each_vat as &$each_vat_i){ //非引用的问题？
+// 				        var_dump($each_vat_i); 
+				        $vat_tc_each[]=$each_vat_i;
+// 				        array_push($vat_tc_each,$each_vat_i);
+				    }
 				}
 				
-				if($tcs){
-					$tmp_vat=array(
-                       "tc_version_name"=>$tcversion->name,
-                       "rs_version_id"=>$rsversion->id,
-                       "rs_version_name"=>$rsversion->name,
-                       "rs_tag_name"=>$rs_tag->tag,
-                       "rs_doc_name"=>$rsdoc->name,
-					);
-					$tmp_vat['tc_tag_name']=implode(',',$tcs);
-					$vat_tc_each[]=$tmp_vat;
-				}
-				if($pt_each){
+				//Parent item Vat组装
+				if($found_flag){
 				    $tmp_parent=array(
 				        "rs_version_id"=>$rsversion->id,
 				        "rs_version_name"=>$rsversion->name,
 				        "rs_tag_name"=>$rs_tag->tag,
 				        "rs_doc_name"=>$rsdoc->name,
 				    );
-				    $tmp_parent['rs_vat']=implode(',', $pt_each);
-				    $parent_vat_each[]=$tmp_parent;
+				    $tmp_parent['rs_vat']=implode(',', $pt_each_vat);
+				    $tmp_parent['rs_vat_comment']=implode(',', $pt_each_comment);
+				    array_push($parent_vat_each, $tmp_parent);
+// 				    $parent_vat_each[]=$tmp_parent;
 				}
-			}
+			}//rs_tags foreach
 			
-            if($parent_vat_each){
-                $parent_vat[]=$parent_vat_each;
-            }
-			if($vat_tc_each){
-				$vat_tc[]=$vat_tc_each;
-			}
-		}
+            if($found_flag) $parent_vat[]=$parent_vat_each;
+			if($vat_tc_each) $vat_tc[]=$vat_tc_each;
+		}//rsversions foreach
 		
-// 		$relation_json['tc_vat']=$tc_vat;
         $relation_json['parent_vat']=$parent_vat;
 		$relation_json['vat_tc']=$vat_tc;
 		return $relation_json;
 	}
-
+	
+	public function assigned_export(){
+	    if(!Input::get('vat_build_id') || !$vats=$this->show()) return [];
+	    $vat_tc=$vats['vat_tc'];
+	    $vat_tc_ex=[];
+	    if(Input::get('rs_version_id')){
+	        $active_sheet=0;
+	        foreach($vat_tc as $vat_tc_i){
+	            if(Input::get('rs_version_id')==$vat_tc_i[0]['rs_version_id']){
+	                $vat_tc_ex=$vat_tc_i;
+	                break;
+	            }
+	        }
+	        $objPHPExcel=parent::get_assigned($vat_tc_ex,$active_sheet);
+	    }else{
+	        $active_sheet=0;
+	        foreach($vat_tc as $vat_tc_i){
+	            $objPHPExcel=parent::get_assigned($vat_tc_i,$active_sheet);
+	            $active_sheet++;
+	        }
+	    }
+	    
+	    header('Content-Type: application/vnd.ms-excel');
+	    header('Content-Disposition: attachment;filename="其他阶段分配给本阶段的需求.xls"');
+	    header('Cache-Control: max-age=0');
+	    header('Cache-Control: max-age=1');
+	    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+	    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+	    header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+	    header('Pragma: public'); // HTTP/1.0
+	    $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+	    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+	    $objWriter->save('php://output');
+	}
+	
+	public function assign_export(){
+	    if(!Input::get('vat_build_id') || !$vats=$this->show()) return [];
+	    $parent_vat=$vats['parent_vat'];
+	    $parent_vat_ex=[];
+	    if(Input::get('rs_version_id')){
+	        $active_sheet=0;
+	        foreach($parent_vat as $parent_vat_i){
+	            if(Input::get('rs_version_id')==$parent_vat_i[0]['rs_version_id']){
+	                $parent_vat_ex=$parent_vat_i;
+	                break;
+	            }
+	        }
+	        $objPHPExcel=parent::get_assigned($parent_vat_ex,$active_sheet);
+	    }else{
+	        $active_sheet=0;
+	        foreach($parent_vat as $parent_vat_i){
+	            $objPHPExcel=parent::get_assigned($parent_vat_i,$active_sheet);
+	            $active_sheet++;
+	        }
+	    }
+	    $objPHPExcel=parent::get_assign($parent_vat_ex,$active_sheet);
+// 	    $objWriter->save("本阶段分配给其他阶段的需求.xls");
+	    header('Content-Type: application/vnd.ms-excel');
+	    header('Content-Disposition: attachment;filename="本阶段分配给其他阶段的需求.xls"');
+	    header('Cache-Control: max-age=0');
+	    header('Cache-Control: max-age=1');
+	    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+	    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+	    header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+	    header('Pragma: public'); // HTTP/1.0
+	    $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+	    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+	    $objWriter->save('php://output');
+	}
+	
+	public function all_export(){
+	    $this->assigned_export();
+	    $this->assign_export();
+	    
+// 	    if(!Input::get('vat_build_id')||!$vats=$this->show()) return [];
+// 	    $objPHPExcel=parent::get_all($vats);
+// 	    header('Content-Type: application/vnd.ms-excel');
+// 	    header('Content-Disposition: attachment;filename="vat_export.xls"');
+// 	    header('Cache-Control: max-age=0');
+// 	    header('Cache-Control: max-age=1');
+// 	    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+// 	    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+// 	    header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+// 	    header('Pragma: public'); // HTTP/1.0
+// 	    $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+// 	    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+// 	    $objWriter->save('php://output');
+	}
+	
+	public function export(){
+	    if((!$p_vid=Input::get('parent_version_name'))||(!$c_vid=Input::get('child_version_name')))return [];
+	    $name = uniqid () . '.doc';  $filename=public_path () . '/files/' . $name;
+	    move_uploaded_file ( $_FILES ["file"] ["tmp_name"], $filename);
+	    $objPHPExcel=parent::tmp_export($filename,$p_vid,$c_vid);
+	    header('Content-Type: application/vnd.ms-excel');
+	    header('Content-Disposition: attachment;filename="result.xls"');
+	    header('Cache-Control: max-age=0');
+	    header('Cache-Control: max-age=1');
+	    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+	    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
+	    header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+	    header('Pragma: public'); // HTTP/1.0
+	    $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+	    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+	    $objWriter->save('php://output');
+	}
+	
+	public function addFileToZip($path,$zip){
+	    $handler=opendir($path); //打开当前文件夹由$path指定。
+	    while(($filename=readdir($handler))!==false){
+	        if($filename != "." && $filename != ".."){//文件夹文件名字为'.'和‘..’，不要对他们进行操作
+	            if(is_dir($path."/".$filename)){// 如果读取的某个对象是文件夹，则递归
+	                $this->addFileToZip($path."/".$filename, $zip);
+	            }else{ //将文件加入zip对象
+	                $zip->addFile($path."/".$filename);
+	            }
+	        }
+	    }
+	    @closedir($path);
+	}
+	
+	public function del($path)
+	{
+	    if(is_dir($path))
+	    {
+	        $file_list= scandir($path);
+	        foreach ($file_list as $file)
+	        {
+	            if( $file!='.' && $file!='..')
+	            {
+	                $this->del($path.'/'.$file);
+	            }
+	        }
+	        @rmdir($path);  //这种方法不用判断文件夹是否为空,  因为不管开始时文件夹是否为空,到达这里的时候,都是空的
+	    }
+	    else
+	    {
+	        @unlink($path);    //这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
+	    }
+	    	
+	}
 }
 

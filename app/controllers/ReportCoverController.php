@@ -16,7 +16,7 @@ class ReportCoverController extends ExportReportController {
 		foreach($items as  $key=>$item){
 			//在此整理一波数组既可以了吧
 			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
-			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
+// 			$result[$item['Parent Requirement Tag']]['Parent Requirement Tag']=$item['Parent Requirement Tag'];
 			$items[$key]['Parent Requirement Text']=$parent?$parent->description():null;
 			$items[$key]['vat']=$parent->vat_json;$vat_result=[];
 			foreach((array)json_decode($parent->vat_json,true) as $item){
