@@ -208,19 +208,28 @@ class ReportController extends ExportReportController
 		foreach($array_child as $child){
 			if(in_array($parent['tag'],$child['sources']))
 			{
-				$flag=true;$tmp_id=Uuid::uuid4();
-				$datas[]=array(
+				$flag=true;$tmp_id=Uuid::uuid4();$flag=false;
+				foreach($datas as $key=>$value){
+					if($value['parent_id']==$parent['id']){
+						$flag=true;
+						$tmp_id=$value['id'];
+						break;
+					}
+				}
+				if(!$flag){
+					$datas[]=array(
 				 	 'parent_id'=>$parent['id'],
 					 'Parent Requirement Tag'=>$parent['tag'],
              	   	 'parent_type'=>'rs',
                      'report_id'=>$report->id,
 					 'id'=>$tmp_id
-				);
+					);	
+				}
 				$middles[]=array(
                		 'child_type'=>'tc',
 					 'Child Requirement Tag'=>$child['tag'],
              	     'child_id'=>$child['id'],
-					 'result_id'=>$child['result_id'],
+					 'result_id'=>$child['result_id'],//为空是那个
 					 'p_id'=>$tmp_id
 				);
 			}//if
