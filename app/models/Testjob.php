@@ -12,7 +12,7 @@ class Testjob extends BaseModel {
 	}
 	public function  vatbuild()
 	{
-	    return $this->belongsTo('VatBuild', 'vat_build_id');
+	    return $this->belongsTo('VatBuild', 'vat_build_id')->withTrashed();
 	}
 	
 	public function  rencents(){

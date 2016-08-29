@@ -1,8 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Input;
 
-
-
 class ExportController extends BaseController {
 
 

@@ -13,7 +13,7 @@ class ReportVerifyController extends  ExportReportController{
 		}
 		if(!$verify) return $datas;
 		foreach($verify  as $ver){
-			$array=array_keys($ver);$values=array_values($ver);$result=1;
+			$array=array_keys(array($ver));$values=array_values(array($ver));$result=1;
 			foreach($values as $value){
 				if($value)
 				$result*=(Result::find($value)->result);

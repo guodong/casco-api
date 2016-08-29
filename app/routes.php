@@ -1,7 +1,5 @@
 <?php
 
-
-
 Route::get('/test', 'TestController@index');
 Route::get('tc/export', 'TcController@export');
 Route::get('tc/matrix','TcController@matirx');
@@ -43,11 +41,15 @@ Route::get('reportcover/export','ReportCoverController@export');
 Route::resource('reportcover','ReportCoverController');
 Route::post('reportvats','ReportCoverController@post');
 Route::resource('reportcovers','ReportCoversController');
-Route::post('vat/export','VatBuildController@export');
+
+//Vat Module
+Route::get('vat/assigned','VatBuildController@assigned_export');
+Route::get('vat/assign','VatBuildController@assign_export');
+Route::get('vat/export_all','VatBuildController@all_export');
 Route::resource('vat','VatBuildController');
+Route::post('vat/export','VatBuildController@export');
 Route::get('vat/relations','VatBuildController@show');
-
-
+    
 Route::group(array('prefix' => 'testjob'), function()
 {
 Route::get('export','TestjobController@export');
