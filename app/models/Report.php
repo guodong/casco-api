@@ -20,7 +20,7 @@ class Report extends BaseModel {
 	}
 	public function  covers(){
 	
-	    return  $this->hasMany('ReportCover','report_id');
+	    return  $this->hasMany('ReportCover','report_id')->orderBy('Parent Requirement Tag','asc');
 	}
 	
 	public function  testjob(){
