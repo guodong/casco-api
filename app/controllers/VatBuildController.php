@@ -238,7 +238,6 @@ class VatBuildController extends VatExportController{
 	            $active_sheet++;
 	        }
 	    }
-	    
 	    header('Content-Type: application/vnd.ms-excel');
 	    header('Content-Disposition: attachment;filename="其他阶段分配给本阶段的需求.xls"');
 	    header('Cache-Control: max-age=0');
@@ -264,16 +263,14 @@ class VatBuildController extends VatExportController{
 	                break;
 	            }
 	        }
-	        $objPHPExcel=parent::get_assigned($parent_vat_ex,$active_sheet);
+	        $objPHPExcel=parent::get_assign($parent_vat_ex,$active_sheet);
 	    }else{
 	        $active_sheet=0;
 	        foreach($parent_vat as $parent_vat_i){
-	            $objPHPExcel=parent::get_assigned($parent_vat_i,$active_sheet);
+	            $objPHPExcel=parent::get_assign($parent_vat_i,$active_sheet);
 	            $active_sheet++;
 	        }
 	    }
-	    $objPHPExcel=parent::get_assign($parent_vat_ex,$active_sheet);
-// 	    $objWriter->save("本阶段分配给其他阶段的需求.xls");
 	    header('Content-Type: application/vnd.ms-excel');
 	    header('Content-Disposition: attachment;filename="本阶段分配给其他阶段的需求.xls"');
 	    header('Cache-Control: max-age=0');
@@ -288,22 +285,16 @@ class VatBuildController extends VatExportController{
 	}
 	
 	public function all_export(){
-	    $this->assigned_export();
-	    $this->assign_export();
-	    
-// 	    if(!Input::get('vat_build_id')||!$vats=$this->show()) return [];
-// 	    $objPHPExcel=parent::get_all($vats);
-// 	    header('Content-Type: application/vnd.ms-excel');
-// 	    header('Content-Disposition: attachment;filename="vat_export.xls"');
-// 	    header('Cache-Control: max-age=0');
-// 	    header('Cache-Control: max-age=1');
-// 	    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-// 	    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always
-// 	    header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
-// 	    header('Pragma: public'); // HTTP/1.0
-// 	    $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-// 	    $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-// 	    $objWriter->save('php://output');
+	    $type=Input::get('type');
+	    switch ($type){
+	        case 'Assign':
+	            $this->assign_export();
+	            break;
+	        case 'Assigned':
+	            $this->assigned_export();
+	            break;
+	       default: break;
+	    }
 	}
 	
 	public function export(){
@@ -324,39 +315,5 @@ class VatBuildController extends VatExportController{
 	    $objWriter->save('php://output');
 	}
 	
-	public function addFileToZip($path,$zip){
-	    $handler=opendir($path); //打开当前文件夹由$path指定。
-	    while(($filename=readdir($handler))!==false){
-	        if($filename != "." && $filename != ".."){//文件夹文件名字为'.'和‘..’，不要对他们进行操作
-	            if(is_dir($path."/".$filename)){// 如果读取的某个对象是文件夹，则递归
-	                $this->addFileToZip($path."/".$filename, $zip);
-	            }else{ //将文件加入zip对象
-	                $zip->addFile($path."/".$filename);
-	            }
-	        }
-	    }
-	    @closedir($path);
-	}
-	
-	public function del($path)
-	{
-	    if(is_dir($path))
-	    {
-	        $file_list= scandir($path);
-	        foreach ($file_list as $file)
-	        {
-	            if( $file!='.' && $file!='..')
-	            {
-	                $this->del($path.'/'.$file);
-	            }
-	        }
-	        @rmdir($path);  //这种方法不用判断文件夹是否为空,  因为不管开始时文件夹是否为空,到达这里的时候,都是空的
-	    }
-	    else
-	    {
-	        @unlink($path);    //这两个地方最好还是要用@屏蔽一下warning错误,看着闹心
-	    }
-	    	
-	}
 }
 

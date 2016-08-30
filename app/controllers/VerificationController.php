@@ -160,7 +160,7 @@ class VerificationController extends ExportController
 		define('p_prefix', '_Com');
 		if(!Input::get('v_id')) return [];
 // 		$ver=DB::table('verification')->where('id',Input::get('v_id'))->get(); //array
-//         $ver=Verification::where('id','=',Input::get('v_id'))->get(); //Eloquent collection{object}
+//      $ver=Verification::where('id','=',Input::get('v_id'))->get(); //Eloquent collection{object}
         $ver=Verification::find(Input::get('v_id')); //Object
 // 		var_dump($ver);
 		if (!$ver) return [];

@@ -43,6 +43,7 @@ class VatExportController extends BaseController {
 	    $objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setName('Arial');
 	    $objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setSize(10);
 	    $objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
+	    $objPHPExcel->getActiveSheet()->getStyle('D1:E'.count($vat))->getAlignment()->setWrapText(true); //设置单元格换行
 	
 	    //设置过滤
 	    $objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
@@ -71,9 +72,9 @@ class VatExportController extends BaseController {
 	    ->setCategory('assign vats');
 	    $objPHPExcel->createSheet();
 	    $objPHPExcel->setActiveSheetIndex($active_sheet);
-	    $objPHPExcel->getActiveSheet()->setTitle($vat[0]['rs_doc_name']); //sheet页命名
+        $objPHPExcel->getActiveSheet()->setTitle($vat[0]['rs_doc_name']); //sheet页命名
 	
-	    $array_config=array('A'=>20,'B'=>20,'C'=>20,'D'=>40,'E'=>20);$line_num=2;
+	    $array_config=array('A'=>20,'B'=>20,'C'=>20,'D'=>40,'E'=>40);$line_num=2;
 	    foreach($array_config as $key=>$config){
 	        $objPHPExcel->getActiveSheet()->getColumnDimension($key)->setWidth($config);
 	    }
@@ -87,7 +88,8 @@ class VatExportController extends BaseController {
 	    $objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setName('Arial');
 	    $objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getFont()->setSize(10);
 	    $objPHPExcel->getActiveSheet()->getStyle('A'.$line_num.':'.chr($i+ord('A')).$line_num)->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN);
-	
+	    $objPHPExcel->getActiveSheet()->getStyle('D1:E'.count($vat))->getAlignment()->setWrapText(true); //设置单元格换行
+	    
 	    //设置过滤
 	    $objPHPExcel->getActiveSheet()->setAutoFilter('A'.$line_num.':'.chr($i+ord('A')).$line_num);
 	    $row = 1+$line_num;
