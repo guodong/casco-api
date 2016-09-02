@@ -35,7 +35,7 @@ class ChildMatrixController extends ExportController {
 			$child_column=$child?$child->column():[];
 			$da['justification']=$parent?$parent->vat_json:[];
 			$da['Child Requirement Text']=$child?$child->description():null;$da['Parent Requirement Text']=$parent?$parent->description():null;
-			foreach($column=(array)$parent->column() as $key=>$val){
+			foreach($column=$parent?$parent->column():[] as $key=>$val){
 				switch($key){
 					case 'contribution':
 						array_key_exists('safety',(array)$child_column)?$da[$key]=$val.MID_COMPOSE.$child_column['safety']:$da[$key]=$val.MID_COMPOSE;
@@ -55,17 +55,11 @@ class ChildMatrixController extends ExportController {
 
 	public function  store(){
 
-
-
 	}
 
 
 
 	public function  show($id){
-
-
-
-
 
 	}
 
@@ -76,7 +70,6 @@ class ChildMatrixController extends ExportController {
 		$childs->update(Input::get());
 		$childs->save();
 		return $childs;
-
 
 	}
 

@@ -11,6 +11,5 @@ class ChildMatrix extends BaseModel {
 	
 	
 	
-	
 }
 ?>

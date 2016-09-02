@@ -162,75 +162,145 @@ class VerificationController extends ExportController
 // 		$ver=DB::table('verification')->where('id',Input::get('v_id'))->get(); //array
 //      $ver=Verification::where('id','=',Input::get('v_id'))->get(); //Eloquent collection{object}
         $ver=Verification::find(Input::get('v_id')); //Object
-// 		var_dump($ver);
 		if (!$ver) return [];
 		$ans = [];
-		// 从数据库中取太慢了吧,使用count就行了
 		$child = $ver->childVersion;
-		$num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->count();
-		$num_ok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'OK')->count();
-		$num_nok=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->count();
-		$num_na=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NA')->count();
-		$defect_num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->where(function($query){
-		    $query->where('Already described in completeness','like','NO')->orWhere('Already described in completeness',null);
-		})->count();
+        $cm=DB::table('child_matrix')->where('verification_id',$ver->id)->orderBy('Child Requirement Tag','asc')->get();
+        $info=[];$cm_tag='';
+        $num=count($cm);
+        $num_ok=$num_nok=$num_na=$defect_num=0;
+		for($i=0;$i<$num;$i++){
+		    $cm_i=(array)$cm[$i];
+// 		    var_dump($cm_i);
+		    if($cm_tag!=$cm_i['Child Requirement Tag']){
+		        $cm_tag=$cm_i['Child Requirement Tag'];
+		        $tmp=array(
+		            'c_tag'=>$cm_tag,
+		            'c_va_na'=>0,
+		            'c_va_ok'=>0,
+		            'c_va_nok'=>0,
+		            'c_adic'=>0,
+		        );
+		       while($cm_tag==$cm_i['Child Requirement Tag']){
+		            switch($cm_i['Verif_Assessment']){
+		                case 'NA':
+		                    $tmp['c_va_na']++;break;
+		                case 'OK':
+		                    $tmp['c_va_ok']++;break;
+		                case 'NOK':
+		                    $tmp['c_va_nok']++;break;
+		                default:break;
+		            }
+		            if('NOK'==$cm_i['Verif_Assessment'] && (!$cm_i['Already described in completeness'] || 'NO'==$cm_i['Already described in completeness']))
+		                $tmp['c_adic']++;
+		            if($i+1>=$num) break;
+		            $cm_i=(array)$cm[++$i];
+		        }
+		        if($tmp['c_va_na']) $num_na++;
+		        else if($tmp['c_va_nok']) $num_nok++;
+		        else $num_ok++;
+		        $defect_num+=$tmp['c_adic'];
+		        $info[]=$tmp; 
+		        $i--;
+		    }
+		}
+		$num=count($info);
+		
+// 		$defect_num=DB::table('child_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('Verif_Assessment', 'like', 'NOK')->where(function($query){
+// 		    $query->where('Already described in completeness','like','NO')->orWhere('Already described in completeness',null);
+// 		})->count();
 		$ans[] = array(
             'doc_name' => $child->document->name . c_prefix,
             'nb of req' => $num,
             'nb req OK' => $num_ok,
             'nb req NOK' => $num_nok,
             'nb req NA' => $num_na,
-            'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100,2) . '%' : 0,
+            'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100, 2) . '%' : 0,
             'defect_num' => $defect_num,
             'not_complete' => 'X',
             'wrong_coverage' => 'X',
             'logic_error' => 'X',
             'other' => 'X'
             );
-            foreach ($ver->parentVersions as $parent) {
-            	//             $middleware = DB::table('parent_matrix')->select(DB::raw('count(*) as num'))
-            	//                 ->where('verification_id', '=', $ver->id)
-            	//                 ->where('parent_v_id', '=', $parent->id);
-            	//             $num = $middleware->count();
-            	//             $middleware_nok = $middleware->where('Verif_Assesst', 'like', 'NOK');
-            	//             $num_ok = $middleware->where('Verif_Assesst', 'like', 'OK')->count();
-            	//             $num_nok = $middleware_nok->count();
-            	//             $num_na = $middleware->where('Verif_Assesst', 'like', 'NA')->count();
-            	//             $middleware = ParentMatrix::where('verification_id', '=', $ver->id);
-            	//             $defect_num = $middleware->where('Completeness', 'like', 'NOK')->count();;
-            	//             $not_complete = $middleware_nok->where('Defect Type', 'like', 'Not complete')->count();
-            	//             $wrong_coverage = $middleware_nok->where('Defect Type', 'like', 'Wrong coverage')->count();
-            	//             $logic_error = $middleware_nok->where('Defect Type', 'like', 'logic or description mistake')->count();
-            	//            可以使用闭包,孩子
-            	$num=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->count();
-            	$num_ok=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'OK')->count();
-            	$num_nok=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->count();
-            	$num_na=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NA')->count();
-            	$not_complete=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', '%Not complete%')->count();
-            	$wrong_coverage=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', '%Wrong coverage%')->count();
-            	$logic_error=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', '%logic or description mistake%')->count();
-            	$other=DB::table('parent_matrix')->select(DB::raw('count(*) as num'))->where('verification_id', '=', $ver->id)->where('parent_v_id', '=', $parent->id)->where('Verif_Assesst', 'like', 'NOK')->where('Defect Type', 'like', 'Other')->count();
-
-            	$ans[] = array(
-                'doc_name' => $parent->document->name . p_prefix,
-                'nb of req' => $num,
-                'nb req OK' => $num_ok,
-                'nb req NOK' => $num_nok,
-                'nb req NA' => $num_na,
-                'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100,2) . '%' : 0,
-                'defect_num' => $num_nok,
-                'not_complete' => $not_complete,
-                'wrong_coverage' => $wrong_coverage,
-                'logic_error' => $logic_error,
-                'other' => $other
-            	);
-            }
-            return $ans;
+		
+		foreach ($ver->parentVersions as $parent){
+		    $cm=DB::table('parent_matrix')->where('verification_id',$ver->id)->where('parent_v_id',$parent->id)->orderBy('Parent Requirement Tag','asc')->get();
+		    $info=[];$cm_tag='';
+		    $num=count($cm);
+		    $num_ok=$num_nok=$num_na=$defect_num=$not_complete=$wrong_coverage=$logic_error=$other=0;
+		    for($i=0;$i<$num;$i++){
+		        $cm_i=(array)$cm[$i];
+		        // 		    var_dump($cm_i);
+		        if($cm_tag!=$cm_i['Parent Requirement Tag']){
+		            $cm_tag=$cm_i['Parent Requirement Tag'];
+		            $tmp=array(
+		                'c_tag'=>$cm_tag,
+		                'c_va_na'=>0,
+		                'c_va_ok'=>0,
+		                'c_va_nok'=>0,
+		                'c_nok_nc'=>0,
+		                'c_nok_wc'=>0,
+		                'c_nok_le'=>0,
+		                'c_nok_o'=>0,
+		            );
+		            while($cm_tag==$cm_i['Parent Requirement Tag']){
+		                switch($cm_i['Verif_Assesst']){
+		                    case 'NA':
+		                        $tmp['c_va_na']++;break;
+		                    case 'OK':
+		                        $tmp['c_va_ok']++;break;
+		                    case 'NOK':
+		                        $tmp['c_va_nok']++;break;
+		                    default:break;
+		                }
+		                if('NOK'==$cm_i['Verif_Assesst']){
+		                    switch ($cm_i['Defect Type']){
+		                        case 'Not complete':
+		                            $tmp['c_nok_nc']++;break;
+		                        case 'Wrong coverage':
+		                            $tmp['c_nok_wc']++;break;
+		                        case 'logic or description mistake in Chil':
+		                        case 'logic or description mistake':
+		                            $tmp['c_nok_le']++;break;
+		                        case 'Other':
+		                            $tmp['c_nok_o']++;break;
+		                            default:break;
+		                    }
+		                }
+		                if($i+1>=$num) break;
+		                $cm_i=(array)$cm[++$i];
+		           }
+		          if($tmp['c_va_na']) $num_na++;
+		          else if($tmp['c_va_nok']) $num_nok++;
+		          else $num_ok++;
+		          $not_complete+=$tmp['c_nok_nc'];
+		          $wrong_coverage+=$tmp['c_nok_wc'];
+		          $logic_error+=$tmp['c_nok_le'];
+		          $other+=$tmp['c_nok_o'];
+		          $info[]=$tmp;
+		          $i--;
+		        }
+		    }
+		    $num=count($info);
+		    $ans[] = array(
+		        'doc_name' => $parent->document->name . p_prefix,
+		        'nb of req' => $num,
+		        'nb req OK' => $num_ok,
+		        'nb req NOK' => $num_nok,
+		        'nb req NA' => $num_na,
+		        'Percent of completeness' => ($num != 0) ? round(($num_ok / $num) * 100, 2) . '%' : 0,
+		        'defect_num' => $num_nok,
+		        'not_complete' => $not_complete,
+		        'wrong_coverage' => $wrong_coverage,
+		        'logic_error' => $logic_error,
+		        'other' => $other
+		    );
+		}
+		return $ans;
 	}
 
 	public function update($id)
 	{
-		
 		$t = Verification::find($id);
 		$t->update(Input::get());
 		if (! Input::get('data'))

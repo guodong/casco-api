@@ -53,7 +53,6 @@ class ParentMatrixController extends ExportController {
 	public function  store(){
 
 
-
 	}
 
 
@@ -69,8 +68,19 @@ class ParentMatrixController extends ExportController {
 
 	public function update($id){
 
-		$parents=ParentMatrix::find($id);
-		$parents->update(Input::get());
+		$parents=ParentMatrix::find($id); //object array
+		$parents->update(Input::get()); //先更新，再过滤数据
+		if(Input::get('Verif_Assesst') || Input::get('Defect Type')){
+		    if($parents['Verif_Assesst']!='NOK'){
+		        $parents['Defect Type']='';
+		    }
+		}
+// 		if($defect=Input::get('Defect Type')){
+// 		    if($parents['Verif_Assesst'] || $parents['Verif_Assesst']=='NA' || $parents['Verif_Assesst']=='OK'){
+// 		        $parents['Defect Type']='';
+// 		    }
+// 		}
+		
 		$parents->save();
 		return $parents;
 
