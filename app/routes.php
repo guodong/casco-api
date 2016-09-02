@@ -6,6 +6,7 @@ Route::get('tc/matrix','TcController@matirx');
 Route::resource('project', 'ProjectController');
 Route::get('tc/tc_steps', 'TcController@tc_steps');
 Route::get('tc/maxtag', 'TcController@maxtag');
+Route::post('rs/multivats','Rscontroller@multivats');
 Route::resource('rs', 'RsController');
 Route::resource('tc', 'TcController');
 Route::resource('document', 'DocumentController');

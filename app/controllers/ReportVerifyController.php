@@ -13,10 +13,14 @@ class ReportVerifyController extends  ExportReportController{
 		}
 		if(!$verify) return $datas;
 		foreach($verify  as $ver){
-			$array=array_keys(array($ver));$values=array_values(array($ver));$result=1;
+			//var_dump(array(json_decode($ver->tc_result,true)));exit;
+			$array=array_keys((array)json_decode($ver->tc_result));$values=array_values((array)json_decode($ver->tc_result));
+			$result=1;
 			foreach($values as $value){
-				if($value)
+				if($value){
+				//var_dump($value);
 				$result*=(Result::find($value)->result);
+				}
 				else
 				$result*=0;
 			}
@@ -49,8 +53,6 @@ class ReportVerifyController extends  ExportReportController{
 		return $verify;
 
 	}
-
-
 	public function  destroy($id)
 	{
 		$build=ReportVerify::find($id);

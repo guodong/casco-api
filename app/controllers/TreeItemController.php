@@ -9,7 +9,8 @@ class TreeItemController extends Controller
         $doc = Document::find($foder_id);
         if ($doc->type != 'folder') {
             if($doc->latest_version() == null){
-                return json_encode(array('children'=> array()));
+                return
+                 json_encode(array('children'=> array()));
             }
             switch ($doc->type) {
                 case 'rs':

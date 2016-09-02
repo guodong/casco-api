@@ -28,12 +28,6 @@ class ReportCoverController extends ExportReportController {
 			$vat_result=(array)json_decode($item['vats'],true);//var_dump($vat_result);
 			$vat_tag=$this->array_column($vat_result,'tag');
 			$vat_id=$this->array_column($vat_result,'id');
-			foreach($vat_result as $key=>$value){
-			if($value['type']!='vat'){
-			$result=Result::where('tc_id',$value['id'])->orderBy('created_at','desc')->first();
-			$vat_result[$key]['vat_result']=$result?($result->result.':'.$result->testjob->name.'-'.$result->testjob->build->name):null;
-			}
-			}
 			//在show层做一个统一处理
 			foreach((array)json_decode($parent->vat_json,true) as $item){
 			 if($item['type']=='vat'){
@@ -41,9 +35,11 @@ class ReportCoverController extends ExportReportController {
 			 		$item['vat_result']=0;
 			 		$item['comment']=null;
 			 		$vat_result[]=$item;
+			 	}else if(!array_key_exists('vat_result',$item)){
+			 		$item['vat_result']=0;
 			 	}
 			 	//$results*=(array_key_exists('vat_result',$item)?$item['vat_result']:0);
-			 	//$results*=$item['vat_result'];
+			 	    $results*=$item['vat_result'];
 			 }else{
 			 	//每次show则重新计算一下
 			 	if(!in_array($item['id'],$vat_id)){
@@ -52,11 +48,11 @@ class ReportCoverController extends ExportReportController {
 			 	$item['comment']=null;
 			 	$item['v_build']=$result->testjob->name.'-'.$result->testjob->build->name;
 			 	$vat_result[]=$item;
-			 	}else{//第一次取决于依赖了，后续固化掉
-			 	
+			 	}else if(!array_key_exists('vat_result',$item)){
+			 		$item['vat_result']=0;
 			 	}
 			 	//var_dump($item['vat_result']);
-			 	//$results*=($item['vat_result']);
+			 	$results*=($item['vat_result']);
 			 }
 			}
 			$items[$key]['vats']=json_encode($vat_result);
