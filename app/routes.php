@@ -35,6 +35,7 @@ Route::resource('version', 'VersionController');
 Route::get('projectuser','ProjectUserController@index');
 Route::get('childmatrix/export', 'ChildMatrixController@export');
 Route::get('parentmatrix/export', 'ParentMatrixController@export');
+Route::post('parentmatrix/updateall', 'ParentMatrixController@updateall');
 Route::resource('parentmatrix', 'ParentMatrixController');
 Route::resource('childmatrix', 'ChildMatrixController');
 Route::get('reportcover/export','ReportCoverController@export');

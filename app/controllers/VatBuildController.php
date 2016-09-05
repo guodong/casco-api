@@ -6,35 +6,40 @@ class VatBuildController extends VatExportController{
 	public function index(){
 		$ans = [];
 		$vats = Project::find(Input::get('project_id'))->vatbuilds;
-		if(!Input::get('document_id')){
-			foreach($vats as $v)
-			{$v->tcVersion && $v->tcVersion->document;
-			foreach($v->rsVersions as $rsv){
-				$rsv->document;
-			}
-			}
-			return  $vats;
-		}
+// 		if(!Input::get('document_id')){
+// 			foreach($vats as $v)
+// 			{$v->tcVersion && $v->tcVersion->document;
+// 			foreach($v->rsVersions as $rsv){
+// 				$rsv->document;
+// 			}
+// 			}
+// 			return  $vats;
+// 		}
 		foreach ($vats as $v){
 			if(!$v) continue;
-			if($v->tcVersion && $v->tcVersion->document->id == Input::get('document_id')){
-				$v->tcVersion->document;
-				$rsVersions = $v->rsVersions ? $v->rsVersions : [];
-				foreach($rsVersions as $vv){
-					$vv->document;
-				}
-				$ans[] = $v;
+			$docVersions = $v->docVersions ? $v->docVersions : [];
+			foreach($docVersions as $vv){
+				$vv->document;
 			}
+			$ans[] = $v;
 		}
 		return $ans;
 	}
 
 	public function store(){
-		if(!Input::get('tc_version_id') || !Input::get('name')) return;
 		$vats = VatBuild::create(Input::get());
-		foreach (Input::get('rs_versions') as $v){
-			if(array_key_exists('rs_version_id', $v)){
-				$vats->rsVersions()->attach($v['rs_version_id']);
+// 		$vat_docs=[];
+// 		foreach (Input::get('doc_versions') as $dv){
+// 		    $vat_docs[]=array(
+// 		        'vat_build_id' => $tcid,
+// 		        'testjob_id' => $job->id,
+// 		        'id'=>Uuid::uuid4()
+// 		    );
+// 		}
+// 		DB::table('result')->insert($data);
+		foreach (Input::get('doc_versions') as $v){
+			if(array_key_exists('doc_version_id', $v)){
+				$vats->docVersions()->attach($v['doc_version_id']);
 			}
 		}
 		return $vats;

@@ -14,8 +14,8 @@ class VatBuild extends BaseModel{
         return $this->belongsTo('Version','tc_version_id');
     }
     
-    public function rsVersions(){
-        return $this->belongsToMany('Version','vat_rs_version','vat_build_id','rs_version_id');
+    public function docVersions(){
+        return $this->belongsToMany('Version','vat_doc_version','vat_build_id','doc_version_id');
     }
     
     public function  directDests(){
@@ -32,7 +32,7 @@ class VatBuild extends BaseModel{
     
     
     public function vatRss() {
-        return $this->hasMany('VatRs','vat_build_id');
+        return $this->hasMany('VatDocs','vat_build_id');
     }
 
     
