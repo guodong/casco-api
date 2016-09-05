@@ -124,7 +124,7 @@ class ExportReportController extends BaseController {
 			$item['parent_type']=='rs'?$parent=Rs::find($item['parent_id']):$parent=Tc::find($item['parent_id']);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $parent?$parent->tag:null);//$item['Parent Requirement Tag']);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $parent?$parent->description():null);//$item['Parent Requirement Text']);
-			$child=(array)json_decode($item->middles);
+			$child=($item->middles);
 			//var_dump($child);exit;
 			$results=1;
 			$vats=(array)json_decode($item->vats,true);
