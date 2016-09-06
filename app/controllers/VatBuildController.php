@@ -58,12 +58,19 @@ class VatBuildController extends VatExportController{
 		$relation_json = [];
 		$vat_tc=[];$parent_vat=[];$vat_parent=[];
 		$parent_versions=[];
+		
 		$vatbuild = VatBuild::find(Input::get('vat_build_id'));
-		$tcversion = $vatbuild->tcVersion;
+		$tcversion = Version::find(Input::get('tc_version_id'));
 		$tcdoc = $tcversion->document;
 		$tc_tags = $tcversion->tcs;
 		//        var_dump($tc_tags);
-		$rsversions = $vatbuild->rsVersions;
+		$docversions = $vatbuild->docVersions;
+		$rsversions = [];
+		foreach ($docversions as $dv){
+		    $doci = Document::find($dv->document_id);
+		    if($doci->type == 'rs') $rsversions[]=$dv;
+		}
+// 		var_dump($rsversions);exit;
 		$parent_docs=$tcdoc->dest(); //直接父文档信息 如果有重复的情况，就用dest()吧
 		foreach($rsversions as $rsversion){ 
 		    foreach($parent_docs as $pd){
