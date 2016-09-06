@@ -6,15 +6,21 @@ class VatBuildController extends VatExportController{
 	public function index(){
 		$ans = [];
 		$vats = Project::find(Input::get('project_id'))->vatbuilds;
-// 		if(!Input::get('document_id')){
-// 			foreach($vats as $v)
-// 			{$v->tcVersion && $v->tcVersion->document;
-// 			foreach($v->rsVersions as $rsv){
-// 				$rsv->document;
-// 			}
-// 			}
-// 			return  $vats;
-// 		}
+		if(Input::get('document_id')){
+			foreach($vats as $v){
+			    if(!$v) continue;
+			    $rsdocs = [];
+			    $docVersions = $v->docVersions ? $v->docVersions : [];
+			    foreach($docVersions as $vv){
+				    if($vv->document->id == Input::get('document_id')){ //条件中也会取document
+				        $v->tc_version_id = $vv->id;
+// 				        $ans[]=array('tc_version_id'=>Input::get('document_id'));
+				    }
+			     }
+			     if($v->tc_version_id) $ans[] = $v;
+			}
+			return  $ans;
+		}
 		foreach ($vats as $v){
 			if(!$v) continue;
 			$docVersions = $v->docVersions ? $v->docVersions : [];

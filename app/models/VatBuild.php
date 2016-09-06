@@ -24,7 +24,6 @@ class VatBuild extends BaseModel{
         foreach ($docvers as $dv){
             $doci = Document::find($dv->document_id);
             if($doci->type == 'rs') $rsvers[]=$dv;
-            var_dump($doci);
         }
         return $rsvers;
 //         return $this->belongsToMany('Version','vat_rs_version','vat_build_id','rs_version_id');
