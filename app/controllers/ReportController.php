@@ -13,11 +13,11 @@ class ReportController extends ExportReportController
 			//&&短路原则很有，版本的原则哦
 			if(!$v->testjob||!$v->testjob->vatbuild)
 			{$v['docs']=[];$datas[]=$v;continue;}
-			foreach($v->testjob->vatbuild->rsVersions as $value){
+			foreach($v->testjob->vatbuild->docVersions as $value){
 				$value->document;
 			}
-			$v['docs']=$v->testjob->vatbuild->rsVersions;
-			$v->testjob->vatbuild->tcVersion->document;
+			$v['docs']=$v->testjob->vatbuild->docVersions;
+			$v->testjob->tcVersion->document;
 			$datas[]=$v;
 		}
 		return $datas;
@@ -149,16 +149,14 @@ class ReportController extends ExportReportController
 			$job->testjob_id=Input::get('test_id');
 			$test=Testjob::find(Input::get('test_id'));
 			$rencents=$test->rencents();$all_rs=[];$results=$shits=[];$last=1;
-			$test->vatbuild&&($all_rs=$test->vatbuild->rsVersions);
+			$test->vatbuild&&($all_rs=$test->vatbuild->docVersions);
 			foreach ($rencents as $key=>$value){
 				$item=Tc::find($value['tc_id']);
 				$child=$item->toArray();
 				$child['sources']=$item?$item->sources():[];
-				//没有的则是untested的
 				$child['result_id']=array_key_exists('id',$value)?$value['id']:null;
 				$array_child[]=$child;
 				$results[]=$value['tc_id'];
-				//存入相应的result_id
 				$shits[$value['tc_id']]=array_key_exists('id',$value)?$value['id']:null;
 				//单独存储一份好了
 				ReportResult::create(array(
@@ -190,7 +188,7 @@ class ReportController extends ExportReportController
 			 }//rss
 			}//$r
 			//还需要建立另外一张表吧
-			$parents=$test->vatbuild->directDests();
+			$parents=$test->directDests();
 			$job->save();//失败了就不save了
 			$this->cover_status((array)$parents,(array)$array_child,$job);
 			DB::commit();

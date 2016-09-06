@@ -42,32 +42,20 @@ class RsController extends Controller{
 	}
 
 	public  $tags = [];
-	public function getTags_down($item)
+	private function getTags_down($sss)
 	{
-		//if(!$item||!$item->verison||!$item->version->document){echo 'error';var_dump($item);echo 'shit';var_dump($item->version);return;}
-		$sss=$item->srcs();
+		
 		foreach ($sss as $v){
 			if ($v&&!in_array($v->toArray(), $this->tags)){
-				$tmp=$v->toArray();$tmp['mark']='down';
-				$this->tags[] = $tmp;
-				$this->getTags_down($v);
+				$tmp=$v;//$tmp['mark']='down';
+				$this->tags[] = $tmp->toArray();
+				$this->getTags_down($v->srcs());
+				$this->getTags_down($v->dests());
+				
 			}
 		}
 	}
-
-	public  function getTags_up($item)
-	{
-		    if(!$item)return;
-			$sss=$item->dests();
-			//var_dump($sss);
-			foreach ($sss as $v){
-				if ($v&&!in_array($v->toArray(), $this->tags)){
-					$tmp=$v->toArray();$tmp['mark']='up';
-					$this->tags[] = $tmp;
-					$this->getTags_up($v);
-				}
-			}
-	}
+	
 	
 	public function index()
 	{
@@ -132,29 +120,23 @@ class RsController extends Controller{
 
 	public function multivats(){
 		$rs=Input::get('rs');
-		$vat_rs=Input::get('versions');//vatversion
-		//var_dump(Input::get('versions'),(array)json_decode(Input::get('verisons')));
-		//var_dump((array)$rs,$vat_rs);
+		$vat_rs=Input::get('versions');
 		foreach((array)$rs  as $key=>$value){
 			$r=Rs::find($value);
 			if(!$r)continue;
-			$this->getTags_down($r);
-			$this->getTags_up($r);
+			$this->getTags_down((array)$r->srcs());
+			//$this->getTags_up($r);
 			if(count($this->array_column($this->tags,'id'))<=0){continue;}
 			$vata =Rs::whereIn('version_id',$vat_rs)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 			$vatb=Tc::whereIn('version_id',$vat_rs)->whereIn('id',$this->array_column($this->tags,'id'))->get();
-			//var_dump($vata,$vatb);
-			//$vats=array_merge($vata[0],$vatb[0]);
 			$array=(array)json_decode($r->vat_json,true);
 			foreach($vata as $m=>$n){
-				var_dump($n);
 				if(!$n)continue;
 				if(!in_array($n->id,$this->array_column($array,'id'))){
 					$array[]=array('id'=>$n->id,'tag'=>$n->tag,'type'=>$n->version->document->type);
 				}
 			}
 			foreach($vatb as $m=>$n){
-				var_dump($n);
 				if(!$n)continue;
 				if(!in_array($n->id,$this->array_column($array,'id'))){
 					$array[]=array('id'=>$n->id,'tag'=>$n->tag,'type'=>$n->version->document->type);
