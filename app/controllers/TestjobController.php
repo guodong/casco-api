@@ -14,6 +14,7 @@ class TestjobController extends BaseController{
 	}
 	public function index()
 	{
+	    $testjobs = [];
 		$jobs = Project::find(Input::get('project_id'))->testjobs;
 		if(Input::get('child_id')){
 			$data=[];
@@ -30,11 +31,15 @@ class TestjobController extends BaseController{
 			if(!$v)continue;
 			$v->user;
 			$v->build;
-			$v->vatbuild&&$v->vatbuild->tcVersion->document;
-			$vss =($v->vatbuild&&$v->vatbuild->rsVersions)?$v->vatbuild->rsVersions:[];
+// 			$v->vatbuild&&$rs_versions  =$v->vatbuild->rsVersions(); //非ORM数据添加
+			$v->tcVersion&&$v->tcVersion->document;
+			$vss =($v->vatbuild&&$v->vatbuild->docVersions)?$v->vatbuild->docVersions:[];
 			foreach ($vss as $vatrs){
 			    $vatrs->document;
 			}
+// 			$v_arr = json_decode(json_encode($v),true);
+// 			$v_arr['rs_versions'] = $vss;
+// 			$testjobs[]=(object)$v_arr;
 		}
 		return $jobs;
 	}

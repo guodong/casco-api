@@ -3,7 +3,7 @@ class Testjob extends BaseModel {
 	
 	use SoftDeletingTrait;
 	protected $table = 'testjob';
-	protected $fillable = array('name', 'project_id', 'build_id', 'vat_build_id', 'user_id','status','created_at','updated_at');
+	protected $fillable = array('name', 'project_id', 'build_id', 'vat_build_id', 'tc_version_id','user_id','status','created_at','updated_at');
 	protected $dates=['deleted_at'];
     
 	public function build()
@@ -14,11 +14,13 @@ class Testjob extends BaseModel {
 	{
 	    return $this->belongsTo('VatBuild', 'vat_build_id')->withTrashed();
 	}
-	
+ 	public function tcVersion(){
+        return $this->belongsTo('Version','tc_version_id');
+    }
 	public function  rencents(){
-		
-		$tests=Testjob::where('vat_build_id',$this->vat_build_id)->where('created_at','<=',$this->created_at)->get();
-		$tmp=[];$ans=[];$tcs=[];$this->vatbuild&&($tcs=$this->vatbuild->tcVersion->tcs);
+		//而且tc_version也要一致的吧
+		$tests=Testjob::where('vat_build_id',$this->vat_build_id)->where('tc_version_id',$this->tc_version_id)->where('created_at','<=',$this->created_at)->get();
+		$tmp=[];$ans=[];$tcs=[];$this->vatbuild&&($tcs=$this->tcVersion->tcs);
 		foreach($tests as $v){
 			//var_dump($v->results);
 			foreach((array)json_decode($v->results,true) as $data){
@@ -39,7 +41,18 @@ class Testjob extends BaseModel {
 		}
 		return $tmp;
 	}
-
+	
+	 public function  directDests(){
+    	$data=[];
+    	$doc=$this->tcVersion->document->dest();
+    	foreach($doc as $d){
+    		foreach($this->rsVersions as $rs_ver){
+    			($rs_ver->document->id==$d->id)&&$data=array_merge($data,$rs_ver->rss->toArray());
+    		}
+    	}
+    	return $data;
+    	
+    }
 	public function results()
 	{
 	    return $this->hasMany('Result', 'testjob_id');

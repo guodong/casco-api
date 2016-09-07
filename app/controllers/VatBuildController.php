@@ -9,25 +9,45 @@ class VatBuildController extends VatExportController{
 		if(Input::get('document_id')){
 			foreach($vats as $v){
 			    if(!$v) continue;
-			    $rsdocs = [];
-			    $docVersions = $v->docVersions ? $v->docVersions : [];
+			    $docVersions = $v->docVersions ? $v->docVersions : []; 
 			    foreach($docVersions as $vv){
-				    if($vv->document->id == Input::get('document_id')){ //条件中也会取document
+				    if($vv->document->id == Input::get('document_id')){ //ORM的会返回
 				        $v->tc_version_id = $vv->id;
 // 				        $ans[]=array('tc_version_id'=>Input::get('document_id'));
 				    }
 			     }
 			     if($v->tc_version_id) $ans[] = $v;
 			}
-			return  $ans;
-		}
-		foreach ($vats as $v){
-			if(!$v) continue;
-			$docVersions = $v->docVersions ? $v->docVersions : [];
-			foreach($docVersions as $vv){
-				$vv->document;
-			}
-			$ans[] = $v;
+		}elseif(Input::get('type')){
+		    foreach($vats as $v){
+		        if(!$v) continue;
+		        $tc_versions = $v->tcVersions();
+		        foreach($tc_versions as $vv){
+		            $vv->document; //object
+// 		            var_dump($vv->document); 
+		        }
+		        $rs_versions = $v->rsVersions();
+		        foreach($rs_versions as $vv){
+		            $vv->document;
+		        }
+// 		        $data = new stdClass();
+// 		        $data->vat_build = $v;
+// 		        $data->tc_versions = $tc_versions;
+// 		        $data->rs_versions = $rs_versions;
+                $v_arr = json_decode(json_encode($v),true);
+                $v_arr['tc_versions'] = $tc_versions;
+                $v_arr['rs_versions'] = $rs_versions;
+		        $ans[]=(object)$v_arr;
+		    }
+		}else{
+		    foreach ($vats as $v){
+		        if(!$v) continue;
+		        $docVersions = $v->docVersions ? $v->docVersions : [];
+		        foreach($docVersions as $vv){
+		            $vv->document;
+		        }
+		        $ans[] = $v;
+		    }
 		}
 		return $ans;
 	}
@@ -70,12 +90,13 @@ class VatBuildController extends VatExportController{
 		$tcdoc = $tcversion->document;
 		$tc_tags = $tcversion->tcs;
 		//        var_dump($tc_tags);
-		$docversions = $vatbuild->docVersions;
-		$rsversions = [];
-		foreach ($docversions as $dv){
-		    $doci = Document::find($dv->document_id);
-		    if($doci->type == 'rs') $rsversions[]=$dv;
-		}
+// 		$docversions = $vatbuild->docVersions;
+// 		$rsversions = [];
+// 		foreach ($docversions as $dv){
+// 		    $doci = Document::find($dv->document_id);
+// 		    if($doci->type == 'rs') $rsversions[]=$dv;
+// 		}
+        $rsversions = $vatbuild->rsVersions();
 // 		var_dump($rsversions);exit;
 		$parent_docs=$tcdoc->dest(); //直接父文档信息 如果有重复的情况，就用dest()吧
 		foreach($rsversions as $rsversion){ 

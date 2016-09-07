@@ -10,9 +10,6 @@ class VatBuild extends BaseModel{
         return $this->belongsTo('Project','project_id');
     }
     
-    public function tcVersion(){
-        return $this->belongsTo('Version','tc_version_id');
-    }
     
     public function docVersions(){
         return $this->belongsToMany('Version','vat_doc_version','vat_build_id','doc_version_id');
@@ -20,13 +17,20 @@ class VatBuild extends BaseModel{
 
     public function rsVersions(){
         $rsvers = [];
-        $docvers = $this->docVersions();
+        $docvers = $this->docVersions;
         foreach ($docvers as $dv){
-            $doci = Document::find($dv->document_id);
-            if($doci->type == 'rs') $rsvers[]=$dv;
+            if(Document::find($dv->document_id)->type == 'rs') $rsvers[]=$dv;
         }
         return $rsvers;
-//         return $this->belongsToMany('Version','vat_rs_version','vat_build_id','rs_version_id');
+    }
+    
+    public function tcVersions(){
+        $tcvers = [];
+        $docvers = $this->docVersions;
+        foreach ($docvers as $dv){
+            if(Document::find($dv->document_id)->type == 'tc') $tcvers[]=$dv;
+        }
+        return $tcvers;
     }
     
     public function  directDests(){
