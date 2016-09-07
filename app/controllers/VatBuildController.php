@@ -13,7 +13,6 @@ class VatBuildController extends VatExportController{
 			    foreach($docVersions as $vv){
 				    if($vv->document->id == Input::get('document_id')){ //ORM的会返回
 				        $v->tc_version_id = $vv->id;
-// 				        $ans[]=array('tc_version_id'=>Input::get('document_id'));
 				    }
 			     }
 			     if($v->tc_version_id) $ans[] = $v;
@@ -54,15 +53,6 @@ class VatBuildController extends VatExportController{
 
 	public function store(){
 		$vats = VatBuild::create(Input::get());
-// 		$vat_docs=[];
-// 		foreach (Input::get('doc_versions') as $dv){
-// 		    $vat_docs[]=array(
-// 		        'vat_build_id' => $tcid,
-// 		        'testjob_id' => $job->id,
-// 		        'id'=>Uuid::uuid4()
-// 		    );
-// 		}
-// 		DB::table('result')->insert($data);
 		foreach (Input::get('doc_versions') as $v){
 			if(array_key_exists('doc_version_id', $v)){
 				$vats->docVersions()->attach($v['doc_version_id']);
@@ -84,12 +74,10 @@ class VatBuildController extends VatExportController{
 		$relation_json = [];
 		$vat_tc=[];$parent_vat=[];$vat_parent=[];
 		$parent_versions=[];
-		
 		$vatbuild = VatBuild::find(Input::get('vat_build_id'));
 		$tcversion = Version::find(Input::get('tc_version_id'));
 		$tcdoc = $tcversion->document;
 		$tc_tags = $tcversion->tcs;
-		//        var_dump($tc_tags);
 // 		$docversions = $vatbuild->docVersions;
 // 		$rsversions = [];
 // 		foreach ($docversions as $dv){
@@ -97,7 +85,6 @@ class VatBuildController extends VatExportController{
 // 		    if($doci->type == 'rs') $rsversions[]=$dv;
 // 		}
         $rsversions = $vatbuild->rsVersions();
-// 		var_dump($rsversions);exit;
 		$parent_docs=$tcdoc->dest(); //直接父文档信息 如果有重复的情况，就用dest()吧
 		foreach($rsversions as $rsversion){ 
 		    foreach($parent_docs as $pd){
@@ -225,11 +212,8 @@ class VatBuildController extends VatExportController{
 				
 				//其他阶段分配给本阶段的，包括vat_json中包含该TC的item以及包含其直接父文档tag的items
 				if($each_vat){
-// 				    var_dump($each_vat);
 				    foreach ($each_vat as &$each_vat_i){ //非引用的问题？
-// 				        var_dump($each_vat_i); 
 				        $vat_tc_each[]=$each_vat_i;
-// 				        array_push($vat_tc_each,$each_vat_i);
 				    }
 				}
 				
@@ -244,7 +228,6 @@ class VatBuildController extends VatExportController{
 				    $tmp_parent['rs_vat']=implode(',', $pt_each_vat);
 				    $tmp_parent['rs_vat_comment']=implode(',', $pt_each_comment);
 				    array_push($parent_vat_each, $tmp_parent);
-// 				    $parent_vat_each[]=$tmp_parent;
 				}
 			}//rs_tags foreach
 			

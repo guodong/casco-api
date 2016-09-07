@@ -33,18 +33,7 @@ class VatBuild extends BaseModel{
         return $tcvers;
     }
     
-    public function  directDests(){
-    	$data=[];
-    	$doc=$this->tcVersion->document->dest();
-    	foreach($doc as $d){
-    		foreach($this->rsVersions as $rs_ver){
-    			($rs_ver->document->id==$d->id)&&$data=array_merge($data,$rs_ver->rss->toArray());
-    		}
-    	}
-    	return $data;
-    	
-    }
-    
+   
     
     public function vatRss() {
         return $this->hasMany('VatDocs','vat_build_id');

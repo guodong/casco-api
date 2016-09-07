@@ -32,23 +32,24 @@ class TreeVatController extends Controller
             return json_encode($r);
 	}
 	private $tags = [];
-	private function getTags_down($item)
+	private function getTags_down($sss)
 	{
-		//if(!$item||!$item->verison||!$item->version->document){echo 'error';var_dump($item);echo 'shit';var_dump($item->version);return;}
-		$sss=$item->srcs();
+		
 		foreach ($sss as $v){
 			if ($v&&!in_array($v->toArray(), $this->tags)){
-				$tmp=$v->toArray();$tmp['mark']='down';
-				$this->tags[] = $tmp;
-				$this->getTags_down($v);
+				$tmp=$v;//$tmp['mark']='down';
+				$this->tags[] = $tmp->toArray();
+				$this->getTags_down($v->srcs());
+				$this->getTags_down($v->dests());
+				
 			}
 		}
 	}
 
-	private function getTags_up($item)
+	private function getTags_up($sss)
 	{
 		    if(!$item)return;
-			$sss=$item->dests();
+			//$sss=$item->dests();
 			//var_dump($sss);
 			foreach ($sss as $v){
 				if ($v&&!in_array($v->toArray(), $this->tags)){
@@ -139,20 +140,20 @@ class TreeVatController extends Controller
 			switch ($docs->type) {
 				case 'rs':
 					$rsitem = Rs::find(Input::get('rs_id'));
-					$this->getTags_down($rsitem);
-					$this->getTags_up($rsitem);
+					//var_dump($rsitem->srcs());
+					$this->getTags_down((array)$rsitem->srcs());
+					//$this->getTags_down($rsitem->dests());
 					if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
-
 					//var_dump($this->array_column($this->tags,'id'));
 					$items =Rs::where('version_id','=', $version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					break;
 				case 'tc':
 					$rsitem = Rs::find(Input::get('rs_id'));
 					
-					$this->getTags_down($rsitem);
-					$this->getTags_up($rsitem);
+					$this->getTags_down($rsitem->srcs());
+					$this->getTags_down($rsitem->dests());
 					if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
-//var_dump(count($this->array_column($this->tags,'id')));exit;
+					//var_dump(count($this->array_column($this->tags,'id')));exit;
 					$items =Tc::where('version_id','=',$version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					/*Tc::where('version_id','=', $version->id)->where(function ($query)use($rsitem){
 					 $query->orWhere('column', 'like', '%"source":%' . $rsitem->tag . '%');
