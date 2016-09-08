@@ -46,7 +46,7 @@ class Testjob extends BaseModel {
     	$data=[];
     	$doc=$this->tcVersion->document->dest();
     	foreach($doc as $d){
-    		foreach($this->rsVersions as $rs_ver){
+    		foreach($this->vatbuild->rsVersions() as $rs_ver){
     			($rs_ver->document->id==$d->id)&&$data=array_merge($data,$rs_ver->rss->toArray());
     		}
     	}

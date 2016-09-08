@@ -19,11 +19,10 @@ class TestjobController extends BaseController{
 		if(Input::get('child_id')){
 			$data=[];
 			foreach ($jobs as $v){
- 			if(!$v||!$v->vatbuild||!($tcVersions=$v->vatbuild->tcVersion))continue;
+ 			if(!$v||!$v->vatbuild||!($tcVersions=$v->tcVersion))continue;
 			if($tcVersions->document->id==Input::get('child_id')){
 			$data[]=$v;
 			}
- 			continue;
 			}//foreach
 			return $data;
 		}
@@ -31,15 +30,11 @@ class TestjobController extends BaseController{
 			if(!$v)continue;
 			$v->user;
 			$v->build;
-// 			$v->vatbuild&&$rs_versions  =$v->vatbuild->rsVersions(); //非ORM数据添加
 			$v->tcVersion&&$v->tcVersion->document;
 			$vss =($v->vatbuild&&$v->vatbuild->docVersions)?$v->vatbuild->docVersions:[];
 			foreach ($vss as $vatrs){
 			    $vatrs->document;
 			}
-// 			$v_arr = json_decode(json_encode($v),true);
-// 			$v_arr['rs_versions'] = $vss;
-// 			$testjobs[]=(object)$v_arr;
 		}
 		return $jobs;
 	}
@@ -64,6 +59,8 @@ class TestjobController extends BaseController{
 			$data[]=array(
 	            'tc_id' => $tcid,
 	            'testjob_id' => $job->id,
+				'created_at'=> date('Y-m-d H:i:s'),
+				'updated_at'=> date('Y-m-d H:i:s'),
 				'id'=>Uuid::uuid4()
 			);
 		}

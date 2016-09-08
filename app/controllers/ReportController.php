@@ -17,7 +17,7 @@ class ReportController extends ExportReportController
 				$value->document;
 			}
 			$v['docs']=$v->testjob->vatbuild->docVersions;
-			$v->testjob->tcVersion->document;
+			$v->testjob->tcVersion&&$v->testjob->tcVersion->document;
 			$datas[]=$v;
 		}
 		return $datas;
@@ -46,11 +46,7 @@ class ReportController extends ExportReportController
 		}
 		return $datas;
 	}
-	public function  show($id){
-		$vefs=[];
-		$vefs=Report::find($id);
-		return $vefs;
-	}
+	
 
 	public function array_column($input,$column_key,$index_key=''){
 
@@ -221,6 +217,8 @@ class ReportController extends ExportReportController
 					 'Parent Requirement Tag'=>$parent['tag'],
              	   	 'parent_type'=>'rs',
                      'report_id'=>$report->id,
+					 'created_at'=> date('Y-m-d H:i:s'),
+				     'updated_at'=> date('Y-m-d H:i:s'),
 					 'id'=>$tmp_id
 					);	
 				}
@@ -228,6 +226,8 @@ class ReportController extends ExportReportController
                		 'child_type'=>'tc',
 					 'Child Requirement Tag'=>$child['tag'],
              	     'child_id'=>$child['id'],
+					 'created_at'=> date('Y-m-d H:i:s'),
+				     'updated_at'=> date('Y-m-d H:i:s'),
 					 'result_id'=>$child['result_id'],//为空是那个
 					 'p_id'=>$tmp_id
 				);

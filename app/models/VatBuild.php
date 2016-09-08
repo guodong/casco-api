@@ -19,7 +19,7 @@ class VatBuild extends BaseModel{
         $rsvers = [];
         $docvers = $this->docVersions;
         foreach ($docvers as $dv){
-            if(Document::find($dv->document_id)->type == 'rs') $rsvers[]=$dv;
+            if($dv->document->type == 'rs') $rsvers[]=$dv;
         }
         return $rsvers;
     }
