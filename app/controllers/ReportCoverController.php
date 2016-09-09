@@ -26,9 +26,9 @@ class ReportCoverController extends ExportReportController {
 			foreach((array)json_decode($parent->vat_json,true) as $item){
 			 if($item['type']=='vat'){
 			 		$flag=false;
-			 		foreach($vat_result as $key=>$value){
+			 		foreach($vat_result as $value){
 			 			if($value['id']==$item['id']){
-			 			if(!array_key_exists('vat_result',$item))$item['vat_result']=0;
+			 			$item['vat_result']=$value['vat_result'];global $flag;
 			 			$flag=true;break;
 			 			}
 			 		}
@@ -41,13 +41,15 @@ class ReportCoverController extends ExportReportController {
 			 }else{
 			 	//每次show则重新计算一下
 			 		$flag=false;
-			 		if("9d5fd871-877b-4f50-8c21-d3ba29b3aba1"==$items[$key]['id']){
-						var_dump('haha');
-						}
-			 		foreach($vat_result as $key=>$value){
+			  		//if("9d5fd871-877b-4f50-8c21-d3ba29b3aba1"==$items[$key]['id']){
+					//	var_dump($results);
+					//	var_dump('fuck you!');
+					//	}
+			 		foreach($vat_result as $value){
 			 			if($value['id']==$item['id']){
-			 			if(!array_key_exists('vat_result',$item))$item['vat_result']=0;
-			 			$flag=true;break;
+			 			//var_dump($vat_result,$items[$key]['vats']);
+			 			$item['vat_result']=$value['vat_result'];global $flag;
+			 			$flag=true;//break;
 			 			}
 			 		}
 			 		if(!$flag){
@@ -58,10 +60,7 @@ class ReportCoverController extends ExportReportController {
 					 	$vat_result[]=$item;	
 			 		}
 			 	    $results*=$item['vat_result'];
-					 if("9d5fd871-877b-4f50-8c21-d3ba29b3aba1"==$items[$key]['id']){
-						var_dump('hehe');
-					}
-			}
+			}//else
 			}//foreach
 			$items[$key]['vats']=json_encode($vat_result);
 			$items[$key]['result']=$results;
