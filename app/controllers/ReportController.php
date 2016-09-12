@@ -171,7 +171,6 @@ class ReportController extends ExportReportController
 					if(count($bak_tc)<=0)continue;
 					foreach ($bak_tc  as $id){
 						if(array_key_exists($id,$shits)){
-							//array_push($res,array($id=>$shits[$id]));
 							$res[$id]=$shits[$id];
 						}
 					}

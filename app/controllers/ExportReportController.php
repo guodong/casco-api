@@ -21,7 +21,7 @@ class ExportReportController extends BaseController {
 		$objPHPExcel=$this->objPHPExcel;
 		$circle =array('col'=>'C','row' => 4);
 		$config = array(0=>'Test Case ID',1=>'Test Case Description',2=>'Pass/Fail',3=>'Version Tested');
-		$testjob=$report->get_results();
+		$testjob=$report->results;
 		$objPHPExcel->createSheet();
 		$objPHPExcel->setActiveSheetIndex($active_sheet);
 	 foreach ($config as $key => $val) {
@@ -47,16 +47,16 @@ class ExportReportController extends BaseController {
 	 	->setSize(15);
 	 }
 	 $num=$circle['row']+1;
-		foreach($testjob  as  $flag=>$value){
-			$j=0;
+		foreach($testjob  as  $value){
+			$j=0;$tc=$value->tc;
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
-			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['tag']);
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$tc->tag);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
-			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['description']);
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$tc->description());
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
-			->setCellValue(chr(ord($circle['col'])+$j++).$num,$this->array[$value['result']]);
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$this->array[$value->result_id?$value->result->result:0]);
 			$objPHPExcel->setActiveSheetIndex($active_sheet)
-			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value['build']);
+			->setCellValue(chr(ord($circle['col'])+$j++).$num,$value->result_id?($value->result->testjob->name.':'.$value->result->testjob->build->name):null);
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getFont()->setName('Arial');
 			$objPHPExcel->getActiveSheet()->getStyle($circle['col'].$num.':'.chr(ord($circle['col'])+$j).$num)->getFont()->setSize(10);

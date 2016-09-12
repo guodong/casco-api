@@ -32,33 +32,35 @@ class TreeVatController extends Controller
             return json_encode($r);
 	}
 	private $tags = [];
-	private function getTags_down($sss)
+	private $srcs=[];
+	private $dests=[];
+	public function getTags_down($item)
 	{
-		
+		if(!$item)return;//if(!$item||!$item->verison||!$item->version->document){echo 'error';var_dump($item);echo 'shit';var_dump($item->version);return;}
+		$sss=$item->srcs();
 		foreach ($sss as $v){
 			if ($v&&!in_array($v->toArray(), $this->tags)){
-				$tmp=$v;//$tmp['mark']='down';
-				$this->tags[] = $tmp->toArray();
-				$this->getTags_down($v->srcs());
-				$this->getTags_down($v->dests());
-				
+				$tmp=$v->toArray();
+				$this->tags[] = $tmp;
+				$this->getTags_down($v);
 			}
 		}
 	}
 
-	private function getTags_up($sss)
+	public  function getTags_up($item)
 	{
-		    if(!$item)return;
-			//$sss=$item->dests();
-			//var_dump($sss);
-			foreach ($sss as $v){
-				if ($v&&!in_array($v->toArray(), $this->tags)){
-					$tmp=$v->toArray();$tmp['mark']='up';
-					$this->tags[] = $tmp;
-					$this->getTags_up($v);
-				}
+		if(!$item)return;
+		$sss=$item->dests();
+		//var_dump($sss);
+		foreach ($sss as $v){
+			if ($v&&!in_array($v->toArray(), $this->tags)){
+				$tmp=$v->toArray();
+				$this->tags[] = $tmp;
+				$this->getTags_up($v);
 			}
+		}
 	}
+
 
 	public function array_column($input,$column_key,$index_key=''){
 
@@ -92,6 +94,23 @@ class TreeVatController extends Controller
 
 		}
 		return $results;
+	}
+
+
+	function doc_down($sr,$mark){
+		if(!$sr)  return [];
+		($mark=='src')?$this->srcs[]=$sr->toArray():$this->dests[]=$sr->toArray();
+		foreach($sr->src() as $item){
+			$this->doc_down($item,$mark);
+		}
+	}
+
+	function doc_up($sr,$mark){
+		if(!$sr)  return [];
+		($mark=='src')?$this->srcs[]=$sr->toArray():$this->dests[]=$sr->toArray();
+		foreach($sr->dest() as $item){
+			$this->doc_up($item,$mark);
+		}
 	}
 
 	function current_doc($items){
@@ -136,36 +155,67 @@ class TreeVatController extends Controller
                     'children' => array()
 				));
 			}
+			$rsitem = Rs::find(Input::get('rs_id'));
+			$this->doc_up($docs,'dest');
+			$this->doc_down($docs,'dest');
+			$this->doc_up($rsitem->version->document,'src');
+			$this->doc_down($rsitem->version->document,'src');
+			$this->getTags_down($rsitem);
+			$this->getTags_up($rsitem);
+			//var_dump($this->srcs);
+			$merge=[];
+			foreach($this->srcs as $t){
+				if(in_array($t,$this->dests))$merge[]=$t;
+			}
+			//var_dump($merge);
+			if(count($merge)==0){
+				return json_encode(array(
+                    'children' => array()
+				));
+			}else if(count($merge)>1){
+
+			}else if(count($merge)==1){//说明有公共焦点哦,非父子关系
+					
+				//var_dump($merge);
+				$tmp=Document::find($merge['id']);
+				$ver =$tmp->latest_version();
+				if (!$ver) {
+					return json_encode(array(
+	                    'children' => array()
+					));
+				}
+				switch ($tmp->type) {
+
+					case 'rs':
+						if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
+						$middles =Rs::where('version_id','=', $ver->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
+						break;
+					case 'tc':
+						if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
+						$middles =Tc::where('version_id','=',$ver->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
+						break;
+					default:
+						$middles= array();
+				}//switch
+				$this->tags=[];
+				foreach($middles as $key=>$value){
+					//只可能往下走
+				 $this->getTags_down($value);
+				}
+			}//else
 
 			switch ($docs->type) {
 				case 'rs':
-					$rsitem = Rs::find(Input::get('rs_id'));
-					//var_dump($rsitem->srcs());
-					$this->getTags_down((array)$rsitem->srcs());
-					//$this->getTags_down($rsitem->dests());
-					if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
-					//var_dump($this->array_column($this->tags,'id'));
+					if(count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
 					$items =Rs::where('version_id','=', $version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					break;
 				case 'tc':
-					$rsitem = Rs::find(Input::get('rs_id'));
-					
-					$this->getTags_down($rsitem->srcs());
-					$this->getTags_down($rsitem->dests());
-					if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
-					//var_dump(count($this->array_column($this->tags,'id')));exit;
+					if(count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
 					$items =Tc::where('version_id','=',$version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
-					/*Tc::where('version_id','=', $version->id)->where(function ($query)use($rsitem){
-					 $query->orWhere('column', 'like', '%"source":%' . $rsitem->tag . '%');
-					 foreach ($this->tags as $v){
-					 $query->orWhere('column', 'like', '%"source":%' . $v . '%');
-					 }
-					 });*/
 					break;
 				default:
 					$items = array();
 			}
-			//var_dump($this->tags);
 			foreach($items as $v) {
 				$rt[] = array(
                     'name' => $v->tag,
@@ -175,7 +225,6 @@ class TreeVatController extends Controller
                     'type' => $docs->type
 				);
 			}
-			// echo '1';return;
 			return json_encode(array(
                 'children' => $rt
 			));
