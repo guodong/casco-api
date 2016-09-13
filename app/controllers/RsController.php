@@ -234,7 +234,7 @@ class RsController extends Controller{
 					$array=(array)json_decode($rsitem->vat_json,true);
 					$vats=$this->get_vat($rsitem,$docs,$array);
 					$rsitem->vat_json=json_encode($vats);
-					var_dump($rsitem->vat_json);
+					//var_dump($rsitem->vat_json);
 				}
 					$rsitem->save();
 			}
