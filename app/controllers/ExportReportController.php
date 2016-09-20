@@ -212,6 +212,8 @@ class ExportReportController extends BaseController {
 				else
 				$result*=0;
 			}
+
+			
 			$ans=Tc::whereIn('id',$array)->select('tag')->get()->toArray();
 			$test_case=implode(',',$this->array_column($ans,'tag'));
 			$objPHPExcel->setActiveSheetIndex($active_sheet)

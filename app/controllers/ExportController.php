@@ -20,7 +20,7 @@ class ExportController extends BaseController {
 		$objPHPExcel=$this->objPHPExcel;
 		$objPHPExcel->createSheet();
 		$objPHPExcel->setActiveSheetIndex($active_sheet);$line_num=5;$col_num=5;
-		foreach ((array)json_decode($ver->result,true)  as  $key=>$value){
+		foreach ((array)json_decode($version->result,true)  as  $key=>$value){
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col_num, $line_num,$key);
 			$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col_num+1, $line_num,$value);
 			$line_num+=2;

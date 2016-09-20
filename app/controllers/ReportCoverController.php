@@ -41,11 +41,7 @@ class ReportCoverController extends ExportReportController {
 			 }else{
 			 	//每次show则重新计算一下
 			 		$flag=false;
-			  		//if("9d5fd871-877b-4f50-8c21-d3ba29b3aba1"==$items[$key]['id']){
-					//	var_dump($results);
-					//	var_dump('fuck you!');
-					//	}
-			 		foreach($vat_result as $value){
+					 foreach($vat_result as $value){
 			 			if($value['id']==$item['id']){
 			 			//var_dump($vat_result,$items[$key]['vats']);
 			 			$item['vat_result']=$value['vat_result'];global $flag;

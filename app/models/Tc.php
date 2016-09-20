@@ -63,6 +63,7 @@ class Tc extends BaseModel {
 					};break;
 				case  'rs':
 					$tmp = Rs::where('version_id', '=',  $src->latest_version()?$src->latest_version()->id:null)->whereIn('tag',$matches)->get();//->where('source_json', 'like', '%'.$this->tag.'%')->get();
+					//var_dump($src->latest_version()->id,$matches);
 					foreach ($tmp as $v)
 					{
 						!in_array($v,$tcs)?$tcs[]=$v:null;

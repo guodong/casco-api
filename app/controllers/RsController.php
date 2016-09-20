@@ -14,29 +14,26 @@ class RsController extends Controller{
 	public function getTags_down($item)
 	{
 		if(!$item)return;//if(!$item||!$item->verison||!$item->version->document){echo 'error';var_dump($item);echo 'shit';var_dump($item->version);return;}
-		$sss=$item->srcs();
+		$sss=$item->srcs();$this->tags[] = $item->toArray();
 		foreach ($sss as $v){
 			if ($v&&!in_array($v->toArray(), $this->tags)){
 				$tmp=$v->toArray();
-				$this->tags[] = $tmp;
 				$this->getTags_down($v);
 			}
 		}
 	}
+
 	public  function getTags_up($item)
 	{
 		if(!$item)return;
-		$sss=$item->dests();
-		//var_dump($sss);
+		$sss=$item->dests();$this->tags[] = $item->toArray();
 		foreach ($sss as $v){
 			if ($v&&!in_array($v->toArray(), $this->tags)){
 				$tmp=$v->toArray();
-				$this->tags[] = $tmp;
 				$this->getTags_up($v);
 			}
 		}
 	}
-
 
 	public function array_column($input,$column_key,$index_key=''){
 
@@ -150,38 +147,37 @@ class RsController extends Controller{
 	}
 
 	public function get_vat($rsitem,$docs,$rt){
-
-			if (!$docs||!$rsitem)return [];
+			if (!$docs||!$rsitem)return $rt;
 			$version = $docs->latest_version();
+			$this->tags=[];$this->srcs=[];
+			$this->dests=[];
 			if ($version == null) {
-				return [];
+				return $rt;
 			}
 			$this->doc_up($docs,'dest');
 			$this->doc_down($docs,'dest');
 			$this->doc_up($rsitem->version->document,'src');
 			$this->doc_down($rsitem->version->document,'src');
 			$this->getTags_down($rsitem);
-			$this->getTags_up($rsitem);
-			//var_dump($this->srcs);
-			$merge=[];
+			$this->getTags_up($rsitem);$center=[];$k=0;
+			$merge=[];$min=count($this->srcs)>count($this->dests)?count($this->dests):count($this->srcs);
 			foreach($this->srcs as $t){
-				if(in_array($t,$this->dests))$merge[]=$t;
+				if(in_array($t,$this->dests)){
+				if($k==0)$center=$t;$k=1;
+				$merge[]=$t;
+				}
 			}
-			//var_dump($merge);
 			if(count($merge)==0){
 				return  $rt;
-			}else if(count($merge)>1){
+			}else if(count($merge)==$min){
 
-			}else if(count($merge)==1){//说明有公共焦点哦,非父子关系
-					
-				//var_dump($merge);
-				$tmp=Document::find($merge['id']);
+			}else if(count($merge)<$min){//说明有公共焦点哦,非父子关系
+				$tmp=Document::find($center['id']);
 				$ver =$tmp->latest_version();
 				if (!$ver) {
 					return $rt;
-				}
+				}$middles= array();
 				switch ($tmp->type) {
-
 					case 'rs':
 						if(!$rsitem||count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
 						$middles =Rs::where('version_id','=', $ver->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
@@ -191,7 +187,7 @@ class RsController extends Controller{
 						$middles =Tc::where('version_id','=',$ver->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 						break;
 					default:
-						$middles= array();
+						
 				}//switch
 				$this->tags=[];
 				foreach($middles as $key=>$value){
@@ -199,24 +195,26 @@ class RsController extends Controller{
 				 $this->getTags_down($value);
 				}
 			}//else
+			$items = array();
 			switch ($docs->type) {
 				case 'rs':
-					if(count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
+					//if(count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
 					$items =Rs::where('version_id','=', $version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					break;
 				case 'tc':
-					if(count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
+					//if(count($this->array_column($this->tags,'id'))<=0){$items=[];break;}
 					$items =Tc::where('version_id','=',$version->id)->whereIn('id',$this->array_column($this->tags,'id'))->get();
 					break;
 				default:
-					$items = array();
+					
 			}
 			foreach($items as $v) {
-				$rt[] = array(
+				$m= array(
                     'tag' => $v->tag,
                     'id' => $v->id,
                     'type' => $v->version->document->type
 				);
+				if(!in_array($m,$rt))$rt[] =$m;
 			}
 			return $rt;
 		}
@@ -228,13 +226,13 @@ class RsController extends Controller{
 			foreach((array)$rs  as $key=>$value){
 				$rsitem = Rs::find($value);
 				if(!$rsitem)continue;
-				foreach($vat_rs as  $a=>$b){
+				foreach((array)$vat_rs as  $a=>$b){
 					if(!$version=Version::find($b)) continue;
 					$docs=$version->document;
-					$array=(array)json_decode($rsitem->vat_json,true);
-					$vats=$this->get_vat($rsitem,$docs,$array);
+					$arr=(array)json_decode($rsitem->vat_json,true);
+					$vats=$this->get_vat($rsitem,$docs,$arr);
 					$rsitem->vat_json=json_encode($vats);
-					//var_dump($rsitem->vat_json);
+					var_dump($vats);
 				}
 					$rsitem->save();
 			}
