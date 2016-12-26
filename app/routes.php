@@ -88,3 +88,5 @@ Route::post('result/updateall', 'ResultController@updateall');
 Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
 Route::get('logout','UserController@logout');
+
+Route::post('document/import', 'DocumentController@import');
