@@ -178,7 +178,7 @@ class DocumentController extends Controller
 			else 
 				$old_array = Input::get('type') == 'rs' ? $old_version->rss->toArray() : $old_version->tcs->toArray();
 
-			$version = Version::create(array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) );
+			$version = Version::create(array('name' => Input::get('name'), 'document_id' => Input::get('document_id')));
 		} else {
 			$version = Version::find (Input::get ( 'version_id' ));
 			$old_version=$version;
