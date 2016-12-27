@@ -136,7 +136,7 @@ class VatBuildController extends VatExportController{
 					foreach($rs_vat_json_objs as $rs_vat_json_obj){ //对象
 						//vat_json中包含该tc item
 						if($rs_vat_json_obj->type == 'tc'){
-							$tc_tag = DB::table('tc')->where('version_id',$vatbuild->tc_version_id)->where('id',$rs_vat_json_obj->id)->first();
+							$tc_tag = DB::table('tc')->where('version_id',$tcversion->id)->where('id',$rs_vat_json_obj->id)->first();
 							if($tc_tag){
 							    $exist_flag=0;
 							    foreach ($each_vat as &$each_vat_i){
