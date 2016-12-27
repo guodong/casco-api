@@ -170,8 +170,8 @@ class DocumentController extends Controller
 		$type = Input::get('type');
 		$column = Input::get('column');
 		
-		$target_url = 'http://192.100.110.87:2614/parse';
-		$convert_url = 'http://192.100.110.87:2614/convert';
+		$target_url = 'http://192.100.110.87:8000/parse';
+		$convert_url = 'http://192.100.110.87:8000/convert';
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
 			if (!old_version)
