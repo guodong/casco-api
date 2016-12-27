@@ -199,10 +199,17 @@ class DocumentController extends Controller
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
 		$result = curl_exec($ch);
 		curl_close($ch);
-		$new_array = json_decode($result);
-		if (!$new_array) {
-			return array ('success' => false, 'msg' => 'windows parse error');
+		$ret = json_decode($result);
+		
+		if (!$ret) {
+			return array ('result' => false, 'data' => $result);
 		}
+
+		if ($ret->result != 0) {
+			return array('result' => 2, 'data' => $result);
+		}
+
+		$new_array = $ret->data;
 
 		$addedc = $updatedc = $deletedc = $unupdatedc = $failedc = 0;
 		$added = $updated = $deleted = $unupdated = $failed = [];
