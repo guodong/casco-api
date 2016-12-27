@@ -144,7 +144,7 @@ class ReportController extends ExportReportController
 			$job->author=Input::get('account')?Input::get('account'):null;
 			$job->testjob_id=Input::get('test_id');
 			$test=Testjob::find(Input::get('test_id'));
-			$rencents=$test->rencents();$all_rs=[];$results=$shits=[];$last=1;
+			$rencents=$test?$test->rencents():[];$all_rs=[];$results=$shits=[];$last=1;
 			$test->vatbuild&&($all_rs=$test->vatbuild->docVersions);
 			foreach ($rencents as $key=>$value){
 				$item=Tc::find($value['tc_id']);
@@ -171,7 +171,6 @@ class ReportController extends ExportReportController
 					if(count($bak_tc)<=0)continue;
 					foreach ($bak_tc  as $id){
 						if(array_key_exists($id,$shits)){
-							//array_push($res,array($id=>$shits[$id]));
 							$res[$id]=$shits[$id];
 						}
 					}

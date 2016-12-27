@@ -28,7 +28,7 @@ class Testjob extends BaseModel {
 				if(!array_key_exists($tc->tag,$tmp)){
 					$tmp[$tc->tag]=$data;
 				}else{
-					if($tmp[$tc->tag]->updated_at<$data['updated_at']){
+					if($tmp[$tc->tag]['updated_at']<$data['updated_at']){
 					$tmp[$tc->tag]=$data;
 					}
 				}

@@ -10,3 +10,5 @@ Thumbs.db
 .buildpath
 .project
 .settings
+/app/config/database.php
+.cache

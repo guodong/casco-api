@@ -97,9 +97,12 @@ class ProjectController extends BaseController {
 		while(Signal::first()->task>1)sleep(60);//休眠
 		Signal::increment('task');//注意顺序很重要
 	}
+	
 	public function docfile() {
+		
+		
 		if (Input::get ( 'isNew' ) == 1){
-			$old_version=Version::where('document_id','=',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
+			$old_version=Version::where('document_id',Input::get( 'document_id'))->orderBy('updated_at','desc')->first();
 			if(!$old_version) $old_array = [];
 			else $old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 			$version = Version::create ( array ('name' => Input::get ( 'name' ), 'document_id' => Input::get ( 'document_id' ) ) );
@@ -110,7 +113,6 @@ class ProjectController extends BaseController {
 			$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
 		//不显示出来的列名,白名单的处理也应该在后端处理
-	
 		set_time_limit ( 0 );
 		$name = uniqid () . '.doc';
 		move_uploaded_file ( $_FILES ["file"] ["tmp_name"], public_path () . '/files/' . $name );
@@ -123,37 +125,36 @@ class ProjectController extends BaseController {
 		$url_path = public_path () . '/files/' . $name;
 		//存贮列名到version里面的headers
 		$column = Input::get ("column");$problems=[];
-		$cols=explode(',',$column);$no_col=[];
-		foreach($cols as $col){array_push($no_col,$col);}
-		$version->headers=strtolower(implode(',',$no_col));//此时column还没有过滤
+		//不要弄混切记啊
+		$cols=explode(',',$column);$no_col=[];$no_cols=[];global $black;
+		foreach($cols as $col){array_push($no_cols,($col));if(!in_array($col,$black))array_push($no_col,($col));}
+		$version->headers=strtolower(implode(',',$no_cols));//此时column还没有过滤
 		try{
 			/*	$soap = new SoapClient ( "http://localhost:2614/WebService2.asmx?WSDL" );
 			 $result2 = $soap->resolve ( array ('column' => $column, 'type' => $type, 'doc_url' => $doc_url ) );
 			 */
 			$type = Input::get ( "type" );
-			//$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
-			$doc_url='http://192.100.212.31:8080/files/'.$name;
+			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
+			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
 			$modify = 0;
 			$wait_save = array ();
 			if (!json_decode($result2)){
-				//$this->p();//carefully
-				throw new Exception();
+				throw new Exception($result2);
 				$version->result="读取文档失败，远程服务器返回结果:".$result2;
 				$version->save($result2);
 				return array ('success' => false, 'msg' =>$version->result);
 			}
 			$resolveResult =$this->objtoarr(json_decode($result2));
-			//var_dump($resolveResult);exit();
 			if (Input::get ( 'type' ) == 'tc') {
 				foreach ($resolveResult as $value ) {
 					$num = Tc::where ( "tag", "=", $value['tag'] )->where ("version_id", "=", $version->id )->first ();
 					$arr=array_keys(array_change_key_case($value,CASE_LOWER));
-					if(count(array_diff($no_col,$arr))>0)array_push($problems,$value['tag']);				
+					//var_dump($no_col,$arr,array_diff($no_col,$arr));
+					if(count(array_diff($no_col,$arr))>0)array_push($problems,($value['tag'].'=>'.implode(',',array_diff($no_col,$arr))));				
 					if ($num) {
 						$num->column = json_encode($value);			
 						foreach ($value as $key => $item ) {
@@ -166,13 +167,13 @@ class ProjectController extends BaseController {
 						if ($wait_save) {
 							$num->steps()->delete();
 						}$i=1;
-						foreach ( $wait_save as  $value) {
-							$in = array ();$value=(array)$value;
-							$in['num']=$i++;
+						foreach ( $wait_save as  $value ) {
+							$in = array ();$value=(array)$value;$in['num']=$i++;
 							$in ["tc_id"] = $num->id;
 							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
 							$in = array_merge ( $in, (array)$value );
 							$step = TcStep::create ( $in );
+							//$step->save(); //这一句有问题么
 						}
 						$modify ++;
 						///	return "更新记录";
@@ -192,9 +193,15 @@ class ProjectController extends BaseController {
 							$in ["tc_id"] = $tc->id;
 							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
 							$in = array_merge ( $in, (array)$value );
+							$step = TcStep::create ( $in );						}
+						/*foreach ( $wait_save as  $value ) {
+							$in = array ();$value=(array)$value;$in['num']=$i++;
+							$in ["tc_id"] = $tc->id;
+							$in ['actions']=array_key_exists('testing steps',$value)?$value['testing steps']:null;
+							$in = array_merge ( $in, (array)$value );
 							$step = TcStep::create ( $in );
 							//$step->save(); //这一句有问题么
-						}
+						}*/
 						$add ++;
 						//	return "增添记录";
 					}
@@ -205,8 +212,7 @@ class ProjectController extends BaseController {
 				foreach ($resolveResult as $value ) {
 					$rs = Rs::where ( "tag", "=", $value['tag'] )->where ( "version_id", "=", $version->id  )->first ();
 					$arr=array_keys(array_change_key_case($value,CASE_LOWER));
-					if(count(array_diff($no_col,$arr))>0)array_push($problems,$value['tag']);
-					if ($rs) {
+					if(count(array_diff($no_col,$arr))>0)array_push($problems,($value['tag'].'=>'.implode(',',array_diff($no_col,$arr))));							if ($rs) {
 						$rs->column=json_encode($value);
 						$rs->save ();
 						$modify++;
@@ -245,14 +251,24 @@ class ProjectController extends BaseController {
 			}
 			$old_tag=$this->array_column(($old_array),'tag');
 			$new_tag=$this->array_column(($new_array),'tag');
-			//   var_dump($old_tag); var_dump($new_tag);
 			$delete=array_diff($old_tag,$new_tag);
 			$adds=array_diff($new_tag,$old_tag);
 			function filter_self($item){
 				preg_match('/(\[[^\]]*?\])/',$item,$matches);
 				return $matches[1];
 			}
-			
+			/*删除delete项目?新建的就不删,重复的就删除
+			if(Input::get ( 'isNew' )==0&&$delete=null){
+			echo DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',($delete))->toSql();
+			return ;
+			$items=DB::table(Input::get('type')=="rs"?'Rs':'Tc')->whereIn('tag',($delete))->delete();
+			}
+			*/
+			//删除原来剩余的
+			$del_items=Input::get ('type')=="rs"?(Rs::where('version_id',$old_version?$old_version->id:null)->whereIn("tag",$delete)->get()):(Tc::where('version_id',$old_version?$old_version->id:null)->whereIn("tag", $delete)->get());
+			foreach($del_items as $item ){
+			$item->delete();
+			}
 			//要不要做个显示报表啊更直观一些.
 	$result='<table border=”1″ cellspacing=”0″ cellpadding=”2″>
 	<tr><td colspan="2"  align=center>旧版本'.($old_version?$old_version->name:null).';新版本'.$version->name.'</td></tr>
@@ -261,7 +277,16 @@ class ProjectController extends BaseController {
 	<tr><td><font size="3" color="red">遗留(删除)'.count($delete)."条</font></td><td>".(string)implode(',',$delete).'</td></tr>
 	<tr><td><font size="3" color="#FF8C00">未变(tag)'.count($nochange)."条</font></td><td>".(string)implode(',',$nochange).'</td></tr>
 	<tr><td><font size="3" color="blue">解析列名失败'.count($problems)."条</font></td><td>".(string)implode(',',$problems).'</td></tr></table>';
+			$version->add=count($adds);$version->modify=count($updates);$version->broken=$problems;
+			$version->unchanged=count($nochange);$version->left=count($delete);
 			$version->result=$result;
+			$version->export_result=json_encode(array(
+			array('增添'.count($adds).'条'=>(string)implode(',',$adds)),
+			array('修改'.count($updates).'条'=>(string)implode(',',$updates)),
+			array('遗留(删除)'.count($delete).'条'=>(string)implode(',',$delete)),
+			array('未变(tag)'.count($nochange).'条'=>(string)implode(',',$nochange)),
+			array('解析列名失败'.count($problems).'条'=>(string)implode(',',$problems))
+			));
 			$version->save();
 			$this->p();
 			return  array('success'=>true,"msg"=>$result);
