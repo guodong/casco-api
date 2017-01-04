@@ -170,7 +170,8 @@ class DocumentController extends Controller
 		$type = Input::get('type');
 		$column = Input::get('column');
 		
-		$target_url = 'http://192.100.110.87:2614/webservice2.asmx/resolve';
+		$target_url = 'http://192.100.110.87:8000/parse';
+		$convert_url = 'http://192.100.110.87:8000/convert';
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
 			if (!old_version)
@@ -180,11 +181,12 @@ class DocumentController extends Controller
 
 			$version = Version::create(array('name' => Input::get('name'), 'document_id' => Input::get('document_id')));
 		} else {
-			$version = Version::find (Input::get ( 'version_id' ));
-			$old_version=$version;
-			$old_array=Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
+			$version = Version::find(Input::get('version_id'));
+			$old_version = $version;
+			$old_array = Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
-		$filename = uniqid() . '.doc';
+
+		$filename = $version->id . '.doc';
 		$version->filename = $filename;
 		$version->save();
 
@@ -199,10 +201,17 @@ class DocumentController extends Controller
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
 		$result = curl_exec($ch);
 		curl_close($ch);
-		$new_array = json_decode($result);
-		if (!$new_array) {
-			return array ('success' => false, 'msg' => 'windows parse error');
+		$ret = json_decode($result);
+		
+		if (!$ret) {
+			return array ('result' => false, 'data' => $result);
 		}
+
+		if ($ret->result != 0) {
+			return array('result' => 2, 'data' => $result);
+		}
+
+		$new_array = $ret->data;
 
 		$addedc = $updatedc = $deletedc = $unupdatedc = $failedc = 0;
 		$added = $updated = $deleted = $unupdated = $failed = [];
@@ -269,15 +278,29 @@ class DocumentController extends Controller
 			$v->delete();
 		}
 
-
+		/** convert pdf **/
+		$post = array('file'=> $cFile);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $convert_url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+		$result = curl_exec($ch);
+		curl_close($ch);
+		$destination = public_path() . "/files/" . $version->id . '.pdf';
+		$file = fopen($destination, "w+");
+		fputs($file, $data);
+		fclose($file);
 		
 		return array(
+			'result' => 0,
+			'data' => array(
 				'added' => $addedc,
 				'updated' => $updatedc,
 				'deleted' => $deletedc,
 				'unupdated' => $unupdatedc,
 				'failed' => $failedc
-				);
+			)
+		);
 
 	}
 
