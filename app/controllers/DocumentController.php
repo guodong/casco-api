@@ -169,12 +169,13 @@ class DocumentController extends Controller
 		$ismerge = Input::get("ismerge") ? Input::get("ismerge") : 0;
 		$type = Input::get('type');
 		$column = Input::get('column');
-		
-		$target_url = 'http://192.100.110.87:8000/parse';
-		$convert_url = 'http://192.100.110.87:8000/convert';
+
+		$fileapi = 'http://192.100.110.96:8000/';
+		$target_url = 'http://192.100.110.96:8500/parse';
+		$convert_url = 'http://192.100.110.96:8500/convert';
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
-			if (!old_version)
+			if (!$old_version)
 				$old_array = [];
 			else 
 				$old_array = Input::get('type') == 'rs' ? $old_version->rss->toArray() : $old_version->tcs->toArray();
@@ -186,119 +187,123 @@ class DocumentController extends Controller
 			$old_array = Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
 
-		$filename = $version->id . '.doc';
-		$version->filename = $filename;
-		$version->save();
-
-		$realpath = realpath(public_path() . '/files/' . $filename);
-		move_uploaded_file($_FILES["file"]["tmp_name"], $realpath);
-		
-		$cFile = '@' . realpath($realpath);
-		$post = array('postData'=> $cFile, 'column' => $column, 'ismerges' => $ismerge, 'regrex' => $regrex, 'type' => $type);
+		$post = array('file' => $fileapi.Input::get('filename'), 'column' => $column, 'ismerges' => $ismerge, 'regrex' => $regrex, 'type' => $type);
+		$query = http_build_query($post, '', '&');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,$target_url);
 		curl_setopt($ch, CURLOPT_POST,1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
+		curl_setopt($ch, CURLOPT_TIMEOUT_MS, 0);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$result = curl_exec($ch);
 		curl_close($ch);
 		$ret = json_decode($result);
-		
-		if (!$ret) {
-			return array ('result' => false, 'data' => $result);
-		}
-
-		if ($ret->result != 0) {
-			return array('result' => 2, 'data' => $result);
+		if (!$ret || $ret->result != 0) {
+			return array ('result' => 1, 'data' => 'parse api return error' . $result);
 		}
 
 		$new_array = $ret->data;
-
 		$addedc = $updatedc = $deletedc = $unupdatedc = $failedc = 0;
 		$added = $updated = $deleted = $unupdated = $failed = [];
 		if (count($old_array) === 0) {
 			$added = $new_array;
 			$addedc = count($new_array);
 		} else {
-			$added = array_udiff($new_array, $old_array, 'compare'); //in new not in old
+
+			$added = array_udiff($new_array, $old_array, array($this, 'compare')); //in new not in old
 			$addedc = count($added);
 
-			$deleted = array_udiff($old_array, $new_array, 'compare'); //in old not in new
+			$deleted = array_udiff($old_array, $new_array, array($this, 'compare')); //in old not in new
 			$deletedc = count($deleted);
 
-			if (self::array_equal($old_array[0]['column'], explode($column))) {
-				$updatedc = count($old_array) - $deletedc;
-			} else {
-				foreach ($old_array as $old_i) {
-					foreach ($new_array as $new_i) {
-						if ($old_i['tag'] == $new_i['tag']) {
-							if (count(array_diff_assoc($old_i['column'], $new_i['column'])) !== 0)
-								$updatedc++;
-						}
-					}
-				}
-			}
-			foreach ($new_array as $new_i) {
-				if (count($new_i['column']) < count($column))
-					$failedc++;
-			}
 
-			$updatedc -= $failedc;
+            foreach ($old_array as $old_i) {
+                foreach ($new_array as $new_i) {
+                    if ($old_i['tag'] == $new_i->tag) {
+                        if ($old_i['column'] != json_encode($new_i)) {
+                            $updatedc++;
+                            $updated[] = $old_i;
+                        }
+                    }
+                }
+            }
 
-			$unupdatedc = count($old_array) - $updatedc - $deletedc - $failedc;
+
+
+			$unupdatedc = count($old_array) - $updatedc - $deletedc;
 		}
+        //print_r($old_array);
+        //print_r($new_array);
 
-		foreach ($new_array as $v) {
+		foreach ($added as $v) {
 			if ($type == 'rs') {
+				$_rs = RS::where('tag', $v->tag)->where('version_id', $version->id)->get();
+				foreach($_rs as $r) 
+					$r->forceDelete();
+
 				$rs = new RS();
-				$rs->tag = $v['tag'];
-				$rs->column = json_encode($v['column']);
+				$rs->tag = $v->tag;
+				$rs->column = json_encode($v);
 				$rs->version_id = $version->id;
 				$rs->save();
 			} else {
+				$_tc = TC::where('tag', $v->tag)->where('version_id', $version->id)->get();
+				foreach($_tc as $r)
+					$r->forceDelete();
+
 				$tc = new TC();
-				$tc->column = json_encode($v['column']);
-				$tc->tag = $v['tag'];
+				$tc->column = json_encode($v);
+				$tc->tag = $v->tag;
 				$tc->version_id = $version->id;
 				$tc->save();
 				$i = 1;
-				foreach ($v['test steps'] as $k => $vv) {
+				foreach ($v->test_steps as $k => $vv) {
 					$step = new TcStep();
 					$step->tc_id = $tc->id;
 					$step->num = $i++;
-					$step->actions = empty($vv['testing steps']) ? null : $vv['testing steps'];
+					$step->actions = empty($vv->testing_steps) ? null : $vv->testing_steps;
 					$step->save();
 				}
 			}
 		}
 
-		$modarr = array_merge($deleted, $updated);
-		foreach ($modarr as $v) {
-			if ($type == 'tc')
-				$v->steps()->delete();
-			$v->delete();
+		foreach ($deleted as $v) {
+			if ($type == 'tc') {
+				$tc = TC::where('tag', $v['tag'])->where('version_id', $version->id)->first();
+				
+				$tc->delete();
+			} else {
+				$rs = RS::where('tag', $v['tag'])->where('version_id', $version->id)->first();
+				$rs->delete();
+			}
 		}
 
-		/** convert pdf **/
-		$post = array('file'=> $cFile);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $convert_url);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-		$result = curl_exec($ch);
-		curl_close($ch);
-		$destination = public_path() . "/files/" . $version->id . '.pdf';
-		$file = fopen($destination, "w+");
-		fputs($file, $data);
-		fclose($file);
-		
+		foreach ($old_array as $old) {
+		    $has = false;
+		    foreach ($deleted as $del) {
+		        if ($del['tag'] == $old['tag']) {
+		            $has = true;
+		            break;
+		        }
+		    }
+		    if ($has) continue;
+		    foreach ($updated as $up) {
+		        if ($up['tag'] == $old['tag']) {
+		            $has = true;
+		            break;
+		        }
+		    }
+		    if ($has) continue;
+		    $unupdated[] = $old;
+		}
+
 		return array(
 			'result' => 0,
 			'data' => array(
-				'added' => $addedc,
-				'updated' => $updatedc,
-				'deleted' => $deletedc,
-				'unupdated' => $unupdatedc,
-				'failed' => $failedc
+				'added' => $added,
+				'updated' => $updated,
+				'deleted' => $deleted,
+				'unupdated' => $unupdated
 			)
 		);
 
@@ -306,9 +311,11 @@ class DocumentController extends Controller
 
 	static function compare($a, $b)
 	{
-		if ($a->tag === $b->tag)
+		$a = json_decode(json_encode($a),true);
+		$b = json_decode(json_encode($b),true);
+		if ($a['tag'] === $b['tag'])
 			return 0;
-		return 1;
+		return ($a['tag']>$b['tag']) ? 1 : -1;
 	}
 
 	static function array_equal($a, $b)

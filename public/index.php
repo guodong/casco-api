@@ -1,4 +1,5 @@
 <?php
+//error_reporting(E_ALL & ~E_DEPRECATED);
 define('PATH_BASE', realpath(__DIR__.'/../'));
 define('COL_PREFIX','(P) // (C)');
 define('MID_COMPOSE',' // ');
