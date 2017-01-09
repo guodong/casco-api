@@ -12,3 +12,4 @@ Thumbs.db
 .settings
 /app/config/database.php
 .cache
+/.idea

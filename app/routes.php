@@ -89,4 +89,4 @@ Route::resource('result', 'ResultController');
 Route::post('login', 'UserController@login');
 Route::get('logout','UserController@logout');
 
-Route::post('document/import', 'DocumentController@import');
+Route::post('import', 'DocumentController@import');
