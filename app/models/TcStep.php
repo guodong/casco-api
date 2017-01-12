@@ -2,7 +2,7 @@
 class TcStep extends BaseModel {
 
 	protected $table = 'tc_step';
-	protected $fillable = array('tc_id', 'num', 'actions', 'expected result');
+	protected $fillable = array('tc_id', 'num', 'actions', 'expected_result');
     public  $id=false;
     
 	public function tc()

@@ -257,11 +257,12 @@ class DocumentController extends Controller
 				$tc->version_id = $version->id;
 				$tc->save();
 				$i = 1;
-				foreach ($v->test_steps as $k => $vv) {
+				foreach ($v->test_steps as $vv) {
 					$step = new TcStep();
 					$step->tc_id = $tc->id;
 					$step->num = $i++;
-					$step->actions = empty($vv->testing_steps) ? null : $vv->testing_steps;
+					$step->actions = empty($vv->actions) ? null : $vv->actions;
+					$step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
 					$step->save();
 				}
 			}
