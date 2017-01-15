@@ -19,8 +19,14 @@ class TestmethodController extends BaseController {
 	// PUT /user/$id
 	public function update($id)
 	{
-	    $user = Testmethod::find($id);
-	    $user->update(Input::get());
-	    return $user;
+	    $method = Testmethod::find($id);
+	    $method->update(Input::get());
+	    return $method;
+	}
+	
+	public function destroy($id){
+	    $method = Testmethod::find($id);
+	    $method->destroy($id);
+	    return $method;
 	}
 }

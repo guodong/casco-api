@@ -38,6 +38,7 @@ class UserController extends BaseController {
 	    
 	    $projects_id=Input::get('project');//发送过来的就是数组了
 	 //   var_dump($projects_id);
+	 if(!$projects_id) $projects_id = [];
 	    foreach($projects_id  as $id){
 	    //用这种方法生成insert简直无语了	
 	    $id = DB::table('project_user')->insertGetId(
@@ -64,6 +65,7 @@ class UserController extends BaseController {
 	    if(!$va){$data['password']=md5(Input::get('password'));}
         }
 	    $user->update($data);
+	    
 	    //还要更新projects表哦
 	    
 	    if($projects_id=Input::get('project')){
@@ -73,8 +75,10 @@ class UserController extends BaseController {
 	    $id = DB::table('project_user')->insertGetId(
 	    array('project_id' => $id, 'user_id' => $user->id)); 
 	    }
-	    
 	    }//修改时有有可能不发送此字段
+	    else{ //为空，直接清除
+	        $affectedrows=ProjectUser::where('user_id',$user->id)->delete();
+	    }
 	    
 	    return $user;
 	}
@@ -106,15 +110,11 @@ class UserController extends BaseController {
             //还要删掉其对应的project_user记录
             if($user->projects_user){
             	$user->projects_user->each(function($u){
-            		
             		$u->delete();
             	});
-            	
             }
             $user->destroy($id);
-            
             return $user;
-             
         }
         
 	public function login(){   
