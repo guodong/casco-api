@@ -168,11 +168,11 @@ class DocumentController extends Controller
 		$regrex = Input::get("regrex") ? Input::get("regrex") : '';
 		$ismerge = Input::get("ismerge") ? Input::get("ismerge") : 0;
 		$type = Input::get('type');
-		$column = Input::get('column');
+		$column = strtolower(Input::get('column'));
+		$isnew = Input::get('isNew') ? true : false;
 
 		$fileapi = 'http://192.100.110.96:8000/';
 		$target_url = 'http://192.100.110.96:8500/parse';
-		$convert_url = 'http://192.100.110.96:8500/convert';
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
 			if (!$old_version)
@@ -186,6 +186,10 @@ class DocumentController extends Controller
 			$old_version = $version;
 			$old_array = Input::get('type')=="rs"?$old_version->rss->toArray():$old_version->tcs->toArray();
 		}
+
+        $version->filename = Input::get('filename');
+        $version->headers = $column;
+        $version->save();
 
 		$post = array('file' => $fileapi.Input::get('filename'), 'column' => $column, 'ismerges' => $ismerge, 'regrex' => $regrex, 'type' => $type);
 		$query = http_build_query($post, '', '&');
@@ -222,7 +226,7 @@ class DocumentController extends Controller
                     if ($old_i['tag'] == $new_i->tag) {
                         if ($old_i['column'] != json_encode($new_i)) {
                             $updatedc++;
-                            $updated[] = $old_i;
+                            $updated[] = $new_i;
                         }
                     }
                 }
@@ -232,71 +236,125 @@ class DocumentController extends Controller
 
 			$unupdatedc = count($old_array) - $updatedc - $deletedc;
 		}
-        //print_r($old_array);
-        //print_r($new_array);
 
-		foreach ($added as $v) {
-			if ($type == 'rs') {
-				$_rs = RS::where('tag', $v->tag)->where('version_id', $version->id)->get();
-				foreach($_rs as $r) 
-					$r->forceDelete();
+		if ($isnew) { // 新版本直接插入所有数据
+		    foreach ($new_array as $v) {
+                if ($type == 'rs') {
+                    $rs = new RS();
+                    $rs->tag = $v->tag;
+                    $rs->column = json_encode($v);
+                    $rs->version_id = $version->id;
+                    $rs->save();
+                } else {
+                    $tc = new TC();
+                    $tc->column = json_encode($v);
+                    $tc->tag = $v->tag;
+                    $tc->version_id = $version->id;
+                    $tc->save();
+                    $i = 1;
+                    foreach ($v->test_steps as $vv) {
+                        $step = new TcStep();
+                        $step->tc_id = $tc->id;
+                        $step->num = $i++;
+                        $step->actions = empty($vv->actions) ? null : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->save();
+                    }
+                }
+            }
 
-				$rs = new RS();
-				$rs->tag = $v->tag;
-				$rs->column = json_encode($v);
-				$rs->version_id = $version->id;
-				$rs->save();
-			} else {
-				$_tc = TC::where('tag', $v->tag)->where('version_id', $version->id)->get();
-				foreach($_tc as $r)
-					$r->forceDelete();
+		} else {
 
-				$tc = new TC();
-				$tc->column = json_encode($v);
-				$tc->tag = $v->tag;
-				$tc->version_id = $version->id;
-				$tc->save();
-				$i = 1;
-				foreach ($v->test_steps as $vv) {
-					$step = new TcStep();
-					$step->tc_id = $tc->id;
-					$step->num = $i++;
-					$step->actions = empty($vv->actions) ? null : $vv->actions;
-					$step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
-					$step->save();
-				}
-			}
-		}
+            foreach ($added as $v) {
+                if ($type == 'rs') {
+                    $rs = new RS();
+                    $rs->tag = $v->tag;
+                    $rs->column = json_encode($v);
+                    $rs->version_id = $version->id;
+                    $rs->save();
+                } else {
+                    $tc = new TC();
+                    $tc->column = json_encode($v);
+                    $tc->tag = $v->tag;
+                    $tc->version_id = $version->id;
+                    $tc->save();
+                    $i = 1;
+                    foreach ($v->test_steps as $vv) {
+                        $step = new TcStep();
+                        $step->tc_id = $tc->id;
+                        $step->num = $i++;
+                        $step->actions = empty($vv->actions) ? null : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->save();
+                    }
+                }
+            }
 
-		foreach ($deleted as $v) {
-			if ($type == 'tc') {
-				$tc = TC::where('tag', $v['tag'])->where('version_id', $version->id)->first();
-				
-				$tc->delete();
-			} else {
-				$rs = RS::where('tag', $v['tag'])->where('version_id', $version->id)->first();
-				$rs->delete();
-			}
-		}
+            foreach ($deleted as $v) {
+                if ($type == 'tc') {
+                    $tc = TC::where('tag', $v['tag'])->where('version_id', $version->id)->first();
 
-		foreach ($old_array as $old) {
-		    $has = false;
-		    foreach ($deleted as $del) {
-		        if ($del['tag'] == $old['tag']) {
-		            $has = true;
-		            break;
-		        }
-		    }
-		    if ($has) continue;
-		    foreach ($updated as $up) {
-		        if ($up['tag'] == $old['tag']) {
-		            $has = true;
-		            break;
-		        }
-		    }
-		    if ($has) continue;
-		    $unupdated[] = $old;
-		}
+                    $tc->delete();
+                } else {
+                    $rs = RS::where('tag', $v['tag'])->where('version_id', $version->id)->first();
+                    $rs->delete();
+                }
+            }
+
+            foreach ($updated as $v) {
+                if ($type == 'rs') {
+                    $_rs = RS::where('tag', $v->tag)->where('version_id', $version->id)->get();
+                    foreach($_rs as $r)
+                        $r->forceDelete();
+
+                    $rs = new RS();
+                    $rs->tag = $v->tag;
+                    $rs->column = json_encode($v);
+                    $rs->version_id = $version->id;
+                    $rs->save();
+                } else {
+                    $_tc = TC::where('tag', $v->tag)->where('version_id', $version->id)->get();
+                    foreach($_tc as $r)
+                        $r->forceDelete();
+
+                    $tc = new TC();
+                    $tc->column = json_encode($v);
+                    $tc->tag = $v->tag;
+                    $tc->version_id = $version->id;
+                    $tc->save();
+                    $i = 1;
+                    foreach ($v->test_steps as $vv) {
+                        $step = new TcStep();
+                        $step->tc_id = $tc->id;
+                        $step->num = $i++;
+                        $step->actions = empty($vv->actions) ? null : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->save();
+                    }
+                }
+
+            }
+        }
+
+        // 未修改的只做显示不做操作,所以独立出来,否则新版本unupdated为0
+        foreach ($old_array as $old) {
+            $has = false;
+            foreach ($deleted as $del) {
+                if ($del['tag'] == $old['tag']) {
+                    $has = true;
+                    break;
+                }
+            }
+            if ($has) continue;
+            foreach ($updated as $up) {
+                if ($up->tag == $old['tag']) {
+                    $has = true;
+                    break;
+                }
+            }
+            if ($has) continue;
+            $unupdated[] = $old;
+        }
 
 		return array(
 			'result' => 0,

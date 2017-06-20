@@ -3,7 +3,9 @@ use Illuminate\Support\Facades\Input;
 class ProjectController extends BaseController {
 	// 项目创建
 	public function store() {
-		$project = new Project ( Input::get () );
+		$project = new Project ();
+		$project->name = Input::get('name');
+		$project->description = Input::get('description');
 		$project->save ();
 		//表单额外的数据的接收方式哦
 		foreach ( Input::get ( 'participants' ) as $v ) {
