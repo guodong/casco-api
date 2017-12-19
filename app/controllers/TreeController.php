@@ -80,12 +80,16 @@ class TreeController extends Controller{
              //checked掉用户已经拥有的id,把用户已经拥有的document_id拼接为数组
             $user_docs=DB::table('project_user')->where('user_id','=',Input::get('user_id'))->select('doc_edit')->get();
             //有可能是个数组
-      //      var_dump($user_docs);
+         //var_dump($user_docs);
             $mine_docs=array();
+           // Console::info(  ); 
             foreach($user_docs  as $docs){
-            	
-            	$mine_docs=array_merge($mine_docs,explode(',',json_encode($docs->doc_edit)));
-            		
+            //   Log::info(json_encode($docs));
+            //   Log::info(json_encode($docs[0]));
+            //   Log::info(json_encode($docs["doc_edit"]));
+              
+            	$mine_docs=array_merge($mine_docs,explode(',',json_encode($docs["doc_edit"])));
+         
             }
             //
             function m_trim($v){
@@ -95,13 +99,14 @@ class TreeController extends Controller{
             }
             $mine_docs=array_map("m_trim",$mine_docs);
           //  这里只用显示出用户的project既可以的了
-           
+         
          	$project=DB::table('project')->where('id','=',Input::get('project_id'))->select('name','id')->get();
          	$root=array();
          	foreach($project as $pros){
             //遍历每个工程的文档,fid=0是为了查找第一级的节点哦
-        
-         	$docs = Document::whereRaw("project_id = ? and fid = ?", array($pros->id, 0))->get();
+            Log::info(gettype($pros));
+            $docs = Document::whereRaw("project_id = ? and fid = ?", array($pros["id"], 0))->get();    
+         	//$docs = Document::whereRaw("project_id = ? and fid = ?", array($pros->id, 0))->get();
          	$rt = array();
             foreach($docs as $d){
             //如果是folder类型,还要拼接相关的chilrens
@@ -114,12 +119,12 @@ class TreeController extends Controller{
            // var_dump(in_array('d6889236-ad21-11e4-aa9b-cf2d72b432dc',$mine_docs));
           
             $children[]=array(
-            'doc_name' => $chils->name,
+            'doc_name' => $chils["name"],
             'leaf' =>true ,
-            'text'=>$chils->name,
-            'checked'=>in_array($chils->id,$mine_docs)?true:false,
-            'doc_id' => $chils->id,
-            'doc_type' => $chils->type,
+            'text'=>$chils["name"],
+            'checked'=>in_array($chils["id"],$mine_docs)?true:false,
+            'doc_id' => $chils["id"],
+            'doc_type' => $chils["type"],
             'type'=>'doc'
             
             
@@ -163,9 +168,9 @@ class TreeController extends Controller{
            $ans=(count(array_filter($rt,'filt'))==sizeof($rt));
             
             $root[]=array(
-            'pro_name'=>$pros->name,
-            'text'=>$pros->name,
-            'id'=>$pros->id,
+            'pro_name'=>$pros["name"],
+            'text'=>$pros["name"],
+            'id'=>$pros["id"],
             'checked'=>$ans,
             'leaf'=>false,
             'type'=>'project',
