@@ -25,7 +25,7 @@ class UserController extends BaseController {
 	        $user->projects;    
 	        return $user;
 	    }else{
-	        return json_encode(array('error'=>1, 'msg'=>'no user'));
+	        return json_encode(array('error'=>1, 'msg'=>'该用户不存在。'));
 	    }
 	}
 
@@ -121,18 +121,18 @@ class UserController extends BaseController {
 		$user=User::whereRaw('account = ?',array(Input::get('account')))->first();
 		if($user){
 			if($user->islock){
-				return $this->outputError('your account has been locked!');
+				return $this->outputError('该账号已被停用。');
 			}else{
 				if($user->password==md5(Input::get('password'))){
 					 $user->role;
 					 Session::put('uid', $user->id);
 	                 return $this->output($user);
 				}else{
-					return $this->outputError('your password error!');
+					return $this->outputError('密码错误。');
 				}
 			}
 		}else{
-			return $this->outputError('account error!');
+			return $this->outputError('登录出错。');
 		}
 	}
 	
@@ -152,7 +152,7 @@ class UserController extends BaseController {
 	    if (Session::has('uid')){
 	        return $this->output(User::find(Session::get('uid')));
 	    }else{
-	        return $this->outputError('not login');
+	        return $this->outputError('用户未登录');
 	    }
 	}
 }
