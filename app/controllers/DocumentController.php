@@ -171,8 +171,12 @@ class DocumentController extends Controller
 		$column = strtolower(Input::get('column'));
 		$isnew = Input::get('isNew') ? true : false;
 
-		$fileapi = 'http://192.100.110.96:8000/';
-		$target_url = 'http://192.100.110.96:8500/parse';
+		// $fileapi = 'http://192.100.110.96:8000/';
+        // $target_url = 'http://192.100.110.96:8500/parse';
+        
+		$fileapi = 'http://localhost/';
+        $target_url = 'http://localhost:9760/WebService1.asmx/InputWord';
+        
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
 			if (!$old_version)
