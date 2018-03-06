@@ -78,8 +78,10 @@ return array(
 	|
 	*/
 
-	'key' => 'YourSecretKey!!!',
+	'key' => 'IwTOyl1FTOKo6uBDcu8JwTsKYhNIC9Rt',
 
+	//'cipher' => MCRYPT_CAST_256,
+	//'cipher' => 'AES-256-CBC',
 	'cipher' => MCRYPT_RIJNDAEL_128,
 
 	/*

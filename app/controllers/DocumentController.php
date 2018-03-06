@@ -171,8 +171,12 @@ class DocumentController extends Controller
 		$column = strtolower(Input::get('column'));
 		$isnew = Input::get('isNew') ? true : false;
 
-		$fileapi = 'http://192.100.110.96:8000/';
-		$target_url = 'http://192.100.110.96:8500/parse';
+		// $fileapi = 'http://192.100.110.96:8000/';
+        // $target_url = 'http://192.100.110.96:8500/parse';
+        
+		$fileapi = 'http://localhost/';
+        $target_url = 'http://localhost:9760/WebService1.asmx/InputWord';
+        
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
 			if (!$old_version)
@@ -191,7 +195,12 @@ class DocumentController extends Controller
         $version->headers = $column;
         $version->save();
 
-		$post = array('file' => $fileapi.Input::get('filename'), 'column' => $column, 'ismerges' => $ismerge, 'regrex' => $regrex, 'type' => $type);
+        $post = array('file' => $fileapi.Input::get('filename'),
+        'url' => $fileapi.Input::get('filename') ,
+         'column' => $column,
+          'ismerges' => $ismerge, 
+          'regrex' => $regrex,
+           'type' => $type);
 		$query = http_build_query($post, '', '&');
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,$target_url);
@@ -200,14 +209,17 @@ class DocumentController extends Controller
 		curl_setopt($ch, CURLOPT_TIMEOUT_MS, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$result = curl_exec($ch);
-		curl_close($ch);
+        curl_close($ch);
+    
+        //$result='[{"title":"[TSP-SyAD-0314]","tag":"[TSP-SyAD-0314]","description":"Humidity condition shall obey the related requirement in EN 50125-3 .Relative humidity: ≤90% (no condensation) (25℃).\r\nHumidity condition shall obey the related requirement in EN 50125-3 .Relative humidity: ≤90% (no condensation) (25℃).\r\n湿度条件应遵循环境标准EN 50125-3相关需求，相对湿度：≤90%（无凝结）（25℃）；\r","Source":["[TSP-SyRS-0031]"],"othercontext":"1","Implement":"","Priority":"","Contribution":" Safety\r","Category":" Non-Functional\r","Allocation":" [COTS]\r","sources":" [TSP-SyRS-0031]\r"},{"title":"[TSP-SyAD-0017]","tag":"[TSP-SyAD-0017]","description":"MPS shall provide safety clock. The variation (fast/slow) of safety clock shall be less than or equal to 0.1%. If the variation of the safety clock is larger than this value, MPS shall be guided to safety side.\r\nMPS shall provide safety clock. The variation (fast/slow) of safety clock shall be less than or equal to 0.1%. If the variation of the safety clock is larger than this value, MPS shall be guided to safety side.\r\nMPS应提供安全时钟，安全时钟偏差不大于等于0.1%。如检测安全时钟偏差大于该值，MPS导向安全。\r","Source":["[TSP-SyRS-0113]","[TSP-IHA-0020]"],"othercontext":"2","Implement":"","Priority":"","Contribution":" SIL4\r","Category":" Functional\r","Allocation":" [MPS]\r","sources":" [TSP-SyRS-0113], [TSP-IHA-0020]\r"}]';
 		$ret = json_decode($result);
-		if (!$ret || $ret->result != 0) {
+		if (!$ret || !is_array($ret) && $ret->result != 0) {
 			return array ('result' => 1, 'data' => 'parse api return error' . $result);
 		}
 
-		$new_array = $ret->data;
-		$addedc = $updatedc = $deletedc = $unupdatedc = $failedc = 0;
+		//$new_array = $ret->data;
+        $new_array = $ret;
+        $addedc = $updatedc = $deletedc = $unupdatedc = $failedc = 0;
 		$added = $updated = $deleted = $unupdated = $failed = [];
 		if (count($old_array) === 0) {
 			$added = $new_array;

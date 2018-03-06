@@ -138,7 +138,7 @@ class ProjectController extends BaseController {
 			$type = Input::get ( "type" );
 			$doc_url = 'http://127.0.0.1/casco-api/public/files/' . $name;
 			//$u ='http://192.100.212.33/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type;
-			$u ='http://localhost:2614/WebService2.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
+			$u ='http://localhost:9760/WebService1.asmx/resolve?doc_url='.$doc_url.'&column='.urlencode($column).'&type='.$type.'&ismerge='.$ismerge.'&regrex='.urlencode(urlencode($regrex));
 			$this->v();
 			$result2 = file_get_contents($u);
 			$add = 0;
