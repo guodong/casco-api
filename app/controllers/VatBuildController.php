@@ -61,6 +61,15 @@ class VatBuildController extends VatExportController{
 		return $vats;
 	}
 
+	public function update($id)
+	{
+		$vat = VatBuild::find($id);
+        $data=Input::get();
+	    $vat->update($data);
+	    
+	    return $vat;
+	}
+
 	public function destroy($id){
 		$vats = VatBuild::find($id);
 		foreach ($vats->vatRss as $v){
