@@ -252,13 +252,13 @@ class DocumentController extends Controller
 		if ($isnew) { // 新版本直接插入所有数据
 		    foreach ($new_array as $v) {
                 if ($type == 'rs') {
-                    $rs = new RS();
+                    $rs = new Rs();
                     $rs->tag = $v->tag;
                     $rs->column = json_encode($v);
                     $rs->version_id = $version->id;
                     $rs->save();
                 } else {
-                    $tc = new TC();
+                    $tc = new Tc();
                     $tc->column = json_encode($v);
                     $tc->tag = $v->tag;
                     $tc->version_id = $version->id;
@@ -279,13 +279,13 @@ class DocumentController extends Controller
 
             foreach ($added as $v) {
                 if ($type == 'rs') {
-                    $rs = new RS();
+                    $rs = new Rs();
                     $rs->tag = $v->tag;
                     $rs->column = json_encode($v);
                     $rs->version_id = $version->id;
                     $rs->save();
                 } else {
-                    $tc = new TC();
+                    $tc  =new Tc();
                     $tc->column = json_encode($v);
                     $tc->tag = $v->tag;
                     $tc->version_id = $version->id;
@@ -319,7 +319,7 @@ class DocumentController extends Controller
                     foreach($_rs as $r)
                         $r->forceDelete();
 
-                    $rs = new RS();
+                    $rs = new Rs();
                     $rs->tag = $v->tag;
                     $rs->column = json_encode($v);
                     $rs->version_id = $version->id;
@@ -329,7 +329,7 @@ class DocumentController extends Controller
                     foreach($_tc as $r)
                         $r->forceDelete();
 
-                    $tc = new TC();
+                    $tc = new Tc();
                     $tc->column = json_encode($v);
                     $tc->tag = $v->tag;
                     $tc->version_id = $version->id;

@@ -180,7 +180,8 @@ class ProjectController extends BaseController {
 						$modify ++;
 						///	return "更新记录";
 					} else { //不存在此记录了
-						$tc = new TC ( );$tc->column=json_encode($value);
+						$tc = new Tc ( );
+						$tc->column=json_encode($value);
 						$tc->tag=$value['tag'];
 						foreach ((array)$value as $key => $item ) {
 							 if ($key == 'test steps') {
@@ -220,7 +221,8 @@ class ProjectController extends BaseController {
 						$modify++;
 					} else { //不存在此记录了
 						//原来的tag为空的version_id的rs要不要删除掉
-						$rs = new RS ( );$rs->tag=$value['tag'];
+						$rs = new Rs ( );
+						$rs->tag=$value['tag'];
 						$rs->column=json_encode($value);
 						$rs->version_id = $version->id ;
 						$rs->save ();
