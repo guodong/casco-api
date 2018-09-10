@@ -174,8 +174,9 @@ class DocumentController extends Controller
 		// $fileapi = 'http://192.100.110.96:8000/';
         // $target_url = 'http://192.100.110.96:8500/parse';
         
-		$fileapi = 'http://localhost/';
-        $target_url = 'http://localhost:9760/WebService1.asmx/InputWord';
+        $fileapi = 'http://localhost:5000/';
+        $target_url = 'http://localhost:90/WebService1.asmx/'; //   InputWord TestRS  readtc TestTC
+        $target_url = $target_url . ($type=='rs'? 'InputWord': 'readtc');
         
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
@@ -268,8 +269,8 @@ class DocumentController extends Controller
                         $step = new TcStep();
                         $step->tc_id = $tc->id;
                         $step->num = $i++;
-                        $step->actions = empty($vv->actions) ? null : $vv->actions;
-                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->actions = empty($vv->actions) ? '' : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? '' : $vv->expected_result;
                         $step->save();
                     }
                 }
@@ -295,8 +296,8 @@ class DocumentController extends Controller
                         $step = new TcStep();
                         $step->tc_id = $tc->id;
                         $step->num = $i++;
-                        $step->actions = empty($vv->actions) ? null : $vv->actions;
-                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->actions = empty($vv->actions) ? '' : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? '' : $vv->expected_result;
                         $step->save();
                     }
                 }
@@ -339,8 +340,8 @@ class DocumentController extends Controller
                         $step = new TcStep();
                         $step->tc_id = $tc->id;
                         $step->num = $i++;
-                        $step->actions = empty($vv->actions) ? null : $vv->actions;
-                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->actions = empty($vv->actions) ? '' : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? '' : $vv->expected_result;
                         $step->save();
                     }
                 }
