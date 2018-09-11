@@ -174,8 +174,9 @@ class DocumentController extends Controller
 		// $fileapi = 'http://192.100.110.96:8000/';
         // $target_url = 'http://192.100.110.96:8500/parse';
         
-		$fileapi = 'http://localhost/';
-        $target_url = 'http://localhost:9760/WebService1.asmx/InputWord';
+        $fileapi = 'http://localhost:5000/';
+        $target_url = 'http://localhost:90/WebService1.asmx/'; //   InputWord TestRS  readtc TestTC
+        $target_url = $target_url . ($type=='rs'? 'InputWord': 'readtc');
         
 		if (Input::get('isNew') == 1) {
 			$old_version = Version::where('document_id', Input::get('document_id'))->orderBy('updated_at', 'desc')->first();
@@ -252,13 +253,13 @@ class DocumentController extends Controller
 		if ($isnew) { // 新版本直接插入所有数据
 		    foreach ($new_array as $v) {
                 if ($type == 'rs') {
-                    $rs = new RS();
+                    $rs = new Rs();
                     $rs->tag = $v->tag;
                     $rs->column = json_encode($v);
                     $rs->version_id = $version->id;
                     $rs->save();
                 } else {
-                    $tc = new TC();
+                    $tc = new Tc();
                     $tc->column = json_encode($v);
                     $tc->tag = $v->tag;
                     $tc->version_id = $version->id;
@@ -268,8 +269,8 @@ class DocumentController extends Controller
                         $step = new TcStep();
                         $step->tc_id = $tc->id;
                         $step->num = $i++;
-                        $step->actions = empty($vv->actions) ? null : $vv->actions;
-                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->actions = empty($vv->actions) ? '' : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? '' : $vv->expected_result;
                         $step->save();
                     }
                 }
@@ -279,13 +280,13 @@ class DocumentController extends Controller
 
             foreach ($added as $v) {
                 if ($type == 'rs') {
-                    $rs = new RS();
+                    $rs = new Rs();
                     $rs->tag = $v->tag;
                     $rs->column = json_encode($v);
                     $rs->version_id = $version->id;
                     $rs->save();
                 } else {
-                    $tc = new TC();
+                    $tc  =new Tc();
                     $tc->column = json_encode($v);
                     $tc->tag = $v->tag;
                     $tc->version_id = $version->id;
@@ -295,8 +296,8 @@ class DocumentController extends Controller
                         $step = new TcStep();
                         $step->tc_id = $tc->id;
                         $step->num = $i++;
-                        $step->actions = empty($vv->actions) ? null : $vv->actions;
-                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->actions = empty($vv->actions) ? '' : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? '' : $vv->expected_result;
                         $step->save();
                     }
                 }
@@ -319,7 +320,7 @@ class DocumentController extends Controller
                     foreach($_rs as $r)
                         $r->forceDelete();
 
-                    $rs = new RS();
+                    $rs = new Rs();
                     $rs->tag = $v->tag;
                     $rs->column = json_encode($v);
                     $rs->version_id = $version->id;
@@ -329,7 +330,7 @@ class DocumentController extends Controller
                     foreach($_tc as $r)
                         $r->forceDelete();
 
-                    $tc = new TC();
+                    $tc = new Tc();
                     $tc->column = json_encode($v);
                     $tc->tag = $v->tag;
                     $tc->version_id = $version->id;
@@ -339,8 +340,8 @@ class DocumentController extends Controller
                         $step = new TcStep();
                         $step->tc_id = $tc->id;
                         $step->num = $i++;
-                        $step->actions = empty($vv->actions) ? null : $vv->actions;
-                        $step->expected_result = empty($vv->expected_result) ? null : $vv->expected_result;
+                        $step->actions = empty($vv->actions) ? '' : $vv->actions;
+                        $step->expected_result = empty($vv->expected_result) ? '' : $vv->expected_result;
                         $step->save();
                     }
                 }
