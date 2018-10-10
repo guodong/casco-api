@@ -20,7 +20,7 @@ class Rs extends BaseModel {
 	{
 		$arr =$this->column();
 		if(!$arr)return [];
-		array_key_exists('source',$arr)?preg_match_all('/\[.*?\]/i',preg_replace('/\s/','',$arr['source']),$matches):($matches[0]=[]);
+		array_key_exists('source',$arr)?preg_match_all('/\[.*?\]/i',preg_replace('/\s/','',$arr['source'])[0],$matches):($matches[0]=[]);
 		return $matches[0];
 	}
 

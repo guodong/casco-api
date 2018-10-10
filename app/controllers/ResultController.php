@@ -25,12 +25,12 @@ class ResultController extends BaseController{
 			}
 			$v->tag=$v->tc->tag;
 			$v->tc->description=$v->tc->description();
-			($v->tc->testmethods=$v->tc->dynamic_col('test method'))||$v->tc->testmethods=$v->tc->dynamic_col('method');
+			($v->tc->testmethods=$v->tc->dynamic_col('test_method'))||$v->tc->testmethods=$v->tc->dynamic_col('method');
 			/*$arr = (array)json_decode('{'.$v->tc->column.'}',true);
-			if(!array_key_exists('test method',$arr)) continue;
-			(count($test_methods=explode('/',$arr['test method']))>1)||
-			(count($test_methods=explode('+',$arr['test method']))>1)||
-			(count($test_methods=explode('&',$arr['test method']))>1);
+			if(!array_key_exists('test_method',$arr)) continue;
+			(count($test_methods=explode('/',$arr['test_method']))>1)||
+			(count($test_methods=explode('+',$arr['test_method']))>1)||
+			(count($test_methods=explode('&',$arr['test_method']))>1);
 			$ids=Testmethod::whereIn('name',(array)$test_methods)->get()->toArray();
 			$v->tc->testmethods = $ids;
 			*/

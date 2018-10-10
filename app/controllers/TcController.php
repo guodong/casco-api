@@ -28,7 +28,7 @@ class TcController extends Controller{
 			foreach($tcs as $tc){
 				//$arr = json_decode($tc->column,true);
 				$tc->description=$tc->description();
-				($tc->testmethods=$tc->dynamic_col('test method'))||$tc->testmethods=$tc->dynamic_col('method');
+				($tc->testmethods=$tc->dynamic_col('test_method'))||$tc->testmethods=$tc->dynamic_col('method');
 				$final[]=array('tc'=>$tc);
 			}
 			return  $final;
@@ -41,8 +41,8 @@ class TcController extends Controller{
 			if(!$base){continue;}
 			$obj=array();
 			$obj['id']=$v->id;
-			if(array_key_exists('test steps',$base))
-			unset($base['test steps']);
+			if(array_key_exists('test_steps',$base))
+			unset($base['test_steps']);
 			$obj=array_merge($base,$obj);
 			$data[]=array_change_key_case($obj,CASE_LOWER);
 		}
@@ -53,7 +53,7 @@ class TcController extends Controller{
 		$columnWidth=(string)(100/(count($column))).'%';
 		$columModle=array();
 		$fieldsNames=array();
-		$black_list=array('input','execution step','expected output','test steps');
+		$black_list=array('input','execution step', 'exec_step' ,'expected output','test_steps');
 		$columModle[]=array('dataIndex'=>'tag','header'=>'tag','width'=> $columnWidth);
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
@@ -123,7 +123,7 @@ class TcController extends Controller{
 		$fieldsNames[]=array('name'=>'tag');
 		foreach($column as $item){
 
-			if($item=='test steps')continue;
+			if($item=='test_steps')continue;
 			$columModle[]=(array('dataIndex'=>$item,'header'=>$item,'width'=> 140));
 			$fieldsNames[]=array('name'=>$item);
 		}
@@ -167,7 +167,7 @@ class TcController extends Controller{
 		$cols=$m->column();	$data = Input::get('column');
 		foreach((array)$data as $key=>$value){
 			if(array_key_exists($key,$cols)){
-				$cols[$key]=$value;//包括了test steps
+				$cols[$key]=$value;//包括了test_steps
 			}
 		}//foreach
 		//多一层转义也没有啥关系吧
@@ -228,15 +228,15 @@ class TcController extends Controller{
 							
 						break;
 							
-					case  'test steps':
+					case  'test_steps':
 							
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'test steps');
+						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'test_steps');
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, 'actions');
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'expected result');
+						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'expected_result');
 						foreach ($tc->steps as $step){
 							$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, $step['num']);
 							$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, $step['actions']);
-							$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, $step['expected result']);
+							$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, $step['expected_result']);
 						}
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Result');
 						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->result==0?'untested':($tc->result==1?'passed':'failed'));
@@ -257,7 +257,7 @@ class TcController extends Controller{
 				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row++, $tc->pre_condition);
 				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(0, $row, 'Test Steps');
 				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(1, $row, 'Actions');
-				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'Expected Result');
+				 $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow(2, $row++, 'expected_result');
 				 */
 
 					
