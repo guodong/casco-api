@@ -160,7 +160,7 @@ class ProjectController extends BaseController {
 					if ($num) {
 						$num->column = json_encode($value);			
 						foreach ($value as $key => $item ) {
-							if ($key == 'test steps') {
+							if ($key == 'test_steps') {
 								//做相应的处理哦
 								$wait_save = json_decode ( $item,true )?json_decode ( $item,true ):array();
 							} //else if
@@ -184,7 +184,7 @@ class ProjectController extends BaseController {
 						$tc->column=json_encode($value);
 						$tc->tag=$value['tag'];
 						foreach ((array)$value as $key => $item ) {
-							 if ($key == 'test steps') {
+							 if ($key == 'test_steps') {
 								//做相应的处理哦
 								$wait_save =json_decode ( $item,true )?json_decode ( $item,true ):array();
 							} 							
